@@ -40,6 +40,11 @@ const en: TranslationDictionary = {
   "common.filters": "Filters",
   "common.clearFilters": "Clear Filters",
   "common.noResults": "No products found",
+  "common.noResultsHint": "Try adjusting or clearing your filters.",
+  "common.products": "Products",
+  "common.priceRange": "Price Range",
+  "common.min": "Min",
+  "common.max": "Max",
   "common.yes": "Yes",
   "common.no": "No",
 
@@ -145,6 +150,11 @@ const en: TranslationDictionary = {
   "home.guarantee.fastDelivery": "Fast, Reliable Delivery",
   "home.guarantee.easyReturns": "Easy Returns Policy",
   "home.guarantee.support": "Dedicated Customer Support",
+
+  "sort.featured": "Featured",
+  "sort.priceAsc": "Price: Low to High",
+  "sort.priceDesc": "Price: High to Low",
+  "sort.nameAsc": "Name: A to Z",
 };
 
 export default en;
