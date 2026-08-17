@@ -68,6 +68,11 @@ const en: TranslationDictionary = {
   "category.televisions.name": "Televisions",
   "category.mobilePhones.name": "Mobile Phones",
 
+  "axis.tonnage.label": "Tonnage",
+  "axis.screenSize.label": "Screen Size",
+  "axis.storage.label": "Storage",
+  "axis.colour.label": "Colour",
+
   "spec.energyRating.label": "Energy Rating",
   "spec.compressorType.label": "Compressor Type",
   "spec.refrigerantType.label": "Refrigerant Type",
@@ -87,6 +92,28 @@ const en: TranslationDictionary = {
   "spec.rearCamera.label": "Rear Camera",
   "spec.displayType.label": "Display Type",
   "spec.fiveGSupport.label": "5G Support",
+
+  "orderStatus.order_placed": "Order Placed",
+  "orderStatus.processing": "Processing",
+  "orderStatus.ready_for_dispatch": "Ready for Dispatch / Installation Scheduled",
+  "orderStatus.shipped": "Shipped",
+  "orderStatus.out_for_delivery": "Out for Delivery",
+  "orderStatus.delivered": "Delivered",
+  "orderStatus.cancelled": "Cancelled",
+  "orderStatus.return_requested": "Return Requested",
+  "orderStatus.returned_refunded": "Returned / Refunded",
+
+  "paymentStatus.pending": "Payment Pending",
+  "paymentStatus.paid": "Paid",
+  "paymentStatus.cod_pending": "Cash on Delivery",
+  "paymentStatus.refunded": "Refunded",
+  "paymentStatus.failed": "Payment Failed",
+
+  "paymentMethod.cod": "Cash on Delivery",
+  "paymentMethod.jazzcash": "JazzCash",
+  "paymentMethod.easypaisa": "Easypaisa",
+  "paymentMethod.card": "Credit / Debit Card",
+  "paymentMethod.raast": "Raast Bank Transfer",
 };
 
 export default en;
