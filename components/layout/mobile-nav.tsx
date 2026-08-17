@@ -15,10 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/context/auth-context";
-import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
-
-const categories = getAllCategories();
 
 const navLinkClass =
   "flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-foreground hover:bg-muted";
@@ -41,7 +38,7 @@ export function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("nav.categories")} className="md:hidden">
+        <Button variant="ghost" size="icon" aria-label={t("nav.menu")} className="md:hidden">
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
@@ -61,18 +58,6 @@ export function MobileNav() {
               className="pl-9"
             />
           </form>
-
-          <nav className="flex flex-col gap-1">
-            {categories.map((category) => (
-              <SheetClose key={category.id} asChild>
-                <Link href={`/category/${category.slug}`} className={navLinkClass}>
-                  {t(category.nameKey)}
-                </Link>
-              </SheetClose>
-            ))}
-          </nav>
-
-          <div className="h-px bg-border" />
 
           <nav className="flex flex-col gap-1">
             <SheetClose asChild>

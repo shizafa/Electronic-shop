@@ -41,3 +41,9 @@ export function searchProducts(query: string): Product[] {
     `${product.name} ${product.brand}`.toLowerCase().includes(normalizedQuery)
   );
 }
+
+export function getDisplayVariant(product: Product): Variant {
+  const inStockVariants = product.variants.filter((variant) => variant.stock > 0);
+  const candidates = inStockVariants.length > 0 ? inStockVariants : product.variants;
+  return candidates.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest));
+}

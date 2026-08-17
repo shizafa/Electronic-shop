@@ -5,6 +5,7 @@ const en: TranslationDictionary = {
 
   "nav.home": "Home",
   "nav.categories": "Categories",
+  "nav.menu": "Menu",
   "nav.search": "Search",
   "nav.searchPlaceholder": "Search for products...",
   "nav.cart": "Cart",
@@ -121,6 +122,29 @@ const en: TranslationDictionary = {
   "paymentMethod.easypaisa": "Easypaisa",
   "paymentMethod.card": "Credit / Debit Card",
   "paymentMethod.raast": "Raast Bank Transfer",
+
+  "home.hero.eyebrow": "Trending Now",
+  "home.hero.heading": "Upgrade Your Home with Trusted Electronics",
+  "home.hero.subheading":
+    "Shop air conditioners, TVs, and mobile phones with easy installation booking and Cash on Delivery, delivered across Pakistan.",
+  "home.hero.shopNow": "Shop Now",
+  "home.hero.exploreCategories": "Explore Categories",
+  "home.categories.heading": "Shop by Category",
+  "home.newArrivals.heading": "New Arrivals",
+  "home.newArrivals.badge": "New",
+  "home.bestSellers.heading": "Best Sellers",
+  "home.promo.heading": "Limited Time Deals on Televisions",
+  "home.promo.subheading": "Save on select 4K and QLED TVs for a limited time.",
+  "home.promo.cta": "Shop the Deal",
+  "home.promo.days": "Days",
+  "home.promo.hours": "Hrs",
+  "home.promo.minutes": "Min",
+  "home.promo.seconds": "Sec",
+  "home.trust.freeDelivery": "Free Delivery Nationwide",
+  "home.guarantee.qualityAssured": "Genuine, Quality-Assured Products",
+  "home.guarantee.fastDelivery": "Fast, Reliable Delivery",
+  "home.guarantee.easyReturns": "Easy Returns Policy",
+  "home.guarantee.support": "Dedicated Customer Support",
 };
 
 export default en;

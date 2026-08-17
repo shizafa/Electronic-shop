@@ -7,20 +7,30 @@ import { Heart } from "lucide-react";
 import { Price } from "@/components/product/price";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
+import { getDisplayVariant } from "@/lib/products";
 import type { Product } from "@/types/product";
 
-function getDisplayVariant(product: Product) {
-  const inStockVariants = product.variants.filter((variant) => variant.stock > 0);
-  const candidates = inStockVariants.length > 0 ? inStockVariants : product.variants;
-  return candidates.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest));
+interface ProductCardProps {
+  product: Product;
+  badge?: string;
 }
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, badge }: ProductCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const displayVariant = getDisplayVariant(product);
   const inWishlist = isInWishlist(product.id);
   const hasMultipleVariants = product.variants.length > 1;
   const isOutOfStock = product.variants.every((variant) => variant.stock === 0);
+
+  const discountPercent = displayVariant.compareAtPrice
+    ? Math.round(
+        ((displayVariant.compareAtPrice - displayVariant.price) / displayVariant.compareAtPrice) * 100
+      )
+    : undefined;
+
+  const topLeftBadge = isOutOfStock
+    ? t("common.outOfStock")
+    : (badge ?? (discountPercent ? `-${discountPercent}%` : undefined));
 
   function handleWishlistToggle(event: MouseEvent) {
     event.preventDefault();
@@ -45,9 +55,9 @@ export function ProductCard({ product }: { product: Product }) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
-        {isOutOfStock && (
+        {topLeftBadge && (
           <span className="absolute left-2 top-2 rounded-full bg-foreground/80 px-2 py-0.5 text-[11px] font-medium text-background">
-            {t("common.outOfStock")}
+            {topLeftBadge}
           </span>
         )}
 
