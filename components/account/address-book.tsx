@@ -23,6 +23,7 @@ const emptyDraft: AddressDraft = {
   isDefault: false,
 };
 
+// AddressBook — lets a logged-in user view, add, edit, and delete saved shipping addresses
 export function AddressBook() {
   const { user, updateAddresses } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export function AddressBook() {
     event.preventDefault();
     if (!user) return;
 
+    // reuse the existing id when editing, otherwise generate a new one
     const id = isAdding ? `addr-${Date.now()}` : (editingId ?? `addr-${Date.now()}`);
     const newAddress: Address = { ...draft, id };
 
@@ -69,6 +71,7 @@ export function AddressBook() {
       ? [...user.addresses, newAddress]
       : user.addresses.map((address) => (address.id === id ? newAddress : address));
 
+    // only one address can be default, so unset the flag on all others
     if (newAddress.isDefault) {
       nextAddresses = nextAddresses.map((address) => ({ ...address, isDefault: address.id === id }));
     }

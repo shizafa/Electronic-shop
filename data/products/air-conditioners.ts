@@ -1,5 +1,7 @@
 import type { Product } from "@/types/product";
 
+// Mock air conditioner catalog: product listing, PDP, filters, and cart all read from this.
+// Tonnage is the only variant axis (room-size options) for ACs; shared across all products below.
 const tonnageAxis = { id: "tonnage", labelKey: "axis.tonnage.label", unit: "Ton" };
 
 export const airConditionerProducts: Product[] = [
@@ -16,6 +18,7 @@ export const airConditionerProducts: Product[] = [
       "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
+      // shape defined by data/specs/air-conditioners.ts; used for spec table + compare
       energyRating: "5 Star",
       compressorType: "Inverter",
       refrigerantType: "R32",
@@ -24,15 +27,15 @@ export const airConditionerProducts: Product[] = [
       wifiEnabled: true,
     },
     variantAxes: [tonnageAxis],
-    featured: true,
+    featured: true, // shown in "featured"/home page sections
     variants: [
       {
         id: "ac-haier-hsu18-1.0",
         productId: "ac-haier-hsu18",
         sku: "AC-HAI-HSU18-1.0T",
-        axisValues: { tonnage: "1.0" },
+        axisValues: { tonnage: "1.0" }, // maps this variant to a value of each variantAxes entry
         price: 98000,
-        compareAtPrice: 108000,
+        compareAtPrice: 108000, // original price shown struck-through when set
         stock: 22,
       },
       {

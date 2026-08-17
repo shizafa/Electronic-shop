@@ -5,6 +5,7 @@ interface SpecTableProps {
   rows: SpecRow[];
 }
 
+// Renders product specifications as a table; used on product page and the compare page (one column per product).
 export function SpecTable({ columns, rows }: SpecTableProps) {
   return (
     <div className="overflow-x-auto">

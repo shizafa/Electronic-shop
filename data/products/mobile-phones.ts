@@ -1,5 +1,7 @@
 import type { Product } from "@/types/product";
 
+// Mock mobile phone catalog: product listing, PDP, filters, and cart all read from this.
+// Storage and colour are the variant axes phones can be picked by; shared across products below.
 const storageAxis = { id: "storage", labelKey: "axis.storage.label" };
 const colourAxis = { id: "colour", labelKey: "axis.colour.label" };
 

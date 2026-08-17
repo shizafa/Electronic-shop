@@ -19,6 +19,7 @@ interface OrderReviewProps {
   total: number;
 }
 
+// OrderReview — read-only summary of items, addresses, installation, payment, and totals before placing an order
 export function OrderReview({
   lineItems,
   shippingAddress,

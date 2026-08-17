@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: t("footer.contactUs"),
 };
 
+// /contact route: static contact details plus the contact form
 export default function ContactPage() {
   return (
     <div className="container-page max-w-3xl py-10">

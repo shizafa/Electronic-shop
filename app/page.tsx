@@ -8,8 +8,10 @@ import { TrustStrip } from "@/components/home/trust-strip";
 import { t } from "@/lib/i18n";
 import { getAllProducts, getFeaturedProducts } from "@/lib/products";
 
+// / route: homepage assembled from the various components/home/* sections
 export default function Home() {
   const featuredProducts = getFeaturedProducts();
+  // Show up to 8 non-featured products as "new arrivals"
   const newArrivals = getAllProducts()
     .filter((product) => !product.featured)
     .slice(0, 8);

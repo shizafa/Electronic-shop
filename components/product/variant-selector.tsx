@@ -9,7 +9,9 @@ interface VariantSelectorProps {
   onSelectVariant: (variant: Variant) => void;
 }
 
+// Lets the shopper pick variant options (e.g. storage, colour, tonnage) on the product page.
 export function VariantSelector({ product, selectedVariant, onSelectVariant }: VariantSelectorProps) {
+  // Looks for a variant matching every axis value at once (e.g. this storage AND this colour).
   function findExactMatch(candidateSelections: Record<string, string>): Variant | undefined {
     return product.variants.find((variant) =>
       product.variantAxes.every((axis) => variant.axisValues[axis.id] === candidateSelections[axis.id])
@@ -34,6 +36,7 @@ export function VariantSelector({ product, selectedVariant, onSelectVariant }: V
   return (
     <div className="flex flex-col gap-4">
       {product.variantAxes.map((axis) => {
+        // unique set of values offered for this axis (e.g. all distinct colours across variants)
         const values = Array.from(
           new Set(product.variants.map((variant) => variant.axisValues[axis.id]))
         );
@@ -47,6 +50,7 @@ export function VariantSelector({ product, selectedVariant, onSelectVariant }: V
             <div className="flex flex-wrap gap-2">
               {values.map((value) => {
                 const isSelected = selectedVariant.axisValues[axis.id] === value;
+                // disable the option if no in-stock variant offers this value at all
                 const isAvailable = product.variants.some(
                   (variant) => variant.axisValues[axis.id] === value && variant.stock > 0
                 );

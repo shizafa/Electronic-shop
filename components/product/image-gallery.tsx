@@ -10,16 +10,18 @@ interface ImageGalleryProps {
   alt: string;
 }
 
+// Main product image with left/right nav and clickable thumbnails, shown on the product page.
 export function ImageGallery({ images, alt }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = images[activeIndex] ?? images[0];
 
   function showPrevious() {
+    // adding images.length before % wraps negative indexes back to the end of the array
     setActiveIndex((index) => (index - 1 + images.length) % images.length);
   }
 
   function showNext() {
-    setActiveIndex((index) => (index + 1) % images.length);
+    setActiveIndex((index) => (index + 1) % images.length); // wraps back to the first image
   }
 
   return (

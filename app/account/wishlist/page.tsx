@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("account.wishlist"),
 };
 
+// /account/wishlist route: renders the saved wishlist items
 export default function AccountWishlistPage() {
   return <WishlistView />;
 }

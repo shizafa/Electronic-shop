@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
 
+// SignupForm — creates a new user account and redirects back to where they came from
 export function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,10 +25,11 @@ export function SignupForm() {
 
     const success = signup(name, email, phone, password);
     if (!success) {
-      setError(t("auth.emailTaken"));
+      setError(t("auth.emailTaken")); // signup() returns false when the email is already registered
       return;
     }
 
+    // send the user to the page they were trying to reach before signing up, if any
     router.push(searchParams.get("redirect") || "/");
   }
 

@@ -1,5 +1,6 @@
 import type { SpecFieldDefinition } from "@/types/category";
 
+// Defines the spec fields phones can have: drives filter sidebar, spec table, and compare page.
 export const mobilePhoneSpecs: SpecFieldDefinition[] = [
   {
     id: "chipset",

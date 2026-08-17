@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 
+// Static countdown values — display only, does not actually tick down
 const countdown = [
   { value: "02", labelKey: "home.promo.days" },
   { value: "15", labelKey: "home.promo.hours" },
@@ -9,6 +10,7 @@ const countdown = [
   { value: "30", labelKey: "home.promo.seconds" },
 ];
 
+// Homepage promo banner with a (hardcoded, non-live) sale countdown
 export function PromoBanner() {
   return (
     <section className="container-page py-8">

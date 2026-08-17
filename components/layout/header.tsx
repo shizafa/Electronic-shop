@@ -21,6 +21,7 @@ import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
 
+// IconLink — nav icon button that links to a page and shows a small count badge (e.g. cart items)
 function IconLink({
   href,
   label,
@@ -53,6 +54,7 @@ function IconLink({
   );
 }
 
+// Header — site-wide top navigation: logo, search, wishlist/compare/cart/account links
 export function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -67,7 +69,7 @@ export function Header() {
     const trimmed = query.trim();
     if (trimmed) {
       setIsSearchOpen(false);
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`); // navigate to search results page with the query
     }
   }
 

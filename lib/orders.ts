@@ -19,18 +19,22 @@ function getLocalOrders(): Order[] {
   return readJSON<Order[]>(NEW_ORDERS_KEY, []);
 }
 
+// Combines built-in seed orders with orders placed locally in this browser
 function getAllOrders(): Order[] {
   return [...orders, ...getLocalOrders()];
 }
 
+// Returns all orders belonging to a given user
 export function getOrdersForUser(userId: string): Order[] {
   return getAllOrders().filter((order) => order.userId === userId);
 }
 
+// Looks up a single order by id
 export function getOrderById(orderId: string): Order | undefined {
   return getAllOrders().find((order) => order.id === orderId);
 }
 
+// Data needed to create a new order from the checkout flow
 export interface PlaceOrderInput {
   userId: string;
   lineItems: { product: Product; variant: Variant; quantity: number }[];
@@ -40,11 +44,12 @@ export interface PlaceOrderInput {
   installation?: InstallationSchedule;
 }
 
+// Builds a new order from cart line items, computes totals, and saves it to localStorage
 export function placeOrder(input: PlaceOrderInput): Order {
   const subtotal = input.lineItems.reduce((sum, { variant, quantity }) => sum + variant.price * quantity, 0);
-  const shippingFee = 0;
+  const shippingFee = 0; // shipping is currently free in this mock shop
   const total = subtotal + shippingFee;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
   const items: OrderItem[] = input.lineItems.map(({ product, variant, quantity }) => {
     const category = getCategoryById(product.categoryId);
@@ -61,11 +66,12 @@ export function placeOrder(input: PlaceOrderInput): Order {
     };
   });
 
+  // Cash-on-delivery orders start "pending payment"; other methods are treated as already paid
   const paymentStatus: PaymentStatus = input.paymentMethod === "cod" ? "cod_pending" : "paid";
 
   const order: Order = {
     id: `order-${Date.now()}`,
-    orderNumber: `ORD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+    orderNumber: `ORD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`, // e.g. ORD-2026-4821
     userId: input.userId,
     items,
     shippingAddress: input.shippingAddress,
@@ -85,6 +91,7 @@ export function placeOrder(input: PlaceOrderInput): Order {
   return order;
 }
 
+// One step in the visual order-progress timeline shown to the user
 export interface OrderTimelineStep {
   status: OrderStatus;
   labelKey: string;
@@ -92,6 +99,7 @@ export interface OrderTimelineStep {
   current: boolean;
 }
 
+// Status sequence for orders that need an installation step (e.g. air conditioners)
 const mainLineWithInstallation: OrderStatus[] = [
   "order_placed",
   "processing",
@@ -101,6 +109,7 @@ const mainLineWithInstallation: OrderStatus[] = [
   "delivered",
 ];
 
+// Status sequence for orders that don't need installation
 const mainLineWithoutInstallation: OrderStatus[] = [
   "order_placed",
   "processing",
@@ -109,11 +118,13 @@ const mainLineWithoutInstallation: OrderStatus[] = [
   "delivered",
 ];
 
+// Builds the ordered list of timeline steps for an order, marking which are done/current
 export function getOrderTimeline(order: Order): OrderTimelineStep[] {
   const requiresInstallation = order.items.some((item) => item.installationRequired);
   const mainLine = requiresInstallation ? mainLineWithInstallation : mainLineWithoutInstallation;
 
   if (order.status === "cancelled") {
+    // Show only the main-line steps actually reached before cancellation, then a final "cancelled" step
     const reachedStatuses = new Set(order.statusHistory.map((entry) => entry.status));
     const completedMainLineSteps = mainLine
       .filter((status) => reachedStatuses.has(status))
@@ -155,6 +166,7 @@ export function getOrderTimeline(order: Order): OrderTimelineStep[] {
     return [...completedMainLineSteps, ...returnSteps];
   }
 
+  // Normal case: every step up to and including the current status is marked completed
   const currentIndex = mainLine.indexOf(order.status);
   return mainLine.map((status, index) => ({
     status,

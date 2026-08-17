@@ -16,6 +16,7 @@ interface SortControlProps {
   onChange: (value: SortOption) => void;
 }
 
+// SortControl — dropdown for choosing product sort order (featured, price, name)
 export function SortControl({ value, onChange }: SortControlProps) {
   return (
     <Select value={value} onValueChange={(next) => onChange(next as SortOption)}>

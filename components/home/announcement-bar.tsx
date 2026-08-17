@@ -2,6 +2,7 @@ import { t } from "@/lib/i18n";
 
 const messages = ["home.trust.freeDelivery", "checkout.codAvailable", "checkout.installationService"];
 
+// Thin scrolling strip at the very top of the homepage with quick perks
 export function AnnouncementBar() {
   return (
     <div className="bg-foreground text-background">

@@ -43,6 +43,7 @@ const faqs = [
   },
 ];
 
+// /faqs route: renders the static FAQ list as accordion sections
 export default function FaqsPage() {
   return (
     <div className="container-page max-w-2xl py-10">

@@ -20,6 +20,7 @@ const legalLinks = [
   { href: "/policies/terms", labelKey: "footer.termsOfService" },
 ];
 
+// FooterColumn — renders one labeled column of links in the footer
 function FooterColumn({
   headingKey,
   links,
@@ -43,6 +44,7 @@ function FooterColumn({
   );
 }
 
+// Footer — site-wide footer with category/company/legal links and trust badges
 export function Footer() {
   const categoryLinks = categories.map((category) => ({
     href: `/category/${category.slug}`,

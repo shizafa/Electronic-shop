@@ -1,5 +1,6 @@
 import type { SpecFieldDefinition } from "@/types/category";
 
+// Defines the spec fields TVs can have: drives filter sidebar, spec table, and compare page.
 export const televisionSpecs: SpecFieldDefinition[] = [
   {
     id: "screenResolution",

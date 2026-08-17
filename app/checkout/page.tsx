@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("common.checkout"),
 };
 
+// /checkout route: renders the multi-step checkout flow
 export default function CheckoutPage() {
   return <CheckoutFlow />;
 }

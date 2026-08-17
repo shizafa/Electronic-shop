@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("account.profile"),
 };
 
+// /account/profile route: renders the editable profile form
 export default function AccountProfilePage() {
   return <ProfileForm />;
 }

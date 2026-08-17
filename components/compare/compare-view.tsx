@@ -11,9 +11,11 @@ import { t } from "@/lib/i18n";
 import { getDisplayVariant, getProductById } from "@/lib/products";
 import { buildSpecRows } from "@/lib/specs";
 
+// CompareView — shows selected products side by side with a shared spec comparison table
 export function CompareView() {
   const { items, removeFromCompare, clearCompare } = useCompare();
 
+  // drop any compared items whose product no longer exists in the catalog
   const products = items
     .map((item) => getProductById(item.productId))
     .filter((product): product is NonNullable<typeof product> => product !== undefined);
@@ -31,7 +33,7 @@ export function CompareView() {
   }
 
   const entries = products.map((product) => ({ product, variant: getDisplayVariant(product) }));
-  const specRows = buildSpecRows(entries);
+  const specRows = buildSpecRows(entries); // flattens each product's specs into aligned table rows
 
   return (
     <div className="flex flex-col gap-6">

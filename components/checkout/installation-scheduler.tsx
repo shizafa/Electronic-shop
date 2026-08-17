@@ -5,6 +5,7 @@ import type { InstallationSchedule } from "@/types/order";
 
 const TIME_SLOTS = ["9:00 AM - 12:00 PM", "12:00 PM - 3:00 PM", "3:00 PM - 6:00 PM"];
 
+// builds a list of the next `count` calendar days (starting tomorrow) as selectable installation dates
 function getUpcomingDates(count: number): { value: string; label: string }[] {
   const dates: { value: string; label: string }[] = [];
   for (let i = 1; i <= count; i += 1) {
@@ -23,8 +24,9 @@ interface InstallationSchedulerProps {
   onChange: (value: InstallationSchedule) => void;
 }
 
+// InstallationScheduler — lets the user pick a date and time slot for product installation
 export function InstallationScheduler({ value, onChange }: InstallationSchedulerProps) {
-  const dates = getUpcomingDates(7);
+  const dates = getUpcomingDates(7); // offer the next 7 days
 
   return (
     <div className="flex flex-col gap-4">
@@ -35,6 +37,7 @@ export function InstallationScheduler({ value, onChange }: InstallationScheduler
             <button
               key={date.value}
               type="button"
+              // picking a date keeps the previously chosen time slot, defaulting to the first one
               onClick={() => onChange({ date: date.value, timeSlot: value?.timeSlot ?? TIME_SLOTS[0] })}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 value?.date === date.value
@@ -55,7 +58,7 @@ export function InstallationScheduler({ value, onChange }: InstallationScheduler
             <button
               key={slot}
               type="button"
-              disabled={!value?.date}
+              disabled={!value?.date} // must choose a date before a time slot
               onClick={() => onChange({ date: value?.date ?? dates[0].value, timeSlot: slot })}
               className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                 value?.timeSlot === slot

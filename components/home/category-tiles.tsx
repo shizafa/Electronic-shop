@@ -4,6 +4,7 @@ import { getAllCategories } from "@/lib/categories";
 import { getProductsByCategory } from "@/lib/products";
 import { t } from "@/lib/i18n";
 
+// Homepage grid of category cards linking into /category/[slug]
 export function CategoryTiles() {
   const categories = getAllCategories();
 
@@ -13,6 +14,7 @@ export function CategoryTiles() {
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {categories.map((category) => {
+          // Use first product's first image as the category thumbnail
           const thumbnail = getProductsByCategory(category.id)[0]?.images[0];
 
           return (

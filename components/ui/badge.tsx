@@ -27,6 +27,7 @@ const badgeVariants = cva(
   }
 )
 
+// Badge — small pill label for status/tags (e.g. discount %, "New"); use inline next to text.
 function Badge({
   className,
   variant = "default",
@@ -46,4 +47,4 @@ function Badge({
   )
 }
 
-export { Badge, badgeVariants }
+export { Badge }

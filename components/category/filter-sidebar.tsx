@@ -22,6 +22,7 @@ interface FilterSidebarProps {
   onClearAll: () => void;
 }
 
+// FilterSidebar — checkbox/price-range filter controls, shared by the desktop sidebar and mobile drawer
 export function FilterSidebar({
   fields,
   activeFieldValues,

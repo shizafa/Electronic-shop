@@ -6,20 +6,23 @@ import { getCategoryById } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { getProductBySlug, getProductsByCategory } from "@/lib/products";
 
+// Sets the tab title to the matched product's name
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   return { title: product ? product.name : "Product" };
 }
 
+// /product/[slug] route: looks up the product and its category, then renders detail + related items
 export default async function ProductPage({ params }: PageProps<"/product/[slug]">) {
   const { slug } = await params;
   const product = getProductBySlug(slug);
-  if (!product) notFound();
+  if (!product) notFound(); // unknown slug -> 404
 
   const category = getCategoryById(product.categoryId);
-  if (!category) notFound();
+  if (!category) notFound(); // data integrity guard, shouldn't normally happen
 
+  // Up to 4 other products from the same category, excluding this one
   const relatedProducts = getProductsByCategory(category.id)
     .filter((candidate) => candidate.id !== product.id)
     .slice(0, 4);

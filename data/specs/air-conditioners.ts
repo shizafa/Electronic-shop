@@ -1,13 +1,14 @@
 import type { SpecFieldDefinition } from "@/types/category";
 
+// Defines the spec fields ACs can have: drives filter sidebar, spec table, and compare page.
 export const airConditionerSpecs: SpecFieldDefinition[] = [
   {
-    id: "energyRating",
+    id: "energyRating", // must match the key used in each product's `specs` object
     labelKey: "spec.energyRating.label",
     type: "enum",
     options: ["3 Star", "4 Star", "5 Star"],
-    filterable: true,
-    showInCompare: true,
+    filterable: true, // whether it appears as a filter option in the sidebar
+    showInCompare: true, // whether it appears as a row in the compare table
   },
   {
     id: "compressorType",

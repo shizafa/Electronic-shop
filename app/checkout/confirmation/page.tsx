@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: t("checkout.confirmationHeading"),
 };
 
+// /checkout/confirmation route: shows the post-order confirmation summary
 export default function CheckoutConfirmationPage() {
   return (
     <Suspense>

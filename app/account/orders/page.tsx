@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("account.orders"),
 };
 
+// /account/orders route: renders the order history list
 export default function AccountOrdersPage() {
   return <OrderHistory />;
 }

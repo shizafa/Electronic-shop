@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("cart.heading"),
 };
 
+// /cart route: renders the shopping cart view
 export default function CartPage() {
   return <CartView />;
 }

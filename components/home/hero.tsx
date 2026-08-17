@@ -15,9 +15,11 @@ const HERO_IMAGES = [
 
 const ROTATION_INTERVAL_MS = 5500;
 
+// Homepage hero banner with auto-rotating background images and CTAs
 export function Hero() {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Auto-advance the slideshow on a timer, cleaned up on unmount
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveIndex((index) => (index + 1) % HERO_IMAGES.length);

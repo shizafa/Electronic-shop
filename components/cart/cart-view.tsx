@@ -12,11 +12,14 @@ import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { formatVariantLabel, getProductById, getVariantById } from "@/lib/products";
 
+// CartView — shows cart contents with quantity controls and an order summary
 export function CartView() {
   const router = useRouter();
   const { user } = useAuth();
   const { items, updateQuantity, removeFromCart } = useCart();
 
+  // resolve stored cart items (product/variant ids) into full product + variant data,
+  // dropping any items whose product/variant no longer exists in the catalog
   const lineItems = items
     .map((item) => {
       const product = getProductById(item.productId);
@@ -31,6 +34,7 @@ export function CartView() {
   const total = subtotal + shippingFee;
 
   function handleCheckout() {
+    // logged-out users are sent to login first, then back to checkout
     router.push(user ? "/checkout" : "/login?redirect=/checkout");
   }
 
@@ -109,6 +113,7 @@ export function CartView() {
                     <button
                       type="button"
                       onClick={() =>
+                        // cap quantity at available stock
                         updateQuantity(item.variantId, Math.min(variant.stock, item.quantity + 1))
                       }
                       disabled={item.quantity >= variant.stock}

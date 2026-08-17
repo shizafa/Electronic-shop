@@ -1,5 +1,7 @@
 import type { Product } from "@/types/product";
 
+// Mock television catalog: product listing, PDP, filters, and cart all read from this.
+// Screen size is the only variant axis for TVs; shared across all products below.
 const screenSizeAxis = { id: "screenSize", labelKey: "axis.screenSize.label", unit: "\"" };
 
 export const televisionProducts: Product[] = [

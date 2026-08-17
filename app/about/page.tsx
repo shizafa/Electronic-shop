@@ -30,6 +30,7 @@ const values = [
   },
 ];
 
+// /about route: static company story and "why choose us" content
 export default function AboutPage() {
   return (
     <div className="container-page max-w-3xl py-10">

@@ -24,8 +24,10 @@ interface ProductDetailProps {
   relatedProducts: Product[];
 }
 
+// Full product detail page: gallery, price, variant picker, add-to-cart, specs, related items.
 export function ProductDetail({ product, category, relatedProducts }: ProductDetailProps) {
   const [selectedVariant, setSelectedVariant] = useState<Variant>(
+    // default to the first in-stock variant, falling back to the first variant if all are sold out
     product.variants.find((variant) => variant.stock > 0) ?? product.variants[0]
   );
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +44,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
 
   function handleSelectVariant(variant: Variant) {
     setSelectedVariant(variant);
-    setQuantity(1);
+    setQuantity(1); // reset quantity since stock/context changed with the new variant
   }
 
   function handleAddToCart() {

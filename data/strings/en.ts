@@ -1,5 +1,6 @@
 import type { TranslationDictionary } from "@/types/i18n";
 
+// All UI text for the English locale, looked up by key via lib/i18n.ts's t() helper.
 const en: TranslationDictionary = {
   "site.name": "Electronics",
 

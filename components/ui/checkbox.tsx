@@ -6,6 +6,7 @@ import { Checkbox as CheckboxPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { CheckIcon } from "lucide-react"
 
+// Checkbox — toggle control for boolean selections, e.g. filter options.
 function Checkbox({
   className,
   ...props

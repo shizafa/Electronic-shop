@@ -1,5 +1,7 @@
 import type { Order } from "@/types/order";
 
+// Mock order history for the two demo users; powers account "My Orders" and order detail pages.
+// Reused shipping/billing addresses for the two demo users.
 const ayeshaAddress = {
   fullName: "Ayesha Khan",
   phone: "0300-1234567",
@@ -44,8 +46,8 @@ export const orders: Order[] = [
     shippingFee: 0,
     total: 95000,
     placedAt: "2026-08-16",
-    installation: { date: "2026-08-20", timeSlot: "10:00 AM - 1:00 PM" },
-    statusHistory: [{ status: "order_placed", changedAt: "2026-08-16" }],
+    installation: { date: "2026-08-20", timeSlot: "10:00 AM - 1:00 PM" }, // only present for orders needing installation
+    statusHistory: [{ status: "order_placed", changedAt: "2026-08-16" }], // timeline shown on order detail page
   },
   {
     id: "order-0002",

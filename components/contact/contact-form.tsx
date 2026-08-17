@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { t } from "@/lib/i18n";
 
+// ContactForm — mock contact form; no backend, just shows a confirmation message on submit
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ export function ContactForm() {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitted(true);
+    setIsSubmitted(true); // no backend to send to — just simulate success
   }
 
   if (isSubmitted) {

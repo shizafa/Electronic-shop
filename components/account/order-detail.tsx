@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrderById } from "@/lib/orders";
 
+// OrderDetail — shows the full details of a single past order for the logged-in user
 export function OrderDetail({ orderId }: { orderId: string }) {
   const { user, isLoading } = useAuth();
 
@@ -19,6 +20,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 
   const order = getOrderById(orderId);
 
+  // guard against viewing a missing order or one that belongs to another user
   if (!order || !user || order.userId !== user.id) {
     notFound();
   }

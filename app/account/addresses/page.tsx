@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("account.addresses"),
 };
 
+// /account/addresses route: renders the saved-addresses manager
 export default function AccountAddressesPage() {
   return <AddressBook />;
 }
