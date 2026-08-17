@@ -223,10 +223,9 @@ const en: TranslationDictionary = {
 
   "home.hero.eyebrow": "Trending Now",
   "home.hero.heading": "Upgrade Your Home with Trusted Electronics",
-  "home.hero.subheading":
-    "Shop air conditioners, TVs, and mobile phones with easy installation booking and Cash on Delivery, delivered across Pakistan.",
   "home.hero.shopNow": "Shop Now",
   "home.hero.exploreCategories": "Explore Categories",
+  "home.hero.goToSlide": "Go to slide",
   "home.categories.heading": "Shop by Category",
   "home.newArrivals.heading": "New Arrivals",
   "home.newArrivals.badge": "New",
