@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AppProviders } from "@/context/app-providers";
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -21,7 +23,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", "font-sans", plusJakartaSans.variable)}
     >
       <body className="min-h-full flex flex-col">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <Header />
+          <main className="flex flex-1 flex-col">{children}</main>
+          <Footer />
+        </AppProviders>
       </body>
     </html>
   );

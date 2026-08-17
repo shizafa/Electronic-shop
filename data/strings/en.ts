@@ -52,6 +52,9 @@ const en: TranslationDictionary = {
   "account.orders": "My Orders",
   "account.wishlist": "Wishlist",
 
+  "footer.company": "Company",
+  "footer.support": "Support",
+  "footer.legal": "Legal",
   "footer.aboutUs": "About Us",
   "footer.contactUs": "Contact Us",
   "footer.faqs": "FAQs",
@@ -59,6 +62,8 @@ const en: TranslationDictionary = {
   "footer.returnsWarranty": "Returns & Warranty",
   "footer.privacyPolicy": "Privacy Policy",
   "footer.termsOfService": "Terms of Service",
+  "footer.tagline": "Consumer electronics and home appliances, delivered across Pakistan.",
+  "footer.copyright": "All rights reserved.",
 
   "checkout.codAvailable": "Cash on Delivery Available",
   "checkout.installationService": "Installation Service",
