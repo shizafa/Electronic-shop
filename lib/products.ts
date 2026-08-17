@@ -17,6 +17,10 @@ export function getProductBySlug(slug: string): Product | undefined {
   return allProducts.find((product) => product.slug === slug);
 }
 
+export function getProductById(productId: string): Product | undefined {
+  return allProducts.find((product) => product.id === productId);
+}
+
 export function getProductsByCategory(categoryId: string): Product[] {
   return allProducts.filter((product) => product.categoryId === categoryId);
 }
@@ -46,4 +50,14 @@ export function getDisplayVariant(product: Product): Variant {
   const inStockVariants = product.variants.filter((variant) => variant.stock > 0);
   const candidates = inStockVariants.length > 0 ? inStockVariants : product.variants;
   return candidates.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest));
+}
+
+export function formatVariantLabel(product: Product, variant: Variant): string {
+  return product.variantAxes
+    .map((axis) => {
+      const value = variant.axisValues[axis.id];
+      if (!axis.unit) return value;
+      return axis.unit === '"' ? `${value}${axis.unit}` : `${value} ${axis.unit}`;
+    })
+    .join(" • ");
 }
