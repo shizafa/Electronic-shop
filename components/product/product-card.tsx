@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type MouseEvent } from "react";
-import { Heart } from "lucide-react";
+import { GitCompare, Heart } from "lucide-react";
 import { Price } from "@/components/product/price";
+import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/products";
@@ -17,8 +18,10 @@ interface ProductCardProps {
 
 export function ProductCard({ product, badge }: ProductCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { isInCompare, addToCompare, removeFromCompare } = useCompare();
   const displayVariant = getDisplayVariant(product);
   const inWishlist = isInWishlist(product.id);
+  const inCompare = isInCompare(product.id);
   const hasMultipleVariants = product.variants.length > 1;
   const isOutOfStock = product.variants.every((variant) => variant.stock === 0);
 
@@ -38,6 +41,19 @@ export function ProductCard({ product, badge }: ProductCardProps) {
       removeFromWishlist({ productId: product.id });
     } else {
       addToWishlist({ productId: product.id });
+    }
+  }
+
+  function handleCompareToggle(event: MouseEvent) {
+    event.preventDefault();
+    if (inCompare) {
+      removeFromCompare(product.id);
+    } else {
+      // Silently no-ops if the 4-item cap is hit or the product is from a
+      // different category than what's already being compared — same
+      // simplification as the product detail page, since there's no
+      // toast/notification system yet to explain why.
+      addToCompare(product.id);
     }
   }
 
@@ -61,16 +77,27 @@ export function ProductCard({ product, badge }: ProductCardProps) {
           </span>
         )}
 
-        <button
-          type="button"
-          onClick={handleWishlistToggle}
-          aria-label={inWishlist ? t("common.removeFromWishlist") : t("common.addToWishlist")}
-          className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-background"
-        >
-          <Heart
-            className={`size-4 ${inWishlist ? "fill-primary text-primary" : "text-muted-foreground"}`}
-          />
-        </button>
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={handleWishlistToggle}
+            aria-label={inWishlist ? t("common.removeFromWishlist") : t("common.addToWishlist")}
+            className="flex size-8 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-background"
+          >
+            <Heart
+              className={`size-4 ${inWishlist ? "fill-primary text-primary" : "text-muted-foreground"}`}
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCompareToggle}
+            aria-label={inCompare ? t("common.removeFromCompare") : t("common.addToCompare")}
+            className="flex size-8 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-background"
+          >
+            <GitCompare className={`size-4 ${inCompare ? "text-primary" : "text-muted-foreground"}`} />
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-1 p-3">

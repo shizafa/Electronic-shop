@@ -25,19 +25,24 @@ export function WishlistView() {
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-16 text-center">
-        <Heart className="size-8 text-muted-foreground" />
-        <p className="text-sm font-medium text-foreground">{t("wishlist.empty")}</p>
-        <p className="text-sm text-muted-foreground">{t("wishlist.emptyHint")}</p>
-        <Button asChild className="mt-2">
-          <Link href="/">{t("common.continueShopping")}</Link>
-        </Button>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-xl font-semibold text-foreground">{t("nav.wishlist")}</h1>
+        <div className="flex flex-col items-center gap-2 py-16 text-center">
+          <Heart className="size-8 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">{t("wishlist.empty")}</p>
+          <p className="text-sm text-muted-foreground">{t("wishlist.emptyHint")}</p>
+          <Button asChild className="mt-2">
+            <Link href="/">{t("common.continueShopping")}</Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col divide-y divide-border">
+    <div className="flex flex-col gap-4">
+      <h1 className="text-xl font-semibold text-foreground">{t("nav.wishlist")}</h1>
+      <div className="flex flex-col divide-y divide-border">
       {entries.map(({ item, product, variant }) => (
         <div key={`${item.productId}-${item.variantId ?? "default"}`} className="flex items-center gap-4 py-4">
           <Link
@@ -86,6 +91,7 @@ export function WishlistView() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

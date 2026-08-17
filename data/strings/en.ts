@@ -103,6 +103,10 @@ const en: TranslationDictionary = {
   "wishlist.empty": "Your wishlist is empty.",
   "wishlist.emptyHint": "Save items you love for later.",
 
+  "compare.empty": "You have no products to compare.",
+  "compare.emptyHint": "Add up to 4 products from the same category to compare their specs side by side.",
+  "compare.clearAll": "Clear All",
+
   "footer.company": "Company",
   "footer.support": "Support",
   "footer.legal": "Legal",
