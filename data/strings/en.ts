@@ -1,0 +1,92 @@
+import type { TranslationDictionary } from "@/types/i18n";
+
+const en: TranslationDictionary = {
+  "site.name": "Electronics",
+
+  "nav.home": "Home",
+  "nav.categories": "Categories",
+  "nav.search": "Search",
+  "nav.searchPlaceholder": "Search for products...",
+  "nav.cart": "Cart",
+  "nav.wishlist": "Wishlist",
+  "nav.compare": "Compare",
+  "nav.account": "Account",
+  "nav.login": "Log In",
+  "nav.signup": "Sign Up",
+  "nav.logout": "Log Out",
+
+  "common.addToCart": "Add to Cart",
+  "common.addToWishlist": "Add to Wishlist",
+  "common.addToCompare": "Add to Compare",
+  "common.removeFromWishlist": "Remove from Wishlist",
+  "common.removeFromCompare": "Remove from Compare",
+  "common.viewDetails": "View Details",
+  "common.quantity": "Quantity",
+  "common.remove": "Remove",
+  "common.subtotal": "Subtotal",
+  "common.shippingFee": "Shipping Fee",
+  "common.total": "Total",
+  "common.checkout": "Checkout",
+  "common.continueShopping": "Continue Shopping",
+  "common.inStock": "In Stock",
+  "common.outOfStock": "Out of Stock",
+  "common.priceFrom": "From",
+  "common.save": "Save",
+  "common.cancel": "Cancel",
+  "common.loading": "Loading...",
+  "common.viewAll": "View All",
+  "common.sortBy": "Sort By",
+  "common.filters": "Filters",
+  "common.clearFilters": "Clear Filters",
+  "common.noResults": "No products found",
+
+  "product.specifications": "Specifications",
+  "product.description": "Description",
+  "product.relatedProducts": "Related Products",
+  "product.installationRequired": "Installation Required",
+  "product.installationNotice":
+    "This product requires professional installation. You'll be able to schedule a date and time slot at checkout.",
+
+  "account.profile": "Profile",
+  "account.addresses": "Addresses",
+  "account.orders": "My Orders",
+  "account.wishlist": "Wishlist",
+
+  "footer.aboutUs": "About Us",
+  "footer.contactUs": "Contact Us",
+  "footer.faqs": "FAQs",
+  "footer.shippingInstallation": "Shipping & Installation",
+  "footer.returnsWarranty": "Returns & Warranty",
+  "footer.privacyPolicy": "Privacy Policy",
+  "footer.termsOfService": "Terms of Service",
+
+  "checkout.codAvailable": "Cash on Delivery Available",
+  "checkout.installationService": "Installation Service",
+  "checkout.secureCheckout": "Secure Checkout",
+
+  "category.airConditioners.name": "Air Conditioners",
+  "category.televisions.name": "Televisions",
+  "category.mobilePhones.name": "Mobile Phones",
+
+  "spec.energyRating.label": "Energy Rating",
+  "spec.compressorType.label": "Compressor Type",
+  "spec.refrigerantType.label": "Refrigerant Type",
+  "spec.noiseLevel.label": "Noise Level",
+  "spec.warrantyYears.label": "Warranty",
+  "spec.wifiEnabled.label": "Wi-Fi / App Control",
+
+  "spec.screenResolution.label": "Screen Resolution",
+  "spec.refreshRate.label": "Refresh Rate",
+  "spec.panelType.label": "Panel Type",
+  "spec.smartOs.label": "Smart OS",
+  "spec.hdmiPorts.label": "HDMI Ports",
+
+  "spec.chipset.label": "Chipset",
+  "spec.ram.label": "RAM",
+  "spec.battery.label": "Battery",
+  "spec.rearCamera.label": "Rear Camera",
+  "spec.displayType.label": "Display Type",
+  "spec.fiveGSupport.label": "5G Support",
+};
+
+export default en;

@@ -9,7 +9,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Electronic Shop",
+  title: "Electronics",
   description: "Consumer electronics and home appliances, delivered across Pakistan.",
 };
 
