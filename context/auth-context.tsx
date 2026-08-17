@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import * as authLib from "@/lib/auth";
-import type { User } from "@/types/user";
+import type { Address, User } from "@/types/user";
 
 interface AuthContextValue {
   user: User | null;
@@ -10,6 +10,8 @@ interface AuthContextValue {
   login: (email: string, password: string) => boolean;
   signup: (name: string, email: string, phone: string, password: string) => boolean;
   logout: () => void;
+  updateProfile: (updates: { name: string; email: string; phone: string }) => void;
+  updateAddresses: (addresses: Address[]) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -45,8 +47,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  function updateProfile(updates: { name: string; email: string; phone: string }): void {
+    if (!user) return;
+    const updated = authLib.updateUserProfile(user.id, updates);
+    if (updated) setUser(updated);
+  }
+
+  function updateAddresses(addresses: Address[]): void {
+    if (!user) return;
+    const updated = authLib.updateUserAddresses(user.id, addresses);
+    if (updated) setUser(updated);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, signup, logout, updateProfile, updateAddresses }}
+    >
       {children}
     </AuthContext.Provider>
   );
