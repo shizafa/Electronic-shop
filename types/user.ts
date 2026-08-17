@@ -1,3 +1,4 @@
+// A saved delivery address in a user's account
 export interface Address {
   id: string;
   label: string;
@@ -9,6 +10,7 @@ export interface Address {
   isDefault: boolean;
 }
 
+// A registered user account
 export interface User {
   id: string;
   name: string;

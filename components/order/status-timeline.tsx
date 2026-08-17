@@ -3,12 +3,14 @@ import { getOrderTimeline } from "@/lib/orders";
 import { t } from "@/lib/i18n";
 import type { Order } from "@/types/order";
 
+// StatusTimeline — visual progress tracker (placed -> ... -> delivered, or cancelled) for an order
 export function StatusTimeline({ order }: { order: Order }) {
   const steps = getOrderTimeline(order);
 
   return (
     <ol className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-6">
       {steps.map((step) => {
+        // cancelled orders get their own icon/color instead of the normal completed/pending states
         const isCancelledStep = step.status === "cancelled";
 
         return (

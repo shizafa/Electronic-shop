@@ -1,5 +1,7 @@
 import type { Product } from "@/types/product";
 
+// Mock television catalog: product listing, PDP, filters, and cart all read from this.
+// Screen size is the only variant axis for TVs; shared across all products below.
 const screenSizeAxis = { id: "screenSize", labelKey: "axis.screenSize.label", unit: "\"" };
 
 export const televisionProducts: Product[] = [
@@ -12,8 +14,8 @@ export const televisionProducts: Product[] = [
     description:
       "Vivid 4K picture quality with a powerful crystal processor, built-in streaming apps, and a slim bezel-less design.",
     images: [
-      "https://picsum.photos/seed/tv-samsung-crystal-1/800/800",
-      "https://picsum.photos/seed/tv-samsung-crystal-2/800/800",
+      "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "4K Ultra HD",
@@ -62,8 +64,8 @@ export const televisionProducts: Product[] = [
     description:
       "Quantum dot color technology paired with Google TV for a smooth, app-rich smart TV experience.",
     images: [
-      "https://picsum.photos/seed/tv-tcl-qled-1/800/800",
-      "https://picsum.photos/seed/tv-tcl-qled-2/800/800",
+      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1567603452239-067dfeba033f?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "4K Ultra HD",
@@ -104,8 +106,8 @@ export const televisionProducts: Product[] = [
     description:
       "An affordable, compact smart TV that's a great fit for bedrooms and smaller living spaces.",
     images: [
-      "https://picsum.photos/seed/tv-haier-le-1/800/800",
-      "https://picsum.photos/seed/tv-haier-le-2/800/800",
+      "https://images.unsplash.com/photo-1567603452239-067dfeba033f?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "Full HD",
@@ -144,8 +146,8 @@ export const televisionProducts: Product[] = [
     description:
       "Cinema-grade OLED contrast and Sony's acclaimed picture processing, for the most demanding home theatre setups.",
     images: [
-      "https://picsum.photos/seed/tv-sony-bravia-1/800/800",
-      "https://picsum.photos/seed/tv-sony-bravia-2/800/800",
+      "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "4K Ultra HD",
@@ -185,8 +187,8 @@ export const televisionProducts: Product[] = [
     description:
       "WebOS-powered smart TV with reliable 4K upscaling and a wide viewing angle IPS-based panel.",
     images: [
-      "https://picsum.photos/seed/tv-lg-uhd-1/800/800",
-      "https://picsum.photos/seed/tv-lg-uhd-2/800/800",
+      "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1567603452239-067dfeba033f?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "4K Ultra HD",
@@ -234,8 +236,8 @@ export const televisionProducts: Product[] = [
     description:
       "A no-frills, budget-friendly LED TV for everyday viewing, built locally for Pakistani households.",
     images: [
-      "https://picsum.photos/seed/tv-ecostar-led-1/800/800",
-      "https://picsum.photos/seed/tv-ecostar-led-2/800/800",
+      "https://images.unsplash.com/photo-1567603452239-067dfeba033f?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       screenResolution: "Full HD",

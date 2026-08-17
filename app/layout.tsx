@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   description: "Consumer electronics and home appliances, delivered across Pakistan.",
 };
 
+// Root layout wrapping every page: global providers, header, and footer
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html

@@ -6,31 +6,21 @@ import { Select as SelectPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
+// Select — dropdown for choosing one value from a list, e.g. city/area pickers at checkout.
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
-function SelectGroup({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Group>) {
-  return (
-    <SelectPrimitive.Group
-      data-slot="select-group"
-      className={cn("scroll-my-1 p-1", className)}
-      {...props}
-    />
-  )
-}
-
+// SelectValue — displays the currently chosen value inside the trigger.
 function SelectValue({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
+// SelectTrigger — the clickable control that opens the options list.
 function SelectTrigger({
   className,
   size = "default",
@@ -57,6 +47,7 @@ function SelectTrigger({
   )
 }
 
+// SelectContent — the floating panel listing the selectable options.
 function SelectContent({
   className,
   children,
@@ -90,19 +81,7 @@ function SelectContent({
   )
 }
 
-function SelectLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Label>) {
-  return (
-    <SelectPrimitive.Label
-      data-slot="select-label"
-      className={cn("px-1.5 py-1 text-xs text-muted-foreground", className)}
-      {...props}
-    />
-  )
-}
-
+// SelectItem — a single choosable option row within SelectContent.
 function SelectItem({
   className,
   children,
@@ -127,19 +106,7 @@ function SelectItem({
   )
 }
 
-function SelectSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Separator>) {
-  return (
-    <SelectPrimitive.Separator
-      data-slot="select-separator"
-      className={cn("pointer-events-none -mx-1 my-1 h-px bg-border", className)}
-      {...props}
-    />
-  )
-}
-
+// SelectScrollUpButton — appears when the options list overflows, scrolls it upward.
 function SelectScrollUpButton({
   className,
   ...props
@@ -159,6 +126,7 @@ function SelectScrollUpButton({
   )
 }
 
+// SelectScrollDownButton — appears when the options list overflows, scrolls it downward.
 function SelectScrollDownButton({
   className,
   ...props
@@ -181,12 +149,7 @@ function SelectScrollDownButton({
 export {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 }

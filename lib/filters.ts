@@ -4,11 +4,13 @@ import { t } from "@/lib/i18n";
 import type { Category, SpecFieldType } from "@/types/category";
 import type { Product, VariantAxisDefinition } from "@/types/product";
 
+// One selectable value within a filter, with how many products match it
 export interface FilterFieldOption {
   value: string;
   count: number;
 }
 
+// A single filterable spec/attribute (e.g. "RAM") and its selectable options
 export interface FilterField {
   id: string;
   label: string;
@@ -16,12 +18,14 @@ export interface FilterField {
   options: FilterFieldOption[];
 }
 
+// Normalizes a spec value to a string so it can be compared/counted as a filter option
 function toFilterValue(value: string | number | boolean | undefined): string | undefined {
   if (value === undefined) return undefined;
   if (typeof value === "boolean") return value ? "true" : "false";
   return String(value);
 }
 
+// Builds the list of filter fields (with option counts) available for a category's products
 export function getFilterFieldsForCategory(category: Category, products: Product[]): FilterField[] {
   const axisDefinitions = new Map<string, VariantAxisDefinition>();
   for (const product of products) {
@@ -58,15 +62,17 @@ export function getFilterFieldsForCategory(category: Category, products: Product
       return field;
     });
 
-  return fields.filter((field) => field.options.length > 1);
+  return fields.filter((field) => field.options.length > 1); // hide filters with only one possible value
 }
 
+// Currently selected filter values: which options are checked, plus an optional price range
 export interface ActiveFilters {
   fields: Record<string, string[]>;
   minPrice?: number;
   maxPrice?: number;
 }
 
+// Narrows a product list down to only those matching all selected filters and the price range
 export function applyFilters(products: Product[], filters: ActiveFilters): Product[] {
   return products.filter((product) => {
     for (const [fieldId, selectedValues] of Object.entries(filters.fields)) {
@@ -81,7 +87,7 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
     }
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      const price = getDisplayVariant(product).price;
+      const price = getDisplayVariant(product).price; // use the cheapest in-stock variant's price
       if (filters.minPrice !== undefined && price < filters.minPrice) return false;
       if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
     }
@@ -92,6 +98,7 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
 
 export type SortOption = "featured" | "price_asc" | "price_desc" | "name_asc";
 
+// Returns a new sorted array of products according to the chosen sort option
 export function sortProducts(products: Product[], sort: SortOption): Product[] {
   const sorted = [...products];
 
@@ -107,7 +114,7 @@ export function sortProducts(products: Product[], sort: SortOption): Product[] {
       break;
     case "featured":
     default:
-      sorted.sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false));
+      sorted.sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false)); // featured items first
       break;
   }
 

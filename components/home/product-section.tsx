@@ -11,8 +11,9 @@ interface ProductSectionProps {
   badge?: string;
 }
 
+// Reusable homepage section that renders a heading plus a grid of products
 export function ProductSection({ heading, viewAllHref, products, badge }: ProductSectionProps) {
-  if (products.length === 0) return null;
+  if (products.length === 0) return null; // hide the section entirely when there's nothing to show
 
   return (
     <section className="container-page py-8">

@@ -13,6 +13,7 @@ interface SearchResultsProps {
   products: Product[];
 }
 
+// SearchResults — displays products matching a search query, with sorting
 export function SearchResults({ query, products }: SearchResultsProps) {
   const [sort, setSort] = useState<SortOption>("featured");
   const sortedProducts = useMemo(() => sortProducts(products, sort), [products, sort]);

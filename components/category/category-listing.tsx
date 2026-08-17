@@ -18,7 +18,9 @@ interface CategoryListingProps {
   products: Product[];
 }
 
+// CategoryListing — shows a category's products with filtering, sorting, and a mobile filter drawer
 export function CategoryListing({ category, products }: CategoryListingProps) {
+  // build the available filter options (e.g. brand, spec values) from this category's products
   const filterFields = useMemo(
     () => getFilterFieldsForCategory(category, products),
     [category, products]
@@ -30,6 +32,7 @@ export function CategoryListing({ category, products }: CategoryListingProps) {
   const [sort, setSort] = useState<SortOption>("featured");
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
+  // toggle a single checkbox value on/off within its filter field's selected list
   function toggleFieldValue(fieldId: string, value: string) {
     setActiveFieldValues((current) => {
       const currentValues = current[fieldId] ?? [];
@@ -46,6 +49,7 @@ export function CategoryListing({ category, products }: CategoryListingProps) {
     setMaxPrice("");
   }
 
+  // recompute the visible product list whenever filters or sort change
   const filteredProducts = useMemo(() => {
     const filtered = applyFilters(products, {
       fields: activeFieldValues,

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
 
+// LoginForm — authenticates an existing user and redirects back to where they came from
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,6 +27,7 @@ export function LoginForm() {
       return;
     }
 
+    // send the user to the page they were trying to reach before logging in, if any
     router.push(searchParams.get("redirect") || "/");
   }
 

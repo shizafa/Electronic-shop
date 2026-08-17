@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrderById } from "@/lib/orders";
 
+// OrderConfirmation — final "thank you" screen shown after an order is placed, read from the orderId URL param
 export function OrderConfirmation() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId") ?? "";

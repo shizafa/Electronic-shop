@@ -1,5 +1,6 @@
 import type { City } from "@/types/location";
 
+// Cities/areas offered at checkout; installationSupported gates whether AC install can be scheduled.
 export const cities: City[] = [
   {
     id: "karachi",

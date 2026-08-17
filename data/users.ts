@@ -1,5 +1,6 @@
 import type { User } from "@/types/user";
 
+// Mock user accounts (with saved addresses) used to simulate login and account pages.
 export const users: User[] = [
   {
     id: "user-ayesha",
@@ -39,6 +40,7 @@ export const users: User[] = [
   },
 ];
 
+// Plaintext demo credentials — fine here since there's no real backend/auth.
 export interface MockCredential {
   email: string;
   password: string;

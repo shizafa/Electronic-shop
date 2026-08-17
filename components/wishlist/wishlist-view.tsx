@@ -10,10 +10,13 @@ import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant, getProductById, getVariantById } from "@/lib/products";
 
+// WishlistView — lists saved products with quick add-to-cart and remove actions
 export function WishlistView() {
   const { items, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
 
+  // resolve wishlist entries into product/variant data; fall back to the product's default
+  // display variant if no specific variant was saved, and drop items whose product is gone
   const entries = items
     .map((item) => {
       const product = getProductById(item.productId);
@@ -75,7 +78,7 @@ export function WishlistView() {
               size="sm"
               variant="outline"
               onClick={() => addToCart(product.id, variant.id, 1)}
-              disabled={variant.stock === 0}
+              disabled={variant.stock === 0} // can't add an out-of-stock variant to the cart
             >
               <ShoppingCart className="size-4" />
               {t("common.addToCart")}

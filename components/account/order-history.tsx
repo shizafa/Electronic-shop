@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrdersForUser } from "@/lib/orders";
 
+// OrderHistory — lists all past orders for the logged-in user, newest first
 export function OrderHistory() {
   const { user, isLoading } = useAuth();
 
@@ -15,6 +16,7 @@ export function OrderHistory() {
 
   if (!user) return null;
 
+  // sort by placed date descending so the most recent order appears first
   const userOrders = [...getOrdersForUser(user.id)].sort(
     (a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
   );

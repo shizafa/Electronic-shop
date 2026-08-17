@@ -5,18 +5,21 @@ import type { CompareItem } from "@/types/cart";
 const COMPARE_KEY = "electronics_compare";
 const MAX_COMPARE_ITEMS = 4;
 
+// Result of trying to add a product to compare: success, or a reason it was rejected
 export type AddToCompareResult =
   | { success: true; items: CompareItem[] }
   | { success: false; reason: "different_category" | "limit_reached"; items: CompareItem[] };
 
+// Reads the current list of products being compared
 export function getCompareList(): CompareItem[] {
   return readJSON<CompareItem[]>(COMPARE_KEY, []);
 }
 
+// Adds a product to compare; rejects if the list is full or the category doesn't match
 export function addToCompare(productId: string): AddToCompareResult {
   const items = getCompareList();
   if (items.some((item) => item.productId === productId)) {
-    return { success: true, items };
+    return { success: true, items }; // already in the list, nothing to do
   }
 
   if (items.length >= MAX_COMPARE_ITEMS) {
@@ -30,6 +33,7 @@ export function addToCompare(productId: string): AddToCompareResult {
       ? allProducts.find((product) => product.id === items[0].productId)?.categoryId
       : undefined;
 
+  // Only allow comparing products from the same category (e.g. TVs with TVs)
   if (existingCategoryId && newProductCategoryId !== existingCategoryId) {
     return { success: false, reason: "different_category", items };
   }
@@ -39,12 +43,14 @@ export function addToCompare(productId: string): AddToCompareResult {
   return { success: true, items: updatedItems };
 }
 
+// Removes one product from the compare list
 export function removeFromCompare(productId: string): CompareItem[] {
   const updatedItems = getCompareList().filter((item) => item.productId !== productId);
   writeJSON(COMPARE_KEY, updatedItems);
   return updatedItems;
 }
 
+// Empties the compare list
 export function clearCompare(): void {
   writeJSON(COMPARE_KEY, []);
 }

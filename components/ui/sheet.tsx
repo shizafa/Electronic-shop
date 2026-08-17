@@ -7,28 +7,33 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
+// Sheet — root wrapper for a slide-in panel (e.g. mobile filters/cart drawer).
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
 }
 
+// SheetTrigger — element that opens the sheet when clicked.
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
 }
 
+// SheetClose — element that closes the sheet when clicked.
 function SheetClose({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
 }
 
+// SheetPortal — renders the sheet's content outside the normal DOM tree, above other content.
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
+// SheetOverlay — dimmed backdrop shown behind the sheet while it's open.
 function SheetOverlay({
   className,
   ...props
@@ -45,6 +50,7 @@ function SheetOverlay({
   )
 }
 
+// SheetContent — the sliding panel itself; holds the sheet's actual content.
 function SheetContent({
   className,
   children,
@@ -86,6 +92,7 @@ function SheetContent({
   )
 }
 
+// SheetHeader — layout wrapper for the title area at the top of the sheet.
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -96,16 +103,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="sheet-footer"
-      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
-      {...props}
-    />
-  )
-}
-
+// SheetTitle — heading text shown inside SheetHeader.
 function SheetTitle({
   className,
   ...props
@@ -122,26 +120,11 @@ function SheetTitle({
   )
 }
 
-function SheetDescription({
-  className,
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Description>) {
-  return (
-    <SheetPrimitive.Description
-      data-slot="sheet-description"
-      className={cn("text-sm text-muted-foreground", className)}
-      {...props}
-    />
-  )
-}
-
 export {
   Sheet,
   SheetTrigger,
   SheetClose,
   SheetContent,
   SheetHeader,
-  SheetFooter,
   SheetTitle,
-  SheetDescription,
 }

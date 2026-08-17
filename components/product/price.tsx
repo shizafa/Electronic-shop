@@ -6,6 +6,7 @@ interface PriceProps {
   className?: string;
 }
 
+// Formats and displays a price, with an optional struck-through original price if discounted.
 export function Price({ price, compareAtPrice, className }: PriceProps) {
   const hasDiscount = compareAtPrice !== undefined && compareAtPrice > price;
 

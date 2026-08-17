@@ -2,6 +2,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Input — single-line text field, use for form fields like name, email, address.
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

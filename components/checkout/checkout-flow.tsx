@@ -23,11 +23,13 @@ import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
 
+// CheckoutFlow — multi-step checkout state machine: address -> (installation) -> payment -> review -> place order
 export function CheckoutFlow() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, clearCart } = useCart();
 
+  // resolve cart items into full product/variant data for pricing and display
   const lineItems = useMemo(
     () =>
       items
@@ -41,10 +43,12 @@ export function CheckoutFlow() {
     [items]
   );
 
+  // installation step only applies if at least one item's category requires it
   const requiresInstallation = lineItems.some(
     ({ product }) => getCategoryById(product.categoryId)?.installationRequired
   );
 
+  // the step list itself changes depending on cart contents (installation step is skipped otherwise)
   const steps: CheckoutStep[] = requiresInstallation
     ? ["address", "installation", "payment", "review"]
     : ["address", "payment", "review"];
@@ -57,6 +61,7 @@ export function CheckoutFlow() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("jazzcash");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
+  // guard the checkout page: must be logged in and have items in the cart
   useEffect(() => {
     if (isAuthLoading) return;
     if (!user) {
@@ -79,9 +84,11 @@ export function CheckoutFlow() {
   const total = subtotal + shippingFee;
 
   const shippingCity = cities.find((city) => city.name === shippingAddress.city);
+  // installation can only be scheduled if the chosen shipping city supports it, regardless of cart contents
   const isInstallationCitySupported = shippingCity?.installationSupported ?? false;
   const currentStep = steps[stepIndex];
 
+  // advance/rewind through the steps array, clamped to its bounds
   function goNext() {
     setStepIndex((index) => Math.min(index + 1, steps.length - 1));
   }
@@ -90,6 +97,7 @@ export function CheckoutFlow() {
     setStepIndex((index) => Math.max(index - 1, 0));
   }
 
+  // address step is only valid once shipping fields are filled, and billing fields too if it differs
   const isAddressValid =
     shippingAddress.fullName.trim() !== "" &&
     shippingAddress.phone.trim() !== "" &&
@@ -103,9 +111,12 @@ export function CheckoutFlow() {
         billingAddress.area !== "" &&
         billingAddress.addressLine.trim() !== ""));
 
+  // if the city doesn't support installation, the step is skipped/informational and always considered valid;
+  // otherwise the user must pick both a date and a time slot
   const isInstallationValid =
     !isInstallationCitySupported || Boolean(installation?.date && installation?.timeSlot);
 
+  // final step: create the order record, empty the cart, then navigate to the confirmation page
   function handlePlaceOrder() {
     if (!user) return;
     setIsPlacingOrder(true);
@@ -114,8 +125,10 @@ export function CheckoutFlow() {
       userId: user.id,
       lineItems,
       shippingAddress,
+      // reuse shipping address as billing when the "same as shipping" checkbox is checked
       billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
       paymentMethod,
+      // only attach installation details if the city actually supports the service
       installation: isInstallationCitySupported ? installation : undefined,
     });
 
@@ -211,6 +224,7 @@ export function CheckoutFlow() {
               {t("checkout.placeOrder")}
             </Button>
           ) : (
+            // "Continue" is blocked until the current step's required fields are valid
             <Button
               onClick={goNext}
               disabled={

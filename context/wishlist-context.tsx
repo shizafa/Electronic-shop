@@ -5,6 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import * as wishlistLib from "@/lib/wishlist";
 import type { WishlistItem } from "@/types/cart";
 
+// Shape of the wishlist data and actions exposed to the rest of the app
 interface WishlistContextValue {
   items: WishlistItem[];
   addToWishlist: (item: WishlistItem) => void;
@@ -14,6 +15,7 @@ interface WishlistContextValue {
 
 const WishlistContext = createContext<WishlistContextValue | undefined>(undefined);
 
+// Tracks the wishlist (guest or per-user) in state and syncs it to localStorage via lib/wishlist
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -21,6 +23,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const currentUserId = user?.id ?? null;
+    // Detect the guest-to-logged-in transition so the guest wishlist gets merged in exactly once
     const justLoggedIn = previousUserId.current === null && currentUserId !== null;
 
     setItems(
@@ -50,6 +53,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to access wishlist state/actions from any component inside WishlistProvider
 export function useWishlist(): WishlistContextValue {
   const context = useContext(WishlistContext);
   if (!context) throw new Error("useWishlist must be used within a WishlistProvider");

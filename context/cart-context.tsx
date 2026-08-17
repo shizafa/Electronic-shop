@@ -5,6 +5,7 @@ import { useAuth } from "@/context/auth-context";
 import * as cartLib from "@/lib/cart";
 import type { CartItem } from "@/types/cart";
 
+// Shape of the cart data and actions exposed to the rest of the app
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
@@ -16,6 +17,7 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
+// Tracks the cart (guest or per-user) in state and syncs it to localStorage via lib/cart
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
@@ -23,6 +25,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const currentUserId = user?.id ?? null;
+    // Detect the guest-to-logged-in transition so the guest cart gets merged in exactly once
     const justLoggedIn = previousUserId.current === null && currentUserId !== null;
 
     setItems(
@@ -48,6 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }
 
+  // Total number of units across all lines (not number of distinct lines)
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -59,6 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to access cart state/actions from any component inside CartProvider
 export function useCart(): CartContextValue {
   const context = useContext(CartContext);
   if (!context) throw new Error("useCart must be used within a CartProvider");

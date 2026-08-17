@@ -16,10 +16,11 @@ interface ProductCardProps {
   badge?: string;
 }
 
+// Product thumbnail card used in grids/listings (home, category, search, related products).
 export function ProductCard({ product, badge }: ProductCardProps) {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
-  const displayVariant = getDisplayVariant(product);
+  const displayVariant = getDisplayVariant(product); // representative variant used for the card's price
   const inWishlist = isInWishlist(product.id);
   const inCompare = isInCompare(product.id);
   const hasMultipleVariants = product.variants.length > 1;

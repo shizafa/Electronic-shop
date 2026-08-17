@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: t("auth.signupHeading"),
 };
 
+// /signup route: renders the signup form
 export default function SignupPage() {
   return (
     <Suspense>

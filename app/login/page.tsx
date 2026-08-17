@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: t("auth.loginHeading"),
 };
 
+// /login route: renders the login form
 export default function LoginPage() {
   return (
     <Suspense>

@@ -41,6 +41,7 @@ const buttonVariants = cva(
   }
 )
 
+// Button — the standard clickable action element, supports variant/size props.
 function Button({
   className,
   variant = "default",
@@ -64,4 +65,4 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+export { Button }

@@ -1,5 +1,7 @@
 import type { Product } from "@/types/product";
 
+// Mock air conditioner catalog: product listing, PDP, filters, and cart all read from this.
+// Tonnage is the only variant axis (room-size options) for ACs; shared across all products below.
 const tonnageAxis = { id: "tonnage", labelKey: "axis.tonnage.label", unit: "Ton" };
 
 export const airConditionerProducts: Product[] = [
@@ -12,10 +14,11 @@ export const airConditionerProducts: Product[] = [
     description:
       "Energy-efficient inverter air conditioner with fast cooling and whisper-quiet operation, built for Pakistani summers.",
     images: [
-      "https://picsum.photos/seed/ac-haier-hsu18-1/800/800",
-      "https://picsum.photos/seed/ac-haier-hsu18-2/800/800",
+      "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
+      // shape defined by data/specs/air-conditioners.ts; used for spec table + compare
       energyRating: "5 Star",
       compressorType: "Inverter",
       refrigerantType: "R32",
@@ -24,15 +27,15 @@ export const airConditionerProducts: Product[] = [
       wifiEnabled: true,
     },
     variantAxes: [tonnageAxis],
-    featured: true,
+    featured: true, // shown in "featured"/home page sections
     variants: [
       {
         id: "ac-haier-hsu18-1.0",
         productId: "ac-haier-hsu18",
         sku: "AC-HAI-HSU18-1.0T",
-        axisValues: { tonnage: "1.0" },
+        axisValues: { tonnage: "1.0" }, // maps this variant to a value of each variantAxes entry
         price: 98000,
-        compareAtPrice: 108000,
+        compareAtPrice: 108000, // original price shown struck-through when set
         stock: 22,
       },
       {
@@ -55,8 +58,8 @@ export const airConditionerProducts: Product[] = [
     description:
       "Powerful cooling with a durable inverter compressor, designed for larger rooms and heavy daily use.",
     images: [
-      "https://picsum.photos/seed/ac-gree-pular-1/800/800",
-      "https://picsum.photos/seed/ac-gree-pular-2/800/800",
+      "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1762341123870-d706f257a12e?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       energyRating: "5 Star",
@@ -96,8 +99,8 @@ export const airConditionerProducts: Product[] = [
     description:
       "Reliable everyday air conditioning at an accessible price point, with sturdy build quality.",
     images: [
-      "https://picsum.photos/seed/ac-dawlance-powercon-1/800/800",
-      "https://picsum.photos/seed/ac-dawlance-powercon-2/800/800",
+      "https://images.unsplash.com/photo-1762341123870-d706f257a12e?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       energyRating: "4 Star",
@@ -136,8 +139,8 @@ export const airConditionerProducts: Product[] = [
     description:
       "Premium inverter AC with rapid cooling mode and a sleek indoor unit design.",
     images: [
-      "https://picsum.photos/seed/ac-orient-ultron-x-1/800/800",
-      "https://picsum.photos/seed/ac-orient-ultron-x-2/800/800",
+      "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       energyRating: "5 Star",
@@ -179,8 +182,8 @@ export const airConditionerProducts: Product[] = [
     description:
       "Versatile inverter AC lineup available across multiple room sizes, with consistent year-round performance.",
     images: [
-      "https://picsum.photos/seed/ac-pel-inverteron-1/800/800",
-      "https://picsum.photos/seed/ac-pel-inverteron-2/800/800",
+      "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1762341123870-d706f257a12e?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       energyRating: "4 Star",
@@ -227,8 +230,8 @@ export const airConditionerProducts: Product[] = [
     description:
       "Top-tier inverter AC with the lowest noise level in its class and a 10-year compressor warranty.",
     images: [
-      "https://picsum.photos/seed/ac-kenwood-eicon-1/800/800",
-      "https://picsum.photos/seed/ac-kenwood-eicon-2/800/800",
+      "https://images.unsplash.com/photo-1762341123870-d706f257a12e?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       energyRating: "5 Star",

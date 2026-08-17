@@ -8,6 +8,7 @@ const items = [
   { icon: LifeBuoy, labelKey: "home.guarantee.support" },
 ];
 
+// Homepage row of icons highlighting quality/delivery/returns/support promises
 export function GuaranteeStrip() {
   return (
     <section className="border-t border-border">

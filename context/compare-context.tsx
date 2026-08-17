@@ -5,6 +5,7 @@ import * as compareLib from "@/lib/compare";
 import type { AddToCompareResult } from "@/lib/compare";
 import type { CompareItem } from "@/types/cart";
 
+// Shape of the compare-list data and actions exposed to the rest of the app
 interface CompareContextValue {
   items: CompareItem[];
   addToCompare: (productId: string) => AddToCompareResult;
@@ -15,6 +16,7 @@ interface CompareContextValue {
 
 const CompareContext = createContext<CompareContextValue | undefined>(undefined);
 
+// Tracks the product-comparison list in state and syncs it to localStorage via lib/compare
 export function CompareProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CompareItem[]>([]);
 
@@ -25,6 +27,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
     setItems(compareLib.getCompareList());
   }, []);
 
+  // Tries to add a product; may fail if the list is full or categories don't match
   function addToCompare(productId: string): AddToCompareResult {
     const result = compareLib.addToCompare(productId);
     setItems(result.items);
@@ -53,6 +56,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to access compare-list state/actions from any component inside CompareProvider
 export function useCompare(): CompareContextValue {
   const context = useContext(CompareContext);
   if (!context) throw new Error("useCompare must be used within a CompareProvider");

@@ -20,6 +20,7 @@ import { t } from "@/lib/i18n";
 const navLinkClass =
   "flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-foreground hover:bg-muted";
 
+// MobileNav — slide-out navigation drawer with search and account links for small screens
 export function MobileNav() {
   const router = useRouter();
   const { user, logout } = useAuth();

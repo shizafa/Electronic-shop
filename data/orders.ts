@@ -1,5 +1,7 @@
 import type { Order } from "@/types/order";
 
+// Mock order history for the two demo users; powers account "My Orders" and order detail pages.
+// Reused shipping/billing addresses for the two demo users.
 const ayeshaAddress = {
   fullName: "Ayesha Khan",
   phone: "0300-1234567",
@@ -27,7 +29,8 @@ export const orders: Order[] = [
         variantId: "ac-pel-inverteron-1.0",
         productName: "PEL InverterOn AC",
         sku: "AC-PEL-INVON-1.0T",
-        image: "https://picsum.photos/seed/ac-pel-inverteron-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 95000,
         quantity: 1,
         categoryName: "Air Conditioners",
@@ -43,8 +46,8 @@ export const orders: Order[] = [
     shippingFee: 0,
     total: 95000,
     placedAt: "2026-08-16",
-    installation: { date: "2026-08-20", timeSlot: "10:00 AM - 1:00 PM" },
-    statusHistory: [{ status: "order_placed", changedAt: "2026-08-16" }],
+    installation: { date: "2026-08-20", timeSlot: "10:00 AM - 1:00 PM" }, // only present for orders needing installation
+    statusHistory: [{ status: "order_placed", changedAt: "2026-08-16" }], // timeline shown on order detail page
   },
   {
     id: "order-0002",
@@ -56,7 +59,8 @@ export const orders: Order[] = [
         variantId: "tv-samsung-crystal-50",
         productName: "Samsung Crystal 4K UHD TV",
         sku: "TV-SAM-CRYSTAL-50",
-        image: "https://picsum.photos/seed/tv-samsung-crystal-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 119000,
         quantity: 1,
         categoryName: "Televisions",
@@ -87,7 +91,8 @@ export const orders: Order[] = [
         variantId: "ac-haier-hsu18-1.5",
         productName: "Haier Inverter AC HSU-18",
         sku: "AC-HAI-HSU18-1.5T",
-        image: "https://picsum.photos/seed/ac-haier-hsu18-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 138000,
         quantity: 1,
         categoryName: "Air Conditioners",
@@ -120,7 +125,8 @@ export const orders: Order[] = [
         variantId: "tv-tcl-qled-55",
         productName: "TCL QLED Google TV",
         sku: "TV-TCL-QLED-55",
-        image: "https://picsum.photos/seed/tv-tcl-qled-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 168000,
         quantity: 1,
         categoryName: "Televisions",
@@ -153,7 +159,8 @@ export const orders: Order[] = [
         variantId: "phone-redmi-note-13-128-black",
         productName: "Xiaomi Redmi Note 13",
         sku: "PH-XIA-RN13-128-BLK",
-        image: "https://picsum.photos/seed/phone-redmi-note-13-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 62000,
         quantity: 1,
         categoryName: "Mobile Phones",
@@ -187,7 +194,8 @@ export const orders: Order[] = [
         variantId: "ac-gree-pular-1.5",
         productName: "Gree Pular Series Inverter AC",
         sku: "AC-GRE-PULAR-1.5T",
-        image: "https://picsum.photos/seed/ac-gree-pular-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1759772238012-9d5ad59ae637?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 145000,
         quantity: 1,
         categoryName: "Air Conditioners",
@@ -224,7 +232,8 @@ export const orders: Order[] = [
         variantId: "phone-realme-12-128-blue",
         productName: "Realme 12",
         sku: "PH-RLM-12-128-BLU",
-        image: "https://picsum.photos/seed/phone-realme-12-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 58000,
         quantity: 1,
         categoryName: "Mobile Phones",
@@ -256,7 +265,8 @@ export const orders: Order[] = [
         variantId: "phone-iphone-15-128-black",
         productName: "Apple iPhone 15",
         sku: "PH-APL-15-128-BLK",
-        image: "https://picsum.photos/seed/phone-iphone-15-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 349000,
         quantity: 1,
         categoryName: "Mobile Phones",
@@ -292,7 +302,8 @@ export const orders: Order[] = [
         variantId: "phone-infinix-note-40-128-black",
         productName: "Infinix Note 40",
         sku: "PH-INF-N40-128-BLK",
-        image: "https://picsum.photos/seed/phone-infinix-note-40-1/800/800",
+        image:
+          "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=800&h=800&fit=crop&auto=format&q=80",
         unitPrice: 54000,
         quantity: 1,
         categoryName: "Mobile Phones",

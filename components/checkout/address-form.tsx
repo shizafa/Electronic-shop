@@ -40,6 +40,7 @@ interface AddressFormProps {
   savedAddresses?: Address[];
 }
 
+// AddressForm — collects a shipping/billing address, with quick-select buttons for saved addresses
 export function AddressForm({ idPrefix, values, onChange, savedAddresses = [] }: AddressFormProps) {
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
 
@@ -53,6 +54,7 @@ export function AddressForm({ idPrefix, values, onChange, savedAddresses = [] }:
     onChange(emptyAddressFormValues);
   }
 
+  // on first mount, auto-fill the form with the account's default saved address (or the first one)
   useEffect(() => {
     if (savedAddresses.length === 0) return;
     const defaultAddress = savedAddresses.find((address) => address.isDefault) ?? savedAddresses[0];

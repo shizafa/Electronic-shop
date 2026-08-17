@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
 
+// ProfileForm — lets the logged-in user view and update their name, email, and phone
 export function ProfileForm() {
   const { user, updateProfile } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
@@ -35,7 +36,7 @@ export function ProfileForm() {
           value={name}
           onChange={(event) => {
             setName(event.target.value);
-            setSavedMessageVisible(false);
+            setSavedMessageVisible(false); // hide "saved" message once the user edits again
           }}
         />
       </div>

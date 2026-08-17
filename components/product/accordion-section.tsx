@@ -9,6 +9,7 @@ interface AccordionSectionProps {
   defaultOpen?: boolean;
 }
 
+// Collapsible section used on the product page (description, specs, installation info, Q&A).
 export function AccordionSection({ title, children, defaultOpen = false }: AccordionSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 

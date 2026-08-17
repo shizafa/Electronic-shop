@@ -1,5 +1,6 @@
 import type { TranslationDictionary } from "@/types/i18n";
 
+// All UI text for the English locale, looked up by key via lib/i18n.ts's t() helper.
 const en: TranslationDictionary = {
   "site.name": "Electronics",
 
@@ -107,6 +108,18 @@ const en: TranslationDictionary = {
   "compare.emptyHint": "Add up to 4 products from the same category to compare their specs side by side.",
   "compare.clearAll": "Clear All",
 
+  "about.ourStory": "Our Story",
+  "about.whyChooseUs": "Why Choose Us",
+
+  "contact.intro": "Have a question about an order, a product, or installation? Reach out — we're happy to help.",
+  "contact.phone": "Phone",
+  "contact.email": "Email",
+  "contact.address": "Address",
+  "contact.subject": "Subject",
+  "contact.message": "Message",
+  "contact.send": "Send Message",
+  "contact.submitted": "Thanks for reaching out — we'll get back to you shortly.",
+
   "footer.company": "Company",
   "footer.support": "Support",
   "footer.legal": "Legal",
@@ -211,10 +224,9 @@ const en: TranslationDictionary = {
 
   "home.hero.eyebrow": "Trending Now",
   "home.hero.heading": "Upgrade Your Home with Trusted Electronics",
-  "home.hero.subheading":
-    "Shop air conditioners, TVs, and mobile phones with easy installation booking and Cash on Delivery, delivered across Pakistan.",
   "home.hero.shopNow": "Shop Now",
   "home.hero.exploreCategories": "Explore Categories",
+  "home.hero.goToSlide": "Go to slide",
   "home.categories.heading": "Shop by Category",
   "home.newArrivals.heading": "New Arrivals",
   "home.newArrivals.badge": "New",

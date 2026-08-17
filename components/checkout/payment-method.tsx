@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import type { PaymentMethod } from "@/types/order";
 
+// maximum order total (in the store's currency units) allowed for Cash on Delivery
 export const COD_MAX_ORDER_VALUE = 300000;
 
 const PAYMENT_METHODS: { value: PaymentMethod; labelKey: string; descriptionKey?: string }[] = [
@@ -25,12 +26,14 @@ interface PaymentMethodSelectorProps {
   orderTotal: number;
 }
 
+// PaymentMethodSelector — lets the user choose a payment method; disables COD above the order value limit
 export function PaymentMethodSelector({ value, onChange, orderTotal }: PaymentMethodSelectorProps) {
   const isCodAllowed = orderTotal <= COD_MAX_ORDER_VALUE;
 
   return (
     <div className="flex flex-col gap-2">
       {PAYMENT_METHODS.map((method) => {
+        // COD is blocked once the order total exceeds the allowed limit
         const isDisabled = method.value === "cod" && !isCodAllowed;
         const isSelected = value === method.value;
 

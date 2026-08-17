@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: t("nav.compare"),
 };
 
+// /compare route: renders the product comparison view
 export default function ComparePage() {
   return (
     <div className="container-page py-8">

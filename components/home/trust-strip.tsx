@@ -8,6 +8,7 @@ const items = [
   { icon: ShieldCheck, labelKey: "checkout.secureCheckout" },
 ];
 
+// Homepage strip of trust badges (delivery, installation, COD, secure checkout)
 export function TrustStrip() {
   return (
     <section className="border-y border-border bg-muted/40">
