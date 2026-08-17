@@ -13,8 +13,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "Flagship performance with a bright AMOLED display, AI-powered camera features, and all-day battery life.",
     images: [
-      "https://picsum.photos/seed/phone-samsung-s24-1/800/800",
-      "https://picsum.photos/seed/phone-samsung-s24-2/800/800",
+      "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "Snapdragon 8 Gen 3",
@@ -71,8 +71,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "The latest iPhone with a durable aluminum design, Dynamic Island, and Apple's most advanced camera system yet.",
     images: [
-      "https://picsum.photos/seed/phone-iphone-15-1/800/800",
-      "https://picsum.photos/seed/phone-iphone-15-2/800/800",
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "Apple A16 Bionic",
@@ -128,8 +128,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "A high-value all-rounder with a large battery, sharp AMOLED screen, and a versatile 108MP main camera.",
     images: [
-      "https://picsum.photos/seed/phone-redmi-note-13-1/800/800",
-      "https://picsum.photos/seed/phone-redmi-note-13-2/800/800",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "Snapdragon 685",
@@ -186,8 +186,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "Big battery, fast charging, and a large AMOLED display — built for heavy daily use at an affordable price.",
     images: [
-      "https://picsum.photos/seed/phone-infinix-note-40-1/800/800",
-      "https://picsum.photos/seed/phone-infinix-note-40-2/800/800",
+      "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "MediaTek Helio G99",
@@ -242,8 +242,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "A stylish mid-ranger with a smooth 5G-ready chipset and a well-balanced camera setup for everyday photography.",
     images: [
-      "https://picsum.photos/seed/phone-realme-12-1/800/800",
-      "https://picsum.photos/seed/phone-realme-12-2/800/800",
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "MediaTek Dimensity 6100+",
@@ -298,8 +298,8 @@ export const mobilePhoneProducts: Product[] = [
     description:
       "Portrait-focused camera phone with a premium curved display and fast charging in a single generous storage tier.",
     images: [
-      "https://picsum.photos/seed/phone-oppo-reno-11-1/800/800",
-      "https://picsum.photos/seed/phone-oppo-reno-11-2/800/800",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&h=800&fit=crop&auto=format&q=80",
+      "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=800&h=800&fit=crop&auto=format&q=80",
     ],
     specs: {
       chipset: "MediaTek Dimensity 7050",

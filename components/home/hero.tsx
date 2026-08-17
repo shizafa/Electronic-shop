@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 
 const HERO_IMAGES = [
-  "https://picsum.photos/seed/hero-electronics-1/1600/700",
-  "https://picsum.photos/seed/hero-electronics-2/1600/700",
-  "https://picsum.photos/seed/hero-electronics-3/1600/700",
-  "https://picsum.photos/seed/hero-electronics-4/1600/700",
+  "https://images.unsplash.com/photo-1757219525975-03b5984bc6e8?w=1600&h=700&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=1600&h=700&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=1600&h=700&fit=crop&auto=format&q=80",
+  "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=1600&h=700&fit=crop&auto=format&q=80",
 ];
 
 const ROTATION_INTERVAL_MS = 5500;
