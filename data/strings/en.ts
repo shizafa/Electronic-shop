@@ -54,6 +54,13 @@ const en: TranslationDictionary = {
   "product.installationRequired": "Installation Required",
   "product.installationNotice":
     "This product requires professional installation. You'll be able to schedule a date and time slot at checkout.",
+  "product.qanda": "Questions & Answers",
+  "product.qandaPlaceholder": "No questions have been asked about this product yet.",
+  "product.sku": "SKU",
+  "product.previousImage": "Previous image",
+  "product.nextImage": "Next image",
+  "product.decreaseQuantity": "Decrease quantity",
+  "product.increaseQuantity": "Increase quantity",
 
   "account.profile": "Profile",
   "account.addresses": "Addresses",
