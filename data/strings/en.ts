@@ -155,6 +155,9 @@ const en: TranslationDictionary = {
   "sort.priceAsc": "Price: Low to High",
   "sort.priceDesc": "Price: High to Low",
   "sort.nameAsc": "Name: A to Z",
+
+  "search.resultsFor": "Search results for",
+  "search.noResultsHint": "Try a different search term.",
 };
 
 export default en;
