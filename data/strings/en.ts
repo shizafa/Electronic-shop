@@ -107,6 +107,18 @@ const en: TranslationDictionary = {
   "compare.emptyHint": "Add up to 4 products from the same category to compare their specs side by side.",
   "compare.clearAll": "Clear All",
 
+  "about.ourStory": "Our Story",
+  "about.whyChooseUs": "Why Choose Us",
+
+  "contact.intro": "Have a question about an order, a product, or installation? Reach out — we're happy to help.",
+  "contact.phone": "Phone",
+  "contact.email": "Email",
+  "contact.address": "Address",
+  "contact.subject": "Subject",
+  "contact.message": "Message",
+  "contact.send": "Send Message",
+  "contact.submitted": "Thanks for reaching out — we'll get back to you shortly.",
+
   "footer.company": "Company",
   "footer.support": "Support",
   "footer.legal": "Legal",
