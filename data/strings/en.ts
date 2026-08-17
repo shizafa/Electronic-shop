@@ -39,6 +39,8 @@ const en: TranslationDictionary = {
   "common.filters": "Filters",
   "common.clearFilters": "Clear Filters",
   "common.noResults": "No products found",
+  "common.yes": "Yes",
+  "common.no": "No",
 
   "product.specifications": "Specifications",
   "product.description": "Description",
