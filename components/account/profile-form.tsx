@@ -13,12 +13,18 @@ export function ProfileForm() {
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [savedMessageVisible, setSavedMessageVisible] = useState(false);
+  const [error, setError] = useState("");
 
   if (!user) return null;
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    updateProfile({ name, email, phone });
+    const success = await updateProfile({ name, email, phone });
+    if (!success) {
+      setError(t("account.profileSaveFailed"));
+      return;
+    }
+    setError("");
     setSavedMessageVisible(true);
   }
 
@@ -74,6 +80,7 @@ export function ProfileForm() {
       </div>
 
       {savedMessageVisible && <p className="text-sm text-emerald-600">{t("account.profileSaved")}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button type="submit" className="self-start">
         {t("account.saveChanges")}

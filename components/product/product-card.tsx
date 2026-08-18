@@ -8,7 +8,7 @@ import { Price } from "@/components/product/price";
 import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant } from "@/lib/products";
+import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {
@@ -54,7 +54,7 @@ export function ProductCard({ product, badge }: ProductCardProps) {
       // different category than what's already being compared — same
       // simplification as the product detail page, since there's no
       // toast/notification system yet to explain why.
-      addToCompare(product.id);
+      addToCompare(product.id, product.categoryId);
     }
   }
 

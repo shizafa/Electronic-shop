@@ -14,11 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
-import { getCategoryById } from "@/lib/categories";
+import { placeOrder } from "@/lib/actions/orders";
 import { t } from "@/lib/i18n";
-import { placeOrder } from "@/lib/orders";
-import { getProductById, getVariantById } from "@/lib/products";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
@@ -28,6 +27,12 @@ export function CheckoutFlow() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, clearCart } = useCart();
+  const {
+    getProductById,
+    getVariantById,
+    getCategoryById,
+    isLoading: isCatalogLoading,
+  } = useProductCatalog();
 
   // resolve cart items into full product/variant data for pricing and display
   const lineItems = useMemo(
@@ -40,7 +45,7 @@ export function CheckoutFlow() {
           return { product, variant, quantity: item.quantity };
         })
         .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
-    [items]
+    [items, getProductById, getVariantById]
   );
 
   // installation step only applies if at least one item's category requires it
@@ -60,6 +65,7 @@ export function CheckoutFlow() {
   const [installation, setInstallation] = useState<InstallationSchedule | undefined>(undefined);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("jazzcash");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [placeOrderError, setPlaceOrderError] = useState("");
 
   // guard the checkout page: must be logged in and have items in the cart
   useEffect(() => {
@@ -73,7 +79,7 @@ export function CheckoutFlow() {
     }
   }, [isAuthLoading, user, items.length, router]);
 
-  if (isAuthLoading || !user || items.length === 0) {
+  if (isAuthLoading || isCatalogLoading || !user || items.length === 0) {
     return (
       <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
     );
@@ -116,14 +122,14 @@ export function CheckoutFlow() {
   const isInstallationValid =
     !isInstallationCitySupported || Boolean(installation?.date && installation?.timeSlot);
 
-  // final step: create the order record, empty the cart, then navigate to the confirmation page
-  function handlePlaceOrder() {
+  // final step: create the order record server-side, empty the cart, then navigate to confirmation
+  async function handlePlaceOrder() {
     if (!user) return;
     setIsPlacingOrder(true);
+    setPlaceOrderError("");
 
-    const order = placeOrder({
-      userId: user.id,
-      lineItems,
+    const result = await placeOrder({
+      lineItems: lineItems.map(({ variant, quantity }) => ({ variantId: variant.id, quantity })),
       shippingAddress,
       // reuse shipping address as billing when the "same as shipping" checkbox is checked
       billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
@@ -132,8 +138,14 @@ export function CheckoutFlow() {
       installation: isInstallationCitySupported ? installation : undefined,
     });
 
+    if (!result.success) {
+      setPlaceOrderError(result.error);
+      setIsPlacingOrder(false);
+      return;
+    }
+
     clearCart();
-    router.push(`/checkout/confirmation?orderId=${order.id}`);
+    router.push(`/checkout/confirmation?orderId=${result.orderId}`);
   }
 
   return (
@@ -213,6 +225,8 @@ export function CheckoutFlow() {
             total={total}
           />
         )}
+
+        {placeOrderError && <p className="mt-4 text-sm text-destructive">{placeOrderError}</p>}
 
         <div className="mt-6 flex justify-between">
           <Button variant="outline" onClick={goBack} disabled={stepIndex === 0}>

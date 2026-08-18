@@ -17,7 +17,8 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
-// Tracks the cart (guest or per-user) in state and syncs it to localStorage via lib/cart
+// Tracks the cart (guest or per-user) in state and syncs it to localStorage (guest) or
+// Supabase (logged in) via lib/cart
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
@@ -27,28 +28,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const currentUserId = user?.id ?? null;
     // Detect the guest-to-logged-in transition so the guest cart gets merged in exactly once
     const justLoggedIn = previousUserId.current === null && currentUserId !== null;
-
-    setItems(
-      justLoggedIn ? cartLib.mergeGuestCartIntoUser(currentUserId) : cartLib.getCart(currentUserId)
-    );
     previousUserId.current = currentUserId;
+
+    let active = true;
+    const load = justLoggedIn
+      ? cartLib.mergeGuestCartIntoUser(currentUserId as string)
+      : cartLib.getCart(currentUserId);
+    load.then((loadedItems) => {
+      if (active) setItems(loadedItems);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [user?.id]);
 
+  // Applies the change to local state immediately (so buttons feel instant), then confirms
+  // against the backend and reconciles state with whatever it actually persisted.
   function addToCart(productId: string, variantId: string, quantity = 1): void {
-    setItems(cartLib.addToCart(user?.id ?? null, productId, variantId, quantity));
+    setItems((current) => {
+      const existing = current.find((item) => item.variantId === variantId);
+      return existing
+        ? current.map((item) =>
+            item.variantId === variantId ? { ...item, quantity: item.quantity + quantity } : item
+          )
+        : [...current, { productId, variantId, quantity }];
+    });
+    cartLib.addToCart(user?.id ?? null, productId, variantId, quantity).then(setItems);
   }
 
   function updateQuantity(variantId: string, quantity: number): void {
-    setItems(cartLib.updateCartQuantity(user?.id ?? null, variantId, quantity));
+    setItems((current) =>
+      quantity <= 0
+        ? current.filter((item) => item.variantId !== variantId)
+        : current.map((item) => (item.variantId === variantId ? { ...item, quantity } : item))
+    );
+    cartLib.updateCartQuantity(user?.id ?? null, variantId, quantity).then(setItems);
   }
 
   function removeFromCart(variantId: string): void {
-    setItems(cartLib.removeFromCart(user?.id ?? null, variantId));
+    setItems((current) => current.filter((item) => item.variantId !== variantId));
+    cartLib.removeFromCart(user?.id ?? null, variantId).then(setItems);
   }
 
   function clearCart(): void {
-    cartLib.clearCart(user?.id ?? null);
     setItems([]);
+    cartLib.clearCart(user?.id ?? null);
   }
 
   // Total number of units across all lines (not number of distinct lines)

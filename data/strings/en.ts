@@ -98,6 +98,7 @@ const en: TranslationDictionary = {
   "account.noAddresses": "You haven't saved any addresses yet.",
   "account.saveChanges": "Save Changes",
   "account.profileSaved": "Profile updated.",
+  "account.profileSaveFailed": "Couldn't save your changes. Please try again.",
   "account.noOrders": "You haven't placed any orders yet.",
   "account.orderPlacedOn": "Placed on",
 

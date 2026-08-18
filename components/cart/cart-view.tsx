@@ -8,15 +8,17 @@ import { Price } from "@/components/product/price";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import { useProductCatalog } from "@/context/product-catalog-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import { formatVariantLabel, getProductById, getVariantById } from "@/lib/products";
+import { formatVariantLabel } from "@/lib/product-helpers";
 
 // CartView — shows cart contents with quantity controls and an order summary
 export function CartView() {
   const router = useRouter();
   const { user } = useAuth();
   const { items, updateQuantity, removeFromCart } = useCart();
+  const { getProductById, getVariantById, isLoading: isCatalogLoading } = useProductCatalog();
 
   // resolve stored cart items (product/variant ids) into full product + variant data,
   // dropping any items whose product/variant no longer exists in the catalog
@@ -36,6 +38,14 @@ export function CartView() {
   function handleCheckout() {
     // logged-out users are sent to login first, then back to checkout
     router.push(user ? "/checkout" : "/login?redirect=/checkout");
+  }
+
+  if (isCatalogLoading) {
+    return (
+      <div className="container-page py-20 text-center text-sm text-muted-foreground">
+        {t("common.loading")}
+      </div>
+    );
   }
 
   if (lineItems.length === 0) {

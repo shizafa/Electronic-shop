@@ -40,7 +40,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
   const inCompare = isInCompare(product.id);
   const isOutOfStock = selectedVariant.stock === 0;
   const images = selectedVariant.images ?? product.images;
-  const specRows = buildSpecRows([{ product, variant: selectedVariant }]);
+  const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
 
   function handleSelectVariant(variant: Variant) {
     setSelectedVariant(variant);
@@ -67,7 +67,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
       // 4-item cap is reached, this is a silent no-op — there's no toast/
       // notification system yet to explain why, so the button just won't
       // toggle rather than doing something misleading.
-      addToCompare(product.id);
+      addToCompare(product.id, product.categoryId);
     }
   }
 

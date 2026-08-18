@@ -1,4 +1,3 @@
-import { getAllProducts } from "@/lib/products";
 import { readJSON, writeJSON } from "@/lib/storage";
 import type { CompareItem } from "@/types/cart";
 
@@ -15,8 +14,10 @@ export function getCompareList(): CompareItem[] {
   return readJSON<CompareItem[]>(COMPARE_KEY, []);
 }
 
-// Adds a product to compare; rejects if the list is full or the category doesn't match
-export function addToCompare(productId: string): AddToCompareResult {
+// Adds a product to compare; rejects if the list is full or the category doesn't match.
+// Callers already have the full Product in hand (it's rendered on the page), so this only
+// needs its categoryId — no catalog lookup required.
+export function addToCompare(productId: string, categoryId: string): AddToCompareResult {
   const items = getCompareList();
   if (items.some((item) => item.productId === productId)) {
     return { success: true, items }; // already in the list, nothing to do
@@ -26,19 +27,14 @@ export function addToCompare(productId: string): AddToCompareResult {
     return { success: false, reason: "limit_reached", items };
   }
 
-  const allProducts = getAllProducts();
-  const newProductCategoryId = allProducts.find((product) => product.id === productId)?.categoryId;
-  const existingCategoryId =
-    items.length > 0
-      ? allProducts.find((product) => product.id === items[0].productId)?.categoryId
-      : undefined;
+  const existingCategoryId = items[0]?.categoryId;
 
   // Only allow comparing products from the same category (e.g. TVs with TVs)
-  if (existingCategoryId && newProductCategoryId !== existingCategoryId) {
+  if (existingCategoryId && categoryId !== existingCategoryId) {
     return { success: false, reason: "different_category", items };
   }
 
-  const updatedItems = [...items, { productId }];
+  const updatedItems = [...items, { productId, categoryId }];
   writeJSON(COMPARE_KEY, updatedItems);
   return { success: true, items: updatedItems };
 }

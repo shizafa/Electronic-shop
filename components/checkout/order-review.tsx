@@ -3,7 +3,7 @@ import type { AddressFormValues } from "@/components/checkout/address-form";
 import { Price } from "@/components/product/price";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import { formatVariantLabel } from "@/lib/products";
+import { formatVariantLabel } from "@/lib/product-helpers";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 import type { Product, Variant } from "@/types/product";
 

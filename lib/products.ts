@@ -1,72 +1,68 @@
-import { airConditionerProducts } from "@/data/products/air-conditioners";
-import { mobilePhoneProducts } from "@/data/products/mobile-phones";
-import { televisionProducts } from "@/data/products/televisions";
+import { createClient } from "@/lib/supabase/public";
+import { mapProductRow, mapVariantRow } from "@/lib/supabase/mappers";
 import type { Product, Variant } from "@/types/product";
 
-const allProducts: Product[] = [
-  ...airConditionerProducts,
-  ...televisionProducts,
-  ...mobilePhoneProducts,
-];
+const PRODUCT_SELECT = "*, variants(*)";
 
-// Returns every product across all categories (mock data, no backend)
-export function getAllProducts(): Product[] {
-  return allProducts;
+// Returns every product across all categories
+export async function getAllProducts(): Promise<Product[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT);
+  if (error) throw new Error(`getAllProducts: ${error.message}`);
+  return (data ?? []).map(mapProductRow);
 }
 
 // Looks up a product by its URL-friendly slug
-export function getProductBySlug(slug: string): Product | undefined {
-  return allProducts.find((product) => product.slug === slug);
+export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  const supabase = createClient();
+  const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  return data ? mapProductRow(data) : undefined;
 }
 
 // Looks up a product by its id
-export function getProductById(productId: string): Product | undefined {
-  return allProducts.find((product) => product.id === productId);
+export async function getProductById(productId: string): Promise<Product | undefined> {
+  const supabase = createClient();
+  const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("id", productId).maybeSingle();
+  return data ? mapProductRow(data) : undefined;
 }
 
 // Returns all products belonging to a category
-export function getProductsByCategory(categoryId: string): Product[] {
-  return allProducts.filter((product) => product.categoryId === categoryId);
+export async function getProductsByCategory(categoryId: string): Promise<Product[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("category_id", categoryId);
+  if (error) throw new Error(`getProductsByCategory: ${error.message}`);
+  return (data ?? []).map(mapProductRow);
 }
 
-// Finds a specific variant (e.g. a color/size option) by searching every product
-export function getVariantById(variantId: string): Variant | undefined {
-  for (const product of allProducts) {
-    const variant = product.variants.find((candidate) => candidate.id === variantId);
-    if (variant) return variant;
-  }
-  return undefined;
+// Finds a specific variant (e.g. a color/size option) by id
+export async function getVariantById(variantId: string): Promise<Variant | undefined> {
+  const supabase = createClient();
+  const { data } = await supabase.from("variants").select("*").eq("id", variantId).maybeSingle();
+  return data ? mapVariantRow(data) : undefined;
 }
 
 // Returns products flagged as featured, for homepage highlights
-export function getFeaturedProducts(): Product[] {
-  return allProducts.filter((product) => product.featured);
+export async function getFeaturedProducts(): Promise<Product[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("featured", true);
+  if (error) throw new Error(`getFeaturedProducts: ${error.message}`);
+  return (data ?? []).map(mapProductRow);
 }
 
 // Case-insensitive search across product name and brand
-export function searchProducts(query: string): Product[] {
-  const normalizedQuery = query.trim().toLowerCase();
+export async function searchProducts(query: string): Promise<Product[]> {
+  const normalizedQuery = query.trim();
   if (!normalizedQuery) return [];
 
-  return allProducts.filter((product) =>
-    `${product.name} ${product.brand}`.toLowerCase().includes(normalizedQuery)
-  );
-}
-
-// Picks the variant shown by default on a product card: cheapest among in-stock ones (or cheapest overall if none in stock)
-export function getDisplayVariant(product: Product): Variant {
-  const inStockVariants = product.variants.filter((variant) => variant.stock > 0);
-  const candidates = inStockVariants.length > 0 ? inStockVariants : product.variants;
-  return candidates.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest));
-}
-
-// Builds a human-readable label for a variant, e.g. "128GB • Black"
-export function formatVariantLabel(product: Product, variant: Variant): string {
-  return product.variantAxes
-    .map((axis) => {
-      const value = variant.axisValues[axis.id];
-      if (!axis.unit) return value;
-      return axis.unit === '"' ? `${value}${axis.unit}` : `${value} ${axis.unit}`; // no space before " (inches)
-    })
-    .join(" • ");
+  const supabase = createClient();
+  const escaped = normalizedQuery.replace(/[%,]/g, ""); // strip characters that would break the PostgREST or-filter syntax
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .or(`name.ilike.%${escaped}%,brand.ilike.%${escaped}%`);
+  if (error) throw new Error(`searchProducts: ${error.message}`);
+  return (data ?? []).map(mapProductRow);
 }

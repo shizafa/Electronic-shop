@@ -1,6 +1,6 @@
-import { airConditionerSpecs } from "@/data/specs/air-conditioners";
-import { mobilePhoneSpecs } from "@/data/specs/mobile-phones";
-import { televisionSpecs } from "@/data/specs/televisions";
+import { airConditionerSpecs } from "./specs/air-conditioners";
+import { mobilePhoneSpecs } from "./specs/mobile-phones";
+import { televisionSpecs } from "./specs/televisions";
 import type { Category } from "@/types/category";
 
 // The three product categories the shop sells; drives nav, filters, and category pages.

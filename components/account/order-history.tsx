@@ -1,35 +1,54 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrdersForUser } from "@/lib/orders";
+import type { Order } from "@/types/order";
 
 // OrderHistory — lists all past orders for the logged-in user, newest first
 export function OrderHistory() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!user) return; // nothing to fetch — the render logic below handles the "no user" case
+
+    let active = true;
+    getOrdersForUser(user.id).then((result) => {
+      if (!active) return;
+      // newest first
+      setOrders([...result].sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()));
+      setIsOrdersLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  if (isAuthLoading) {
     return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
   }
 
   if (!user) return null;
 
-  // sort by placed date descending so the most recent order appears first
-  const userOrders = [...getOrdersForUser(user.id)].sort(
-    (a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()
-  );
+  if (isOrdersLoading) {
+    return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
+  }
 
   return (
     <div className="flex max-w-3xl flex-col gap-4">
       <h1 className="text-xl font-semibold text-foreground">{t("account.orders")}</h1>
 
-      {userOrders.length === 0 ? (
+      {orders.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("account.noOrders")}</p>
       ) : (
         <div className="flex flex-col gap-3">
-          {userOrders.map((order) => (
+          {orders.map((order) => (
             <Link
               key={order.id}
               href={`/account/orders/${order.id}`}
