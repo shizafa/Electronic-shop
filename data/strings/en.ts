@@ -81,8 +81,6 @@ const en: TranslationDictionary = {
   "auth.emailTaken": "An account with this email already exists.",
   "auth.noAccount": "Don't have an account?",
   "auth.haveAccount": "Already have an account?",
-  "auth.demoAccountsHint":
-    "Demo accounts: ayesha.khan@example.com or bilal.ahmed@example.com, password: password123",
 
   "account.profile": "Profile",
   "account.addresses": "Addresses",

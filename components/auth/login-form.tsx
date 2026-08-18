@@ -74,10 +74,6 @@ export function LoginForm() {
           </Button>
         </form>
 
-        <p className="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-          {t("auth.demoAccountsHint")}
-        </p>
-
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t("auth.noAccount")}{" "}
           <Link href="/signup" className="font-medium text-primary hover:underline">
