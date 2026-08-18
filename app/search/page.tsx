@@ -16,7 +16,7 @@ export async function generateMetadata({ searchParams }: PageProps<"/search">): 
 // /search route: runs the query from the URL against the product catalog
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {
   const query = getQuery(await searchParams);
-  const results = searchProducts(query);
+  const results = await searchProducts(query);
 
   return <SearchResults query={query} products={results} />;
 }

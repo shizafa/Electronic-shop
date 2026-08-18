@@ -1,4 +1,4 @@
-import { getDisplayVariant } from "@/lib/products";
+import { getDisplayVariant } from "@/lib/product-helpers";
 import { getSpecDefinitionsForCategory } from "@/lib/specs";
 import { t } from "@/lib/i18n";
 import type { Category, SpecFieldType } from "@/types/category";
@@ -34,7 +34,7 @@ export function getFilterFieldsForCategory(category: Category, products: Product
     }
   }
 
-  const definitions = getSpecDefinitionsForCategory(category.id, Array.from(axisDefinitions.values()));
+  const definitions = getSpecDefinitionsForCategory(category, Array.from(axisDefinitions.values()));
 
   const fields = definitions
     .filter((definition) => definition.filterable)

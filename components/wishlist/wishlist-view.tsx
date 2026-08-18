@@ -6,14 +6,16 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Price } from "@/components/product/price";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
+import { useProductCatalog } from "@/context/product-catalog-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant, getProductById, getVariantById } from "@/lib/products";
+import { getDisplayVariant } from "@/lib/product-helpers";
 
 // WishlistView — lists saved products with quick add-to-cart and remove actions
 export function WishlistView() {
   const { items, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { getProductById, getVariantById, isLoading: isCatalogLoading } = useProductCatalog();
 
   // resolve wishlist entries into product/variant data; fall back to the product's default
   // display variant if no specific variant was saved, and drop items whose product is gone
@@ -25,6 +27,12 @@ export function WishlistView() {
       return { item, product, variant };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+  if (isCatalogLoading) {
+    return (
+      <div className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
+    );
+  }
 
   if (entries.length === 0) {
     return (

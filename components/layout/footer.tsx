@@ -2,8 +2,6 @@ import Link from "next/link";
 import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 
-const categories = getAllCategories();
-
 const companyLinks = [
   { href: "/about", labelKey: "footer.aboutUs" },
   { href: "/contact", labelKey: "footer.contactUs" },
@@ -45,7 +43,8 @@ function FooterColumn({
 }
 
 // Footer — site-wide footer with category/company/legal links and trust badges
-export function Footer() {
+export async function Footer() {
+  const categories = await getAllCategories();
   const categoryLinks = categories.map((category) => ({
     href: `/category/${category.slug}`,
     labelKey: category.nameKey,

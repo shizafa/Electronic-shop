@@ -8,7 +8,7 @@ import { Price } from "@/components/product/price";
 import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant } from "@/lib/products";
+import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {

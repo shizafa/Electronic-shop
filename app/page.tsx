@@ -6,15 +6,14 @@ import { ProductSection } from "@/components/home/product-section";
 import { PromoBanner } from "@/components/home/promo-banner";
 import { TrustStrip } from "@/components/home/trust-strip";
 import { t } from "@/lib/i18n";
-import { getAllProducts, getFeaturedProducts } from "@/lib/products";
+import { getAllProducts } from "@/lib/products";
 
 // / route: homepage assembled from the various components/home/* sections
-export default function Home() {
-  const featuredProducts = getFeaturedProducts();
+export default async function Home() {
+  const allProducts = await getAllProducts();
+  const featuredProducts = allProducts.filter((product) => product.featured);
   // Show up to 8 non-featured products as "new arrivals"
-  const newArrivals = getAllProducts()
-    .filter((product) => !product.featured)
-    .slice(0, 8);
+  const newArrivals = allProducts.filter((product) => !product.featured).slice(0, 8);
 
   return (
     <>

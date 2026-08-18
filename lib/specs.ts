@@ -1,15 +1,12 @@
-import { categories } from "@/data/categories";
 import { t } from "@/lib/i18n";
-import type { SpecFieldDefinition } from "@/types/category";
+import type { Category, SpecFieldDefinition } from "@/types/category";
 import type { Product, Variant, VariantAxisDefinition } from "@/types/product";
 
 // Combines a category's fixed spec fields with the product's own variant axes (e.g. storage, color)
 export function getSpecDefinitionsForCategory(
-  categoryId: string,
+  category: Category | undefined,
   variantAxes: VariantAxisDefinition[] = []
 ): SpecFieldDefinition[] {
-  const category = categories.find((candidate) => candidate.id === categoryId);
-
   // Variant axes act like extra filterable/comparable spec fields
   const axisFields: SpecFieldDefinition[] = variantAxes.map((axis) => ({
     id: axis.id,
@@ -31,11 +28,14 @@ export interface SpecRow {
 }
 
 // Builds the rows for a side-by-side spec comparison table (used on the compare page)
-export function buildSpecRows(entries: { product: Product; variant: Variant }[]): SpecRow[] {
+export function buildSpecRows(
+  entries: { product: Product; variant: Variant }[],
+  category: Category | undefined
+): SpecRow[] {
   if (entries.length === 0) return [];
 
   const { product: firstProduct } = entries[0];
-  const definitions = getSpecDefinitionsForCategory(firstProduct.categoryId, firstProduct.variantAxes);
+  const definitions = getSpecDefinitionsForCategory(category, firstProduct.variantAxes);
 
   return definitions.map((definition) => ({
     id: definition.id,

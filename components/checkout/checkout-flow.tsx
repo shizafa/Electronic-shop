@@ -14,11 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
-import { getCategoryById } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { placeOrder } from "@/lib/orders";
-import { getProductById, getVariantById } from "@/lib/products";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
@@ -28,6 +27,12 @@ export function CheckoutFlow() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, clearCart } = useCart();
+  const {
+    getProductById,
+    getVariantById,
+    getCategoryById,
+    isLoading: isCatalogLoading,
+  } = useProductCatalog();
 
   // resolve cart items into full product/variant data for pricing and display
   const lineItems = useMemo(
@@ -40,7 +45,7 @@ export function CheckoutFlow() {
           return { product, variant, quantity: item.quantity };
         })
         .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
-    [items]
+    [items, getProductById, getVariantById]
   );
 
   // installation step only applies if at least one item's category requires it
@@ -73,7 +78,7 @@ export function CheckoutFlow() {
     }
   }, [isAuthLoading, user, items.length, router]);
 
-  if (isAuthLoading || !user || items.length === 0) {
+  if (isAuthLoading || isCatalogLoading || !user || items.length === 0) {
     return (
       <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
     );
@@ -121,16 +126,19 @@ export function CheckoutFlow() {
     if (!user) return;
     setIsPlacingOrder(true);
 
-    const order = placeOrder({
-      userId: user.id,
-      lineItems,
-      shippingAddress,
-      // reuse shipping address as billing when the "same as shipping" checkbox is checked
-      billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
-      paymentMethod,
-      // only attach installation details if the city actually supports the service
-      installation: isInstallationCitySupported ? installation : undefined,
-    });
+    const order = placeOrder(
+      {
+        userId: user.id,
+        lineItems,
+        shippingAddress,
+        // reuse shipping address as billing when the "same as shipping" checkbox is checked
+        billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
+        paymentMethod,
+        // only attach installation details if the city actually supports the service
+        installation: isInstallationCitySupported ? installation : undefined,
+      },
+      getCategoryById
+    );
 
     clearCart();
     router.push(`/checkout/confirmation?orderId=${order.id}`);

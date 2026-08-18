@@ -1,7 +1,7 @@
 import { orders } from "@/data/orders";
-import { getCategoryById } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { readJSON, writeJSON } from "@/lib/storage";
+import type { Category } from "@/types/category";
 import type {
   InstallationSchedule,
   Order,
@@ -44,8 +44,13 @@ export interface PlaceOrderInput {
   installation?: InstallationSchedule;
 }
 
-// Builds a new order from cart line items, computes totals, and saves it to localStorage
-export function placeOrder(input: PlaceOrderInput): Order {
+// Builds a new order from cart line items, computes totals, and saves it to localStorage.
+// `getCategoryById` is injected from the caller's already-loaded catalog (see useProductCatalog)
+// since this module is client-reachable and can't do its own Supabase queries.
+export function placeOrder(
+  input: PlaceOrderInput,
+  getCategoryById: (id: string) => Category | undefined
+): Order {
   const subtotal = input.lineItems.reduce((sum, { variant, quantity }) => sum + variant.price * quantity, 0);
   const shippingFee = 0; // shipping is currently free in this mock shop
   const total = subtotal + shippingFee;

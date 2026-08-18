@@ -40,7 +40,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
   const inCompare = isInCompare(product.id);
   const isOutOfStock = selectedVariant.stock === 0;
   const images = selectedVariant.images ?? product.images;
-  const specRows = buildSpecRows([{ product, variant: selectedVariant }]);
+  const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
 
   function handleSelectVariant(variant: Variant) {
     setSelectedVariant(variant);

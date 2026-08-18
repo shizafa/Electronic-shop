@@ -7,18 +7,26 @@ import { Price } from "@/components/product/price";
 import { SpecTable } from "@/components/product/spec-table";
 import { Button } from "@/components/ui/button";
 import { useCompare } from "@/context/compare-context";
+import { useProductCatalog } from "@/context/product-catalog-context";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant, getProductById } from "@/lib/products";
+import { getDisplayVariant } from "@/lib/product-helpers";
 import { buildSpecRows } from "@/lib/specs";
 
 // CompareView — shows selected products side by side with a shared spec comparison table
 export function CompareView() {
   const { items, removeFromCompare, clearCompare } = useCompare();
+  const { getProductById, getCategoryById, isLoading: isCatalogLoading } = useProductCatalog();
 
   // drop any compared items whose product no longer exists in the catalog
   const products = items
     .map((item) => getProductById(item.productId))
     .filter((product): product is NonNullable<typeof product> => product !== undefined);
+
+  if (isCatalogLoading) {
+    return (
+      <div className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
+    );
+  }
 
   if (products.length === 0) {
     return (
@@ -33,7 +41,8 @@ export function CompareView() {
   }
 
   const entries = products.map((product) => ({ product, variant: getDisplayVariant(product) }));
-  const specRows = buildSpecRows(entries); // flattens each product's specs into aligned table rows
+  const category = getCategoryById(products[0].categoryId);
+  const specRows = buildSpecRows(entries, category); // flattens each product's specs into aligned table rows
 
   return (
     <div className="flex flex-col gap-6">
