@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useProductCatalog } from "@/context/product-catalog-context";
 import * as compareLib from "@/lib/compare";
 import type { AddToCompareResult } from "@/lib/compare";
 import type { CompareItem } from "@/types/cart";
@@ -9,7 +8,7 @@ import type { CompareItem } from "@/types/cart";
 // Shape of the compare-list data and actions exposed to the rest of the app
 interface CompareContextValue {
   items: CompareItem[];
-  addToCompare: (productId: string) => AddToCompareResult;
+  addToCompare: (productId: string, categoryId: string) => AddToCompareResult;
   removeFromCompare: (productId: string) => void;
   clearCompare: () => void;
   isInCompare: (productId: string) => boolean;
@@ -19,7 +18,6 @@ const CompareContext = createContext<CompareContextValue | undefined>(undefined)
 
 // Tracks the product-comparison list in state and syncs it to localStorage via lib/compare
 export function CompareProvider({ children }: { children: ReactNode }) {
-  const { products } = useProductCatalog();
   const [items, setItems] = useState<CompareItem[]>([]);
 
   useEffect(() => {
@@ -30,8 +28,8 @@ export function CompareProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Tries to add a product; may fail if the list is full or categories don't match
-  function addToCompare(productId: string): AddToCompareResult {
-    const result = compareLib.addToCompare(productId, products);
+  function addToCompare(productId: string, categoryId: string): AddToCompareResult {
+    const result = compareLib.addToCompare(productId, categoryId);
     setItems(result.items);
     return result;
   }

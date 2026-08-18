@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -7,12 +8,33 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrderById } from "@/lib/orders";
+import type { Order } from "@/types/order";
 
 // OrderConfirmation — final "thank you" screen shown after an order is placed, read from the orderId URL param
 export function OrderConfirmation() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId") ?? "";
-  const order = orderId ? getOrderById(orderId) : undefined;
+  const [order, setOrder] = useState<Order | null | undefined>(undefined); // undefined = still loading
+
+  useEffect(() => {
+    if (!orderId) return; // no id in the URL — the render logic below treats that as "not found"
+
+    let active = true;
+    getOrderById(orderId).then((result) => {
+      if (active) setOrder(result ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  if (orderId && order === undefined) {
+    return (
+      <div className="container-page flex flex-col items-center gap-3 py-16 text-center text-sm text-muted-foreground">
+        {t("common.loading")}
+      </div>
+    );
+  }
 
   if (!order) {
     return (

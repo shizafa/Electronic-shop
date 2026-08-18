@@ -16,8 +16,8 @@ import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
+import { placeOrder } from "@/lib/actions/orders";
 import { t } from "@/lib/i18n";
-import { placeOrder } from "@/lib/orders";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
@@ -65,6 +65,7 @@ export function CheckoutFlow() {
   const [installation, setInstallation] = useState<InstallationSchedule | undefined>(undefined);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("jazzcash");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [placeOrderError, setPlaceOrderError] = useState("");
 
   // guard the checkout page: must be logged in and have items in the cart
   useEffect(() => {
@@ -121,27 +122,30 @@ export function CheckoutFlow() {
   const isInstallationValid =
     !isInstallationCitySupported || Boolean(installation?.date && installation?.timeSlot);
 
-  // final step: create the order record, empty the cart, then navigate to the confirmation page
-  function handlePlaceOrder() {
+  // final step: create the order record server-side, empty the cart, then navigate to confirmation
+  async function handlePlaceOrder() {
     if (!user) return;
     setIsPlacingOrder(true);
+    setPlaceOrderError("");
 
-    const order = placeOrder(
-      {
-        userId: user.id,
-        lineItems,
-        shippingAddress,
-        // reuse shipping address as billing when the "same as shipping" checkbox is checked
-        billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
-        paymentMethod,
-        // only attach installation details if the city actually supports the service
-        installation: isInstallationCitySupported ? installation : undefined,
-      },
-      getCategoryById
-    );
+    const result = await placeOrder({
+      lineItems: lineItems.map(({ variant, quantity }) => ({ variantId: variant.id, quantity })),
+      shippingAddress,
+      // reuse shipping address as billing when the "same as shipping" checkbox is checked
+      billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
+      paymentMethod,
+      // only attach installation details if the city actually supports the service
+      installation: isInstallationCitySupported ? installation : undefined,
+    });
+
+    if (!result.success) {
+      setPlaceOrderError(result.error);
+      setIsPlacingOrder(false);
+      return;
+    }
 
     clearCart();
-    router.push(`/checkout/confirmation?orderId=${order.id}`);
+    router.push(`/checkout/confirmation?orderId=${result.orderId}`);
   }
 
   return (
@@ -221,6 +225,8 @@ export function CheckoutFlow() {
             total={total}
           />
         )}
+
+        {placeOrderError && <p className="mt-4 text-sm text-destructive">{placeOrderError}</p>}
 
         <div className="mt-6 flex justify-between">
           <Button variant="outline" onClick={goBack} disabled={stepIndex === 0}>

@@ -54,7 +54,7 @@ export function ProductCard({ product, badge }: ProductCardProps) {
       // different category than what's already being compared — same
       // simplification as the product detail page, since there's no
       // toast/notification system yet to explain why.
-      addToCompare(product.id);
+      addToCompare(product.id, product.categoryId);
     }
   }
 

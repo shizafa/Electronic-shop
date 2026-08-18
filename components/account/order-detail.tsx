@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { StatusTimeline } from "@/components/order/status-timeline";
@@ -7,18 +8,28 @@ import { useAuth } from "@/context/auth-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrderById } from "@/lib/orders";
+import type { Order } from "@/types/order";
 
 // OrderDetail — shows the full details of a single past order for the logged-in user
 export function OrderDetail({ orderId }: { orderId: string }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const [order, setOrder] = useState<Order | null | undefined>(undefined); // undefined = still loading
 
-  if (isLoading) {
+  useEffect(() => {
+    let active = true;
+    getOrderById(orderId).then((result) => {
+      if (active) setOrder(result ?? null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  if (isAuthLoading || order === undefined) {
     return (
       <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
     );
   }
-
-  const order = getOrderById(orderId);
 
   // guard against viewing a missing order or one that belongs to another user
   if (!order || !user || order.userId !== user.id) {

@@ -1,5 +1,5 @@
-// One-time (but safe to re-run) seed script: loads the existing static data/*.ts
-// mock catalog + demo users + demo orders into Supabase.
+// One-time (but safe to re-run) seed script: loads the fixture data under scripts/seed-data/
+// (the original mock catalog + demo users + demo orders) into Supabase.
 //
 // Run with: npm run seed
 
@@ -8,12 +8,12 @@ loadEnv({ path: ".env.local" });
 
 import { createClient } from "@supabase/supabase-js";
 
-import { categories } from "../data/categories";
-import { airConditionerProducts } from "../data/products/air-conditioners";
-import { mobilePhoneProducts } from "../data/products/mobile-phones";
-import { televisionProducts } from "../data/products/televisions";
-import { orders } from "../data/orders";
-import { users, mockCredentials } from "../data/users";
+import { categories } from "./seed-data/categories";
+import { airConditionerProducts } from "./seed-data/products/air-conditioners";
+import { mobilePhoneProducts } from "./seed-data/products/mobile-phones";
+import { televisionProducts } from "./seed-data/products/televisions";
+import { orders } from "./seed-data/orders";
+import { users, mockCredentials } from "./seed-data/users";
 import type { Product } from "../types/product";
 
 const allProducts: Product[] = [...airConditionerProducts, ...televisionProducts, ...mobilePhoneProducts];
