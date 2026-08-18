@@ -19,13 +19,18 @@ export function SignupForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    const success = signup(name, email, phone, password);
+    // signup() returns false when the email is already registered, or Supabase rejects
+    // the request (e.g. a password under its minimum length) — both surface the same message.
+    const success = await signup(name, email, phone, password);
     if (!success) {
-      setError(t("auth.emailTaken")); // signup() returns false when the email is already registered
+      setError(t("auth.emailTaken"));
+      setIsSubmitting(false);
       return;
     }
 
@@ -88,7 +93,7 @@ export function SignupForm() {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" size="lg" className="mt-2">
+          <Button type="submit" size="lg" className="mt-2" disabled={isSubmitting}>
             {t("nav.signup")}
           </Button>
         </form>

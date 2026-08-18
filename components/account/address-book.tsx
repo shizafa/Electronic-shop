@@ -53,17 +53,18 @@ export function AddressBook() {
     setDraft(emptyDraft);
   }
 
-  function handleDelete(addressId: string) {
+  async function handleDelete(addressId: string) {
     if (!user) return;
     if (!window.confirm(`${t("account.deleteAddress")}?`)) return;
-    updateAddresses(user.addresses.filter((address) => address.id !== addressId));
+    await updateAddresses(user.addresses.filter((address) => address.id !== addressId));
   }
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!user) return;
 
-    // reuse the existing id when editing, otherwise generate a new one
+    // reuse the existing id when editing, otherwise generate a new one — either way this is
+    // just a temporary key; updateAddresses replaces all rows and the DB assigns real ids
     const id = isAdding ? `addr-${Date.now()}` : (editingId ?? `addr-${Date.now()}`);
     const newAddress: Address = { ...draft, id };
 
@@ -76,7 +77,7 @@ export function AddressBook() {
       nextAddresses = nextAddresses.map((address) => ({ ...address, isDefault: address.id === id }));
     }
 
-    updateAddresses(nextAddresses);
+    await updateAddresses(nextAddresses);
     cancelForm();
   }
 

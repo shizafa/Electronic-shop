@@ -17,13 +17,16 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
 
-    const success = login(email, password);
+    const success = await login(email, password);
     if (!success) {
       setError(t("auth.invalidCredentials"));
+      setIsSubmitting(false);
       return;
     }
 
@@ -66,7 +69,7 @@ export function LoginForm() {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" size="lg" className="mt-2">
+          <Button type="submit" size="lg" className="mt-2" disabled={isSubmitting}>
             {t("nav.login")}
           </Button>
         </form>
