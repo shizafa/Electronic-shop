@@ -250,6 +250,14 @@ const en: TranslationDictionary = {
 
   "search.resultsFor": "Search results for",
   "search.noResultsHint": "Try a different search term.",
+
+  "admin.nav.overview": "Overview",
+  "admin.nav.products": "Products",
+  "admin.nav.categories": "Categories",
+  "admin.nav.orders": "Orders",
+  "admin.nav.customers": "Customers",
+  "admin.nav.settings": "Settings",
+  "admin.dashboard": "Dashboard",
 };
 
 export default en;
