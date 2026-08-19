@@ -7,6 +7,7 @@ export const users: User[] = [
     name: "Ayesha Khan",
     email: "ayesha.khan@example.com",
     phone: "0300-1234567",
+    isAdmin: false,
     addresses: [
       {
         id: "addr-ayesha-1",
@@ -25,6 +26,7 @@ export const users: User[] = [
     name: "Bilal Ahmed",
     email: "bilal.ahmed@example.com",
     phone: "0321-9876543",
+    isAdmin: false,
     addresses: [
       {
         id: "addr-bilal-1",

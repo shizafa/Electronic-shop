@@ -30,7 +30,7 @@ function mapAddressRow(row: AddressRow): Address {
 async function loadUser(userId: string, email: string): Promise<User> {
   const supabase = createClient();
   const [{ data: profile }, { data: addressRows }] = await Promise.all([
-    supabase.from("profiles").select("name, phone").eq("id", userId).single(),
+    supabase.from("profiles").select("name, phone, is_admin").eq("id", userId).single(),
     supabase
       .from("addresses")
       .select("id, label, full_name, phone, city, area, address_line, is_default")
@@ -43,6 +43,7 @@ async function loadUser(userId: string, email: string): Promise<User> {
     name: profile?.name ?? "",
     email,
     phone: profile?.phone ?? "",
+    isAdmin: profile?.is_admin ?? false,
     addresses: (addressRows ?? []).map(mapAddressRow),
   };
 }
@@ -81,7 +82,7 @@ export async function signup(
   });
   if (error || !data.user) return null;
 
-  return { id: data.user.id, name, email, phone, addresses: [] };
+  return { id: data.user.id, name, email, phone, isAdmin: false, addresses: [] };
 }
 
 // Ends the current session
