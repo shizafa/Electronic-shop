@@ -26,7 +26,7 @@ interface OrderStatusHistoryRow {
   changed_at: string;
 }
 
-interface OrderRow {
+export interface OrderRow {
   id: string;
   order_number: string;
   user_id: string;
@@ -45,7 +45,7 @@ interface OrderRow {
   order_status_history?: OrderStatusHistoryRow[] | null;
 }
 
-const ORDER_SELECT = "*, order_items(*), order_status_history(*)";
+export const ORDER_SELECT = "*, order_items(*), order_status_history(*)";
 
 // placed_at/changed_at are `timestamptz` columns (full ISO datetimes), but the UI was built
 // around plain "YYYY-MM-DD" strings (matching the original mock seed data) — truncate to date.
@@ -53,7 +53,7 @@ function toDateOnly(isoTimestamp: string): string {
   return isoTimestamp.slice(0, 10);
 }
 
-function mapOrderRow(row: OrderRow): Order {
+export function mapOrderRow(row: OrderRow): Order {
   return {
     id: row.id,
     orderNumber: row.order_number,
