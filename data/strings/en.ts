@@ -297,6 +297,33 @@ const en: TranslationDictionary = {
   "admin.customers.addresses": "Addresses",
   "admin.customers.orderHistory": "Order History",
   "admin.customers.admin": "Admin",
+
+  "admin.settings.salesTargets": "Sales Targets",
+  "admin.settings.salesTargetsHint": "Used by the Overview page's target gauge to track progress against your goals.",
+  "admin.settings.weeklyTarget": "Weekly Target",
+  "admin.settings.monthlyTarget": "Monthly Target",
+  "admin.settings.saveTargets": "Save Targets",
+  "admin.settings.saved": "Sales targets updated.",
+  "admin.settings.saveFailed": "Couldn't save targets. Please try again.",
+
+  "admin.overview.totalRevenue": "Total Revenue",
+  "admin.overview.totalOrders": "Total Orders",
+  "admin.overview.totalProducts": "Total Products",
+  "admin.overview.totalCustomers": "Total Customers",
+  "admin.overview.salesStatistics": "Sales Statistics",
+  "admin.overview.orderStatus": "Order Status",
+  "admin.overview.topProducts": "Top Products",
+  "admin.overview.recentOrders": "Recent Orders",
+  "admin.overview.salesTarget": "Sales Target",
+  "admin.overview.thisWeek": "This Week",
+  "admin.overview.thisMonth": "This Month",
+  "admin.overview.setTarget": "Set a target in Settings to track progress here.",
+  "admin.overview.noData": "Not enough data yet.",
+
+  "admin.orderStatusBucket.delivered": "Delivered",
+  "admin.orderStatusBucket.in_progress": "In Progress",
+  "admin.orderStatusBucket.cancelled": "Cancelled",
+  "admin.orderStatusBucket.returned": "Returned",
 };
 
 export default en;
