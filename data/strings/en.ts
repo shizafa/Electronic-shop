@@ -291,6 +291,8 @@ const en: TranslationDictionary = {
   "home.newArrivals.heading": "New Arrivals",
   "home.newArrivals.badge": "New",
   "home.bestSellers.heading": "Best Sellers",
+  "home.brands.heading": "Favorite Brands",
+  "home.brands.upToOff": "Up to {percent}% off",
   "home.promo.heading": "Limited Time Deals on Televisions",
   "home.promo.subheading": "Save on select 4K and QLED TVs for a limited time.",
   "home.promo.cta": "Shop the Deal",

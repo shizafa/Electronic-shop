@@ -25,27 +25,46 @@ export async function CategoryTiles() {
       <div className="grid grid-cols-1 items-start gap-4 rounded-3xl bg-muted/40 p-4 sm:p-6 lg:grid-cols-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
           {categories.map((category) => {
-            // Use first product's first image as the category thumbnail; count all products in this category
             const categoryProducts = products.filter((product) => product.categoryId === category.id);
+            // Use first product's first image as the category thumbnail; list a few real
+            // products as quick links (the template shows fake subcategories here, we don't
+            // have subcategory data, so real top products fill that spot instead)
             const thumbnail = categoryProducts[0]?.images[0];
+            const quickLinks = categoryProducts.slice(0, 3);
 
             return (
-              <Link
+              <div
                 key={category.id}
-                href={`/category/${category.slug}`}
-                className="group flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5"
+                className="group flex items-start justify-between gap-3 rounded-2xl border border-border bg-card p-5"
               >
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">{t(category.nameKey)}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{categoryProducts.length} products</p>
+                <div className="min-w-0">
+                  <Link href={`/category/${category.slug}`} className="text-base font-semibold text-foreground">
+                    {t(category.nameKey)}
+                  </Link>
+                  <ul className="mt-2 flex flex-col gap-1.5">
+                    {quickLinks.map((product) => (
+                      <li key={product.id}>
+                        <Link
+                          href={`/product/${product.slug}`}
+                          className="truncate text-sm text-muted-foreground hover:text-primary"
+                        >
+                          {product.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div className="flex flex-shrink-0 items-center gap-3">
+                <Link
+                  href={`/category/${category.slug}`}
+                  className="flex flex-shrink-0 flex-col items-center gap-2"
+                  aria-label={t(category.nameKey)}
+                >
                   {thumbnail && (
                     <div className="relative size-14 overflow-hidden rounded-lg bg-muted">
                       <Image
                         src={thumbnail}
-                        alt={t(category.nameKey)}
+                        alt=""
                         fill
                         sizes="56px"
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -55,8 +74,8 @@ export async function CategoryTiles() {
                   <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-full border border-primary/30 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                     <ArrowUpRight className="size-4" />
                   </span>
-                </div>
-              </Link>
+                </Link>
+              </div>
             );
           })}
         </div>

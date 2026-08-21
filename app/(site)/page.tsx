@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { BrandLogos } from "@/components/home/brand-logos";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { GuaranteeStrip } from "@/components/home/guarantee-strip";
 import { Hero } from "@/components/home/hero";
@@ -35,6 +36,8 @@ export default async function Home() {
         products={featuredProducts.slice(0, 8)}
         categories={categories}
       />
+
+      <BrandLogos />
 
       <div className="container-page flex justify-center py-4">
         <Button size="lg" variant="outline" asChild>
