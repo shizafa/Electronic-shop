@@ -28,7 +28,7 @@ export function SpecTable({ columns, rows }: SpecTableProps) {
         <tbody>
           {rows.map((row) => (
             <tr key={row.id}>
-              <td className="border-b border-border py-2 pr-4 text-muted-foreground">{row.label}</td>
+              <td className="border-b border-border py-2 pr-4 font-semibold text-muted-foreground">{row.label}</td>
               {row.values.map((value, index) => (
                 <td key={index} className="border-b border-border px-4 py-2 text-foreground">
                   {formatSpecValue(value)}

@@ -6,15 +6,17 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
 import { sortProducts, type SortOption } from "@/lib/filters";
 import { t } from "@/lib/i18n";
+import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
 
 interface SearchResultsProps {
   query: string;
   products: Product[];
+  categories: Category[];
 }
 
 // SearchResults — displays products matching a search query, with sorting
-export function SearchResults({ query, products }: SearchResultsProps) {
+export function SearchResults({ query, products, categories }: SearchResultsProps) {
   const [sort, setSort] = useState<SortOption>("featured");
   const sortedProducts = useMemo(() => sortProducts(products, sort), [products, sort]);
 
@@ -41,9 +43,16 @@ export function SearchResults({ query, products }: SearchResultsProps) {
           </div>
         ) : (
           <ProductGrid>
-            {sortedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {sortedProducts.map((product) => {
+              const category = categories.find((candidate) => candidate.id === product.categoryId);
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  categoryName={category ? t(category.nameKey) : undefined}
+                />
+              );
+            })}
           </ProductGrid>
         )}
       </div>

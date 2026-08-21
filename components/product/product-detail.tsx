@@ -1,15 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { GitCompare, Heart, Minus, Plus, ShoppingCart } from "lucide-react";
-import { AccordionSection } from "@/components/product/accordion-section";
+import { GitCompare, Heart, Minus, Plus, RotateCcw, ShoppingCart, Star } from "lucide-react";
 import { ImageGallery } from "@/components/product/image-gallery";
 import { Price } from "@/components/product/price";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
+import { QASection } from "@/components/product/qa-section";
+import { ReviewsSection } from "@/components/product/reviews-section";
 import { SpecTable } from "@/components/product/spec-table";
 import { VariantSelector } from "@/components/product/variant-selector";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
@@ -41,6 +44,12 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
   const isOutOfStock = selectedVariant.stock === 0;
   const images = selectedVariant.images ?? product.images;
   const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
+
+  const discountPercent = selectedVariant.compareAtPrice
+    ? Math.round(
+        ((selectedVariant.compareAtPrice - selectedVariant.price) / selectedVariant.compareAtPrice) * 100
+      )
+    : undefined;
 
   function handleSelectVariant(variant: Variant) {
     setSelectedVariant(variant);
@@ -74,19 +83,40 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
   return (
     <div>
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <ImageGallery images={images} alt={product.name} />
+        <ImageGallery images={images} alt={product.name} badge={discountPercent ? t("common.sale") : undefined} />
 
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">{product.brand}</p>
+            <Link href={`/category/${category.slug}`} className="text-sm font-medium text-primary hover:underline">
+              {t(category.nameKey)}
+            </Link>
             <h1 className="mt-1 text-2xl font-semibold text-foreground sm:text-3xl">{product.name}</h1>
+            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
           </div>
 
-          <Price
-            price={selectedVariant.price}
-            compareAtPrice={selectedVariant.compareAtPrice}
-            className="text-xl"
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Price price={selectedVariant.price} compareAtPrice={selectedVariant.compareAtPrice} className="text-xl" />
+            {discountPercent !== undefined && (
+              <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
+                {t("common.save")} {discountPercent}%
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Star key={index} className="size-3.5 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <Link
+              href="/policies/returns-warranty"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="size-3.5" />
+              {t("footer.returnsWarranty")}
+            </Link>
+          </div>
 
           <p className={`text-sm font-medium ${isOutOfStock ? "text-destructive" : "text-emerald-600"}`}>
             {isOutOfStock ? t("common.outOfStock") : t("common.inStock")}
@@ -123,8 +153,13 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            {t("product.sku")}: {selectedVariant.sku}
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span>
+              {t("product.sku")}: {selectedVariant.sku}
+            </span>
+            <span>
+              {t("product.brand")}: {product.brand}
+            </span>
           </p>
 
           <div className="flex flex-wrap items-center gap-2 pt-2">
@@ -160,32 +195,67 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
       </div>
 
       <div className="mt-10 max-w-3xl">
-        <AccordionSection title={t("product.description")} defaultOpen>
-          <p>{product.description}</p>
-        </AccordionSection>
+        <Tabs defaultValue="description">
+          <TabsList className="h-auto gap-1.5 bg-transparent p-0">
+            <TabsTrigger
+              value="description"
+              className="rounded-t-xl rounded-b-none border border-b-0 border-border bg-muted px-4 py-2.5 data-active:bg-background"
+            >
+              {t("product.description")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="specifications"
+              className="rounded-t-xl rounded-b-none border border-b-0 border-border bg-muted px-4 py-2.5 data-active:bg-background"
+            >
+              {t("product.specifications")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="reviews"
+              className="rounded-t-xl rounded-b-none border border-b-0 border-border bg-muted px-4 py-2.5 data-active:bg-background"
+            >
+              {t("product.reviews")}
+            </TabsTrigger>
+            <TabsTrigger
+              value="qanda"
+              className="rounded-t-xl rounded-b-none border border-b-0 border-border bg-muted px-4 py-2.5 data-active:bg-background"
+            >
+              {t("product.qanda")}
+            </TabsTrigger>
+          </TabsList>
 
-        <AccordionSection title={t("product.specifications")} defaultOpen>
-          <SpecTable columns={[product.name]} rows={specRows} />
-        </AccordionSection>
+          <div className="rounded-b-xl rounded-tr-xl border border-border p-5">
+            <TabsContent value="description" className="text-sm text-muted-foreground">
+              <p>{product.description}</p>
+              {category.installationRequired && (
+                <p className="mt-4 rounded-lg bg-muted p-3 text-foreground">
+                  <span className="font-medium">{t("product.installationRequired")}:</span>{" "}
+                  {t("product.installationNotice")}
+                </p>
+              )}
+            </TabsContent>
 
-        {category.installationRequired && (
-          <AccordionSection title={t("product.installationRequired")} defaultOpen>
-            <p>{t("product.installationNotice")}</p>
-          </AccordionSection>
-        )}
+            <TabsContent value="specifications">
+              <SpecTable columns={[product.name]} rows={specRows} />
+            </TabsContent>
 
-        <AccordionSection title={t("product.qanda")}>
-          <p>{t("product.qandaPlaceholder")}</p>
-        </AccordionSection>
+            <TabsContent value="reviews">
+              <ReviewsSection reviews={[]} />
+            </TabsContent>
+
+            <TabsContent value="qanda">
+              <QASection questions={[]} />
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
 
       {relatedProducts.length > 0 && (
         <div className="mt-10">
-          <h2 className="text-xl font-semibold sm:text-2xl">{t("product.relatedProducts")}</h2>
+          <h2 className="text-xl font-semibold sm:text-2xl">{t("product.similarItems")}</h2>
           <div className="mt-5">
             <ProductGrid>
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                <ProductCard key={relatedProduct.id} product={relatedProduct} categoryName={t(category.nameKey)} />
               ))}
             </ProductGrid>
           </div>
