@@ -184,6 +184,18 @@ const en: TranslationDictionary = {
   "footer.termsOfService": "Terms of Service",
   "footer.tagline": "Consumer electronics and home appliances, delivered across Pakistan.",
   "footer.copyright": "All rights reserved.",
+  "footer.letUsHelpYou": "Let Us Help You",
+  "footer.getToKnowUs": "Get to Know Us",
+  "footer.accountInfo": "Account Info",
+  "footer.yourOrders": "Your Orders",
+  "footer.categories": "Categories",
+  "footer.followUs": "Follow Us:",
+
+  "footer.newsletterHeading": "Subscribe our newsletter",
+  "footer.newsletterSubheading": "Get updates on new arrivals and deals.",
+  "footer.emailPlaceholder": "Enter your email address",
+  "footer.subscribe": "Subscribe",
+  "footer.newsletterComingSoon": "Newsletter signup isn't connected yet — this is a preview of what's coming.",
 
   "checkout.codAvailable": "Cash on Delivery Available",
   "checkout.installationService": "Installation Service",
