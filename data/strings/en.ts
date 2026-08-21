@@ -29,6 +29,10 @@ const en: TranslationDictionary = {
 
   "common.dismiss": "Dismiss",
   "common.addToCart": "Add to Cart",
+  "common.onlyLeftInStock": "Only {count} left in stock",
+  "common.inStockCount": "{count} in stock",
+  "common.sale": "Sale",
+  "common.freeShipping": "Free shipping",
   "common.addToWishlist": "Add to Wishlist",
   "common.addToCompare": "Add to Compare",
   "common.removeFromWishlist": "Remove from Wishlist",

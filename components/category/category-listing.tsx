@@ -116,7 +116,7 @@ export function CategoryListing({ category, products }: CategoryListingProps) {
           ) : (
             <ProductGrid>
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} categoryName={t(category.nameKey)} />
               ))}
             </ProductGrid>
           )}

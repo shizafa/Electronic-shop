@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
 import { t } from "@/lib/i18n";
+import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
 
 interface ProductSectionProps {
@@ -9,10 +10,11 @@ interface ProductSectionProps {
   viewAllHref?: string;
   products: Product[];
   badge?: string;
+  categories?: Category[];
 }
 
 // Reusable homepage section that renders a heading plus a grid of products
-export function ProductSection({ heading, viewAllHref, products, badge }: ProductSectionProps) {
+export function ProductSection({ heading, viewAllHref, products, badge, categories = [] }: ProductSectionProps) {
   if (products.length === 0) return null; // hide the section entirely when there's nothing to show
 
   return (
@@ -28,9 +30,17 @@ export function ProductSection({ heading, viewAllHref, products, badge }: Produc
 
       <div className="mt-5">
         <ProductGrid>
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} badge={badge} />
-          ))}
+          {products.map((product) => {
+            const category = categories.find((candidate) => candidate.id === product.categoryId);
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                badge={badge}
+                categoryName={category ? t(category.nameKey) : undefined}
+              />
+            );
+          })}
         </ProductGrid>
       </div>
     </section>

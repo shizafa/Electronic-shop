@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
+import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { getAllProducts } from "@/lib/products";
 import { getDisplayVariant } from "@/lib/product-helpers";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 // /deals route: featured products and anything with a live discount (variant.compareAtPrice)
 export default async function DealsPage() {
-  const allProducts = await getAllProducts();
+  const [allProducts, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
   const deals = allProducts.filter(
     (product) => product.featured || getDisplayVariant(product).compareAtPrice !== undefined
   );
@@ -24,9 +25,16 @@ export default async function DealsPage() {
       {deals.length > 0 ? (
         <div className="mt-8">
           <ProductGrid>
-            {deals.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {deals.map((product) => {
+              const category = categories.find((candidate) => candidate.id === product.categoryId);
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  categoryName={category ? t(category.nameKey) : undefined}
+                />
+              );
+            })}
           </ProductGrid>
         </div>
       ) : (

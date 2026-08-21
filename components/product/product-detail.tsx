@@ -185,7 +185,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
           <div className="mt-5">
             <ProductGrid>
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} />
+                <ProductCard key={relatedProduct.id} product={relatedProduct} categoryName={t(category.nameKey)} />
               ))}
             </ProductGrid>
           </div>
