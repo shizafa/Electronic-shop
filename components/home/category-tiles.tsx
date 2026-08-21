@@ -35,10 +35,13 @@ export async function CategoryTiles() {
             return (
               <div
                 key={category.id}
-                className="group flex items-start justify-between gap-3 rounded-2xl border border-border bg-card p-5"
+                className="group flex items-start justify-between gap-3 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg"
               >
                 <div className="min-w-0">
-                  <Link href={`/category/${category.slug}`} className="text-base font-semibold text-foreground">
+                  <Link
+                    href={`/category/${category.slug}`}
+                    className="text-base font-semibold text-foreground transition-colors group-hover:text-primary"
+                  >
                     {t(category.nameKey)}
                   </Link>
                   <ul className="mt-2 flex flex-col gap-1.5">
@@ -82,7 +85,7 @@ export async function CategoryTiles() {
 
         <Link
           href="/search"
-          className="flex flex-col justify-between rounded-2xl bg-green-50 p-7 text-center dark:bg-green-950/30"
+          className="group flex flex-col justify-between rounded-2xl bg-green-50 p-7 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:bg-green-950/30"
         >
           <div>
             <p className="text-sm text-foreground/70">Weekend Deal</p>
@@ -92,7 +95,12 @@ export async function CategoryTiles() {
             <p className="mt-2 leading-none font-bold text-primary">Super Holiday</p>
           </div>
           <div className="relative mx-auto mt-4 h-32 w-full">
-            <Image src="/categories/banner-cat-01.webp" alt="Weekend deal" fill className="object-contain" />
+            <Image
+              src="/categories/banner-cat-01.webp"
+              alt="Weekend deal"
+              fill
+              className="object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </div>
         </Link>
       </div>

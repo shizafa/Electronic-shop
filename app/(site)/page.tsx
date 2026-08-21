@@ -40,7 +40,7 @@ export default async function Home() {
       <BrandLogos />
 
       <div className="container-page flex justify-center py-4">
-        <Button size="lg" variant="outline" asChild>
+        <Button size="lg" className="h-auto rounded-full px-8 py-4 text-base" asChild>
           <Link href="/shop">
             {t("nav.showAllProducts")}
             <ArrowRight />
