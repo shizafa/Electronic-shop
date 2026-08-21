@@ -1,4 +1,3 @@
-import { AnnouncementBar } from "@/components/home/announcement-bar";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { GuaranteeStrip } from "@/components/home/guarantee-strip";
 import { Hero } from "@/components/home/hero";
@@ -17,7 +16,6 @@ export default async function Home() {
 
   return (
     <>
-      <AnnouncementBar />
       <Hero />
       <TrustStrip />
       <CategoryTiles />

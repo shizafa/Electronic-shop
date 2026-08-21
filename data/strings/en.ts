@@ -16,7 +16,18 @@ const en: TranslationDictionary = {
   "nav.login": "Log In",
   "nav.signup": "Sign Up",
   "nav.logout": "Log Out",
+  "nav.shop": "Shop",
+  "nav.aboutUs": "About",
+  "nav.contactUs": "Contact Us",
+  "nav.deals": "Present Deals",
+  "nav.more": "More",
+  "nav.viewAllCategories": "View All Categories",
 
+  "deals.title": "Present Deals",
+  "deals.subtitle": "Featured picks and products with a live discount, all in one place.",
+  "deals.empty": "No deals right now — check back soon.",
+
+  "common.dismiss": "Dismiss",
   "common.addToCart": "Add to Cart",
   "common.addToWishlist": "Add to Wishlist",
   "common.addToCompare": "Add to Compare",
