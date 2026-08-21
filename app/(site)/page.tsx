@@ -1,9 +1,12 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { GuaranteeStrip } from "@/components/home/guarantee-strip";
 import { Hero } from "@/components/home/hero";
 import { ProductSection } from "@/components/home/product-section";
 import { PromoBanner } from "@/components/home/promo-banner";
 import { TrustStrip } from "@/components/home/trust-strip";
+import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import { getAllCategories } from "@/lib/categories";
 import { getAllProducts } from "@/lib/products";
@@ -32,6 +35,16 @@ export default async function Home() {
         products={featuredProducts.slice(0, 8)}
         categories={categories}
       />
+
+      <div className="container-page flex justify-center py-4">
+        <Button size="lg" variant="outline" asChild>
+          <Link href="/shop">
+            {t("nav.showAllProducts")}
+            <ArrowRight />
+          </Link>
+        </Button>
+      </div>
+
       <GuaranteeStrip />
     </>
   );

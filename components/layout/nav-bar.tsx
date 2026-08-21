@@ -69,8 +69,8 @@ export async function NavBar() {
               ))}
             </div>
             <div className="mt-6 border-t border-border pt-4">
-              <Link href="/search" className="text-sm font-medium text-primary hover:underline">
-                {t("nav.viewAllCategories")}
+              <Link href="/shop" className="text-sm font-medium text-primary hover:underline">
+                {t("nav.showAllProducts")}
               </Link>
             </div>
           </DropdownMenuContent>
