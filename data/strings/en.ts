@@ -172,9 +172,6 @@ const en: TranslationDictionary = {
   "contact.send": "Send Message",
   "contact.submitted": "Thanks for reaching out — we'll get back to you shortly.",
 
-  "footer.company": "Company",
-  "footer.support": "Support",
-  "footer.legal": "Legal",
   "footer.aboutUs": "About Us",
   "footer.contactUs": "Contact Us",
   "footer.faqs": "FAQs",
@@ -189,7 +186,6 @@ const en: TranslationDictionary = {
   "footer.accountInfo": "Account Info",
   "footer.yourOrders": "Your Orders",
   "footer.categories": "Categories",
-  "footer.followUs": "Follow Us:",
 
   "footer.newsletterHeading": "Subscribe our newsletter",
   "footer.newsletterSubheading": "Get updates on new arrivals and deals.",

@@ -1,12 +1,7 @@
 import Link from "next/link";
-import { FacebookIcon } from "@/components/icons/social-icons";
 import { NewsletterBar } from "@/components/layout/newsletter-bar";
 import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
-
-// TODO: fill in the store's real Facebook/Instagram/WhatsApp URLs, then this row will render.
-// Import InstagramIcon/WhatsAppIcon from "@/components/icons/social-icons" once they're added.
-const SOCIAL_LINKS: { icon: typeof FacebookIcon; href: string; label: string }[] = [];
 
 const helpLinks = [
   { href: "/account/profile", labelKey: "footer.accountInfo" },
@@ -91,24 +86,6 @@ export async function Footer() {
 
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          {SOCIAL_LINKS.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground">{t("footer.followUs")}</span>
-              {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/85"
-                >
-                  <Icon className="size-4" />
-                </a>
-              ))}
-            </div>
-          )}
-
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <p>
               &copy; {new Date().getFullYear()} {t("site.name")}. {t("footer.copyright")}
