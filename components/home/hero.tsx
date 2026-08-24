@@ -107,7 +107,7 @@ export function Hero() {
           navigation={{ prevEl: ".hero-arrow-prev", nextEl: ".hero-arrow-next" }}
           pagination={{ clickable: true, el: ".hero-pagination" }}
         >
-          {HERO_SLIDES.map((slide) => (
+          {HERO_SLIDES.map((slide, index) => (
             <SwiperSlide key={slide.image}>
               <div
                 className={`relative aspect-[3/4] overflow-hidden rounded-2xl sm:aspect-[11/8] ${slide.cardClassName}`}
@@ -116,7 +116,7 @@ export function Hero() {
                   src={slide.image}
                   alt={`${slide.titleBold} ${slide.titleRest}`}
                   fill
-                  priority
+                  priority={index === 0}
                   sizes="(min-width: 768px) 50vw, 100vw"
                   className="object-cover mix-blend-multiply"
                 />
