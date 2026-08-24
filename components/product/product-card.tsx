@@ -51,10 +51,8 @@ export function ProductCard({ product, badge, categoryName }: ProductCardProps) 
     if (inCompare) {
       removeFromCompare(product.id);
     } else {
-      // Silently no-ops if the 4-item cap is hit or the product is from a
-      // different category than what's already being compared — same
-      // simplification as the product detail page, since there's no
-      // toast/notification system yet to explain why.
+      // addToCompare shows a toast itself if the 4-item cap is hit or the
+      // product is from a different category than what's already compared.
       addToCompare(product.id, product.categoryId);
     }
   }

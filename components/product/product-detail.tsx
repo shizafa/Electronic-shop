@@ -72,10 +72,8 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
     if (inCompare) {
       removeFromCompare(product.id);
     } else {
-      // If the category doesn't match what's already being compared, or the
-      // 4-item cap is reached, this is a silent no-op — there's no toast/
-      // notification system yet to explain why, so the button just won't
-      // toggle rather than doing something misleading.
+      // addToCompare shows a toast itself if the category doesn't match
+      // what's already being compared, or the 4-item cap is reached.
       addToCompare(product.id, product.categoryId);
     }
   }

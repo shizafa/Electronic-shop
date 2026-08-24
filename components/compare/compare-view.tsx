@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ProductCard } from "@/components/product/product-card";
 import { SpecTable } from "@/components/product/spec-table";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,7 @@ export function CompareView() {
     .map((item) => getProductById(item.productId))
     .filter((product): product is NonNullable<typeof product> => product !== undefined);
 
-  const entries = useMemo(
-    () => products.map((product) => ({ product, variant: getDisplayVariant(product) })),
-    [products]
-  );
+  const entries = products.map((product) => ({ product, variant: getDisplayVariant(product) }));
   const category = getCategoryById(products[0]?.categoryId ?? "");
   const specRows = buildSpecRows(entries, category); // flattens each product's specs into aligned table rows
 

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BadgeCheck,
   ChevronLeft,
@@ -147,9 +147,12 @@ export function ShopListing({ products, categories }: ShopListingProps) {
   }, [products, activeCategoryIds, searchQuery, activeFieldValues, minPrice, maxPrice, sort]);
 
   // reset to page 1 whenever the result set changes shape, so we don't strand the user on an empty page
-  useEffect(() => {
+  const filterKey = JSON.stringify([activeCategoryIds, activeFieldValues, minPrice, maxPrice, searchQuery, pageSize]);
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setPage(1);
-  }, [activeCategoryIds, activeFieldValues, minPrice, maxPrice, searchQuery, pageSize]);
+  }
 
   const total = filteredProducts.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));

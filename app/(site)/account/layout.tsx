@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Heart, LogOut, MapPin, Package, User as UserIcon } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
@@ -19,15 +19,19 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const isLoggingOutRef = useRef(false);
 
-  // Redirect signed-out users to login, then back to the page they wanted
+  // Redirect signed-out users to login, then back to the page they wanted.
+  // Skipped during an explicit logout so it doesn't race handleLogout's own
+  // navigation and bounce the user to the login page instead of home.
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && !isLoggingOutRef.current) {
       router.replace(`/login?redirect=${pathname}`);
     }
   }, [isLoading, user, pathname, router]);
 
   async function handleLogout() {
+    isLoggingOutRef.current = true;
     await logout();
     router.push("/");
   }
