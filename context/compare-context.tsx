@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import * as compareLib from "@/lib/compare";
 import type { AddToCompareResult } from "@/lib/compare";
+import { t } from "@/lib/i18n";
 import type { CompareItem } from "@/types/cart";
 
 // Shape of the compare-list data and actions exposed to the rest of the app
@@ -29,8 +31,18 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   // Tries to add a product; may fail if the list is full or categories don't match
   function addToCompare(productId: string, categoryId: string): AddToCompareResult {
+    const alreadyPresent = items.some((item) => item.productId === productId);
     const result = compareLib.addToCompare(productId, categoryId);
     setItems(result.items);
+
+    if (result.success) {
+      if (!alreadyPresent) toast.success(t("toast.addedToCompare"));
+    } else if (result.reason === "limit_reached") {
+      toast.error(t("toast.compareLimitReached"));
+    } else {
+      toast.error(t("toast.compareDifferentCategory"));
+    }
+
     return result;
   }
 

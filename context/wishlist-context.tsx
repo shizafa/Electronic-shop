@@ -1,9 +1,11 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import * as wishlistLib from "@/lib/wishlist";
 import { isSameItem } from "@/lib/wishlist";
+import { t } from "@/lib/i18n";
 import type { WishlistItem } from "@/types/cart";
 
 // Shape of the wishlist data and actions exposed to the rest of the app
@@ -45,8 +47,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   // Applies the change to local state immediately (so buttons feel instant), then confirms
   // against the backend and reconciles state with whatever it actually persisted.
   function addToWishlist(item: WishlistItem): void {
+    const alreadyPresent = items.some((existing) => isSameItem(existing, item));
     setItems((current) => (current.some((existing) => isSameItem(existing, item)) ? current : [...current, item]));
     wishlistLib.addToWishlist(user?.id ?? null, item).then(setItems);
+    if (!alreadyPresent) toast.success(t("toast.addedToWishlist"));
   }
 
   function removeFromWishlist(item: WishlistItem): void {

@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
 import * as cartLib from "@/lib/cart";
+import { t } from "@/lib/i18n";
 import type { CartItem } from "@/types/cart";
 
 // Shape of the cart data and actions exposed to the rest of the app
@@ -55,6 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         : [...current, { productId, variantId, quantity }];
     });
     cartLib.addToCart(user?.id ?? null, productId, variantId, quantity).then(setItems);
+    toast.success(t("toast.addedToCart"));
   }
 
   function updateQuantity(variantId: string, quantity: number): void {

@@ -110,7 +110,7 @@ export function Hero() {
           {HERO_SLIDES.map((slide) => (
             <SwiperSlide key={slide.image}>
               <div
-                className={`relative aspect-[4/3] overflow-hidden rounded-2xl sm:aspect-[11/8] ${slide.cardClassName}`}
+                className={`relative aspect-[3/4] overflow-hidden rounded-2xl sm:aspect-[11/8] ${slide.cardClassName}`}
               >
                 <Image
                   src={slide.image}
@@ -121,26 +121,26 @@ export function Hero() {
                   className="object-cover mix-blend-multiply"
                 />
 
-                <div className="relative z-10 flex h-full max-w-[65%] flex-col justify-center gap-3 p-6 sm:p-10">
-                  <p className="text-sm font-medium tracking-wide text-foreground/60 uppercase">
+                <div className="relative z-10 flex h-full max-w-[85%] flex-col justify-center gap-2 p-5 sm:max-w-[65%] sm:gap-3 sm:p-10">
+                  <p className="text-xs font-medium tracking-wide text-foreground/60 uppercase sm:text-sm">
                     {slide.eyebrow}
                   </p>
-                  <h2 className="text-2xl leading-tight font-semibold tracking-tight text-foreground sm:text-3xl">
+                  <h2 className="text-xl leading-tight font-semibold tracking-tight text-foreground sm:text-3xl">
                     <span className="font-extrabold">{slide.titleBold}</span> {slide.titleRest}
                   </h2>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <del className="text-sm text-foreground/50">{slide.originalPrice}</del>
-                    <span className="text-xl font-bold text-primary sm:text-2xl">{slide.salePrice}</span>
-                    <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <del className="text-xs text-foreground/50 sm:text-sm">{slide.originalPrice}</del>
+                    <span className="text-lg font-bold text-primary sm:text-2xl">{slide.salePrice}</span>
+                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive sm:px-2.5 sm:py-1 sm:text-xs">
                       {slide.discountLabel}
                     </span>
                   </div>
                   <Button
-                    className="mt-2 flex size-[84px] flex-col items-center justify-center gap-0.5 rounded-full p-0 text-xs leading-tight font-bold uppercase"
+                    className="mt-1 flex size-14 flex-col items-center justify-center gap-0.5 rounded-full p-0 text-[10px] leading-tight font-bold uppercase sm:mt-2 sm:size-[84px] sm:text-xs"
                     asChild
                   >
                     <Link href={slide.href}>
-                      <ArrowUpRight className="mb-0.5 size-3.5" />
+                      <ArrowUpRight className="mb-0.5 size-3 sm:size-3.5" />
                       Shop
                       <br />
                       Now

@@ -7,13 +7,6 @@ import { GitCompare, Heart, Phone, Search, ShoppingCart, User, X } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
@@ -59,7 +52,7 @@ function IconLink({
 // Header — site-wide top navigation: logo, search, wishlist/compare/cart/account links
 export function Header() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { items: cartItems, itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { items: compareItems } = useCompare();
@@ -209,26 +202,11 @@ export function Header() {
           </Button>
 
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted hover:bg-muted/70" aria-label={t("nav.account")}>
-                  <User className="size-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link href="/account/profile">{t("account.profile")}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/account/orders">{t("account.orders")}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/account/wishlist">{t("account.wishlist")}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => logout()}>{t("nav.logout")}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="ghost" size="icon" className="rounded-full bg-muted hover:bg-muted/70" asChild>
+              <Link href="/account/profile" aria-label={t("nav.account")}>
+                <User className="size-5" />
+              </Link>
+            </Button>
           ) : (
             <Button variant="ghost" size="icon" className="rounded-full bg-muted hover:bg-muted/70" asChild>
               <Link href="/login" aria-label={t("nav.login")}>
