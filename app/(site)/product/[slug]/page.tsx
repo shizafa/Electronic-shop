@@ -38,7 +38,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         </Link>
         <span>/</span>
         <Link href={`/category/${category.slug}`} className="hover:text-foreground">
-          {t(category.nameKey)}
+          {category.name}
         </Link>
         <span>/</span>
         <span className="text-foreground">{product.name}</span>

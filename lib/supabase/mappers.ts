@@ -44,7 +44,12 @@ interface SpecFieldRow {
 interface CategoryRow {
   id: string;
   slug: string;
-  name_key: string;
+  name: string;
+  description: string;
+  thumbnail_url: string | null;
+  banner_url: string | null;
+  is_active: boolean;
+  display_order: number;
   installation_required: boolean;
   spec_fields?: SpecFieldRow[] | null;
 }
@@ -96,7 +101,12 @@ export function mapCategoryRow(row: CategoryRow): Category {
   return {
     id: row.id,
     slug: row.slug,
-    nameKey: row.name_key,
+    name: row.name,
+    description: row.description,
+    thumbnailUrl: row.thumbnail_url,
+    bannerUrl: row.banner_url,
+    isActive: row.is_active,
+    displayOrder: row.display_order,
     installationRequired: row.installation_required,
     specFields: (row.spec_fields ?? [])
       .slice()

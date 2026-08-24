@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -72,9 +73,18 @@ export function CategoryListing({ category, products }: CategoryListingProps) {
 
   return (
     <div className="container-page py-8">
+      {category.bannerUrl && (
+        <div className="relative mb-6 aspect-[3/1] w-full overflow-hidden rounded-2xl bg-muted">
+          <Image src={category.bannerUrl} alt="" fill sizes="100vw" className="object-cover" />
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold sm:text-3xl">{t(category.nameKey)}</h1>
+          <h1 className="text-2xl font-semibold sm:text-3xl">{category.name}</h1>
+          {category.description && (
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{category.description}</p>
+          )}
           <p className="mt-1 text-sm text-muted-foreground">
             {filteredProducts.length} {t("common.products")}
           </p>
@@ -116,7 +126,7 @@ export function CategoryListing({ category, products }: CategoryListingProps) {
           ) : (
             <ProductGrid>
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} categoryName={t(category.nameKey)} />
+                <ProductCard key={product.id} product={product} categoryName={category.name} />
               ))}
             </ProductGrid>
           )}

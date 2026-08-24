@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { t } from "@/lib/i18n";
 import type { SpecFieldDefinition } from "@/types/category";
 
 interface ProductSpecsFieldsProps {
@@ -27,7 +28,7 @@ export function ProductSpecsFields({ specFields, specs, onChange }: ProductSpecs
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {specFields.map((field) => {
         const value = specs[field.id];
-        const label = field.labelKey + (field.unit ? ` (${field.unit})` : "");
+        const label = t(field.labelKey) + (field.unit ? ` (${field.unit})` : "");
 
         if (field.type === "boolean") {
           return (
@@ -44,7 +45,7 @@ export function ProductSpecsFields({ specFields, specs, onChange }: ProductSpecs
               <Label>{label}</Label>
               <Select value={String(value ?? "")} onValueChange={(next) => setValue(field.id, next)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={field.labelKey} />
+                  <SelectValue placeholder={label} />
                 </SelectTrigger>
                 <SelectContent>
                   {(field.options ?? []).map((option) => (

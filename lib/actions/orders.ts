@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { t } from "@/lib/i18n";
 import type { InstallationSchedule, OrderAddressSnapshot, PaymentMethod } from "@/types/order";
 
 export interface PlaceOrderLineItem {
@@ -30,7 +29,7 @@ interface VariantWithProductRow {
     id: string;
     name: string;
     images: string[];
-    categories: { name_key: string; installation_required: boolean } | null;
+    categories: { name: string; installation_required: boolean } | null;
   } | null;
 }
 
@@ -50,7 +49,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const variantIds = input.lineItems.map((item) => item.variantId);
   const { data: variantRows, error: variantError } = await supabase
     .from("variants")
-    .select("id, sku, price, images, products(id, name, images, categories(name_key, installation_required))")
+    .select("id, sku, price, images, products(id, name, images, categories(name, installation_required))")
     .in("id", variantIds);
 
   if (variantError || !variantRows) {
@@ -95,7 +94,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       image: variantRow.images?.[0] ?? product.images?.[0] ?? null,
       unit_price: unitPrice,
       quantity: lineItem.quantity,
-      category_name: category ? t(category.name_key) : "",
+      category_name: category?.name ?? "",
       installation_required: category?.installation_required ?? false,
     });
   }

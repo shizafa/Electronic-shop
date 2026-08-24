@@ -35,7 +35,12 @@ async function seedCategories() {
   const rows = categories.map((c) => ({
     id: c.id,
     slug: c.slug,
-    name_key: c.nameKey,
+    name: c.name,
+    description: c.description,
+    thumbnail_url: c.thumbnailUrl,
+    banner_url: c.bannerUrl,
+    is_active: c.isActive,
+    display_order: c.displayOrder,
     installation_required: c.installationRequired,
   }));
   const { error } = await supabase.from("categories").upsert(rows);

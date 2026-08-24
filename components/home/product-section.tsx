@@ -37,7 +37,7 @@ export function ProductSection({ heading, viewAllHref, products, badge, categori
                 key={product.id}
                 product={product}
                 badge={badge}
-                categoryName={category ? t(category.nameKey) : undefined}
+                categoryName={category?.name}
               />
             );
           })}

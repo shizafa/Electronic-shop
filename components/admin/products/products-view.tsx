@@ -21,7 +21,7 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
   const [categoryId, setCategoryId] = useState("all");
 
   const categoryNameById = useMemo(
-    () => Object.fromEntries(categories.map((category) => [category.id, t(category.nameKey)])),
+    () => Object.fromEntries(categories.map((category) => [category.id, category.name])),
     [categories]
   );
 
@@ -57,7 +57,7 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
               <SelectItem value="all">{t("admin.products.allCategories")}</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  {t(category.nameKey)}
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>

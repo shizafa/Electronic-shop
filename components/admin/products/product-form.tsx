@@ -124,7 +124,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
                   <SelectContent>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {t(category.nameKey)}
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

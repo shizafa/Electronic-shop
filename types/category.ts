@@ -12,11 +12,17 @@ export interface SpecFieldDefinition {
   showInCompare: boolean;
 }
 
-// A product category (e.g. Televisions), including which specs apply to it
+// A product category (e.g. Televisions), including which specs apply to it and everything
+// needed to display it on the storefront (homepage tiles, nav, category page)
 export interface Category {
   id: string;
   slug: string;
-  nameKey: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string | null;
+  bannerUrl: string | null;
+  isActive: boolean;
+  displayOrder: number;
   installationRequired: boolean;
   specFields: SpecFieldDefinition[];
 }

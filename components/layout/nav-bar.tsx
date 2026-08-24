@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getAllCategories } from "@/lib/categories";
+import { getVisibleCategories } from "@/lib/categories";
 import { getAllProducts } from "@/lib/products";
 import { t } from "@/lib/i18n";
 
@@ -23,7 +23,7 @@ const moreLinks = [
 
 // Site-wide secondary nav bar: Shop mega-menu (categories + top products), plus static links.
 export async function NavBar() {
-  const [categories, products] = await Promise.all([getAllCategories(), getAllProducts()]);
+  const [categories, products] = await Promise.all([getVisibleCategories(), getAllProducts()]);
 
   const topProductsByCategory = categories.map((category) => {
     const inCategory = products.filter((product) => product.categoryId === category.id);
@@ -47,7 +47,7 @@ export async function NavBar() {
                     href={`/category/${category.slug}`}
                     className="text-sm font-semibold text-foreground hover:text-primary"
                   >
-                    {t(category.nameKey)}
+                    {category.name}
                   </Link>
                   <ul className="mt-2 flex flex-col gap-1.5">
                     {topProducts.length > 0 ? (

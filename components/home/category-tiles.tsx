@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { getAllCategories } from "@/lib/categories";
+import { getVisibleCategories } from "@/lib/categories";
 import { getAllProducts } from "@/lib/products";
 import { t } from "@/lib/i18n";
 
 // Homepage grid of category cards linking into /category/[slug]
 export async function CategoryTiles() {
-  const [categories, products] = await Promise.all([getAllCategories(), getAllProducts()]);
+  const [categories, products] = await Promise.all([getVisibleCategories(), getAllProducts()]);
 
   return (
     <section id="categories" className="container-page py-10">
@@ -26,10 +26,11 @@ export async function CategoryTiles() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
           {categories.map((category) => {
             const categoryProducts = products.filter((product) => product.categoryId === category.id);
-            // Use first product's first image as the category thumbnail; list a few real
-            // products as quick links (the template shows fake subcategories here, we don't
-            // have subcategory data, so real top products fill that spot instead)
-            const thumbnail = categoryProducts[0]?.images[0];
+            // Prefer the admin-set thumbnail; fall back to a product image for categories that
+            // don't have one yet. List a few real products as quick links (the template shows
+            // fake subcategories here, we don't have subcategory data, so real top products
+            // fill that spot instead)
+            const thumbnail = category.thumbnailUrl ?? categoryProducts[0]?.images[0];
             const quickLinks = categoryProducts.slice(0, 3);
 
             return (
@@ -42,7 +43,7 @@ export async function CategoryTiles() {
                     href={`/category/${category.slug}`}
                     className="text-base font-semibold text-foreground transition-colors group-hover:text-primary"
                   >
-                    {t(category.nameKey)}
+                    {category.name}
                   </Link>
                   <ul className="mt-2 flex flex-col gap-1.5">
                     {quickLinks.map((product) => (
@@ -61,7 +62,7 @@ export async function CategoryTiles() {
                 <Link
                   href={`/category/${category.slug}`}
                   className="flex flex-shrink-0 flex-col items-center gap-2"
-                  aria-label={t(category.nameKey)}
+                  aria-label={category.name}
                 >
                   {thumbnail && (
                     <div className="relative size-14 overflow-hidden rounded-lg bg-muted">

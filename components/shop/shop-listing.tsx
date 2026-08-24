@@ -121,7 +121,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       return getFilterFieldsForCategory(category, categoryProducts).map((field) => ({
         ...field,
         id: field.id,
-        label: `${t(category.nameKey)}: ${field.label}`,
+        label: `${category.name}: ${field.label}`,
       }));
     });
   }, [activeCategoryIds, categories, products]);
@@ -189,7 +189,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       {/* Quick category nav — same categories as the sidebar checkboxes below */}
       <div className="mt-2 flex flex-wrap justify-center gap-6 py-6 sm:justify-start">
         {categories.map((category) => {
-          const thumbnail = products.find((product) => product.categoryId === category.id)?.images[0];
+          const thumbnail = category.thumbnailUrl ?? products.find((product) => product.categoryId === category.id)?.images[0];
           const isActive = activeCategoryIds.includes(category.id);
           return (
             <button
@@ -202,10 +202,10 @@ export function ShopListing({ products, categories }: ShopListingProps) {
                 className={`relative size-24 overflow-hidden rounded-full bg-muted ring-2 ${isActive ? "ring-primary" : "ring-transparent"}`}
               >
                 {thumbnail && (
-                  <Image src={thumbnail} alt={t(category.nameKey)} fill sizes="96px" className="object-cover" />
+                  <Image src={thumbnail} alt={category.name} fill sizes="96px" className="object-cover" />
                 )}
               </span>
-              <span className="text-sm font-medium text-foreground">{t(category.nameKey)}</span>
+              <span className="text-sm font-medium text-foreground">{category.name}</span>
             </button>
           );
         })}
@@ -227,7 +227,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
                     checked={activeCategoryIds.includes(category.id)}
                     onCheckedChange={() => toggleCategory(category.id)}
                   />
-                  <span>{t(category.nameKey)}</span>
+                  <span>{category.name}</span>
                   <span className="text-xs text-muted-foreground">({categoryCounts[category.id] ?? 0})</span>
                 </label>
               ))}
@@ -260,7 +260,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
                           checked={activeCategoryIds.includes(category.id)}
                           onCheckedChange={() => toggleCategory(category.id)}
                         />
-                        <span>{t(category.nameKey)}</span>
+                        <span>{category.name}</span>
                         <span className="text-xs text-muted-foreground">
                           ({categoryCounts[category.id] ?? 0})
                         </span>
@@ -375,7 +375,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      categoryName={category ? t(category.nameKey) : undefined}
+                      categoryName={category?.name}
                     />
                   );
                 })}

@@ -49,7 +49,7 @@ export function SearchResults({ query, products, categories }: SearchResultsProp
                 <ProductCard
                   key={product.id}
                   product={product}
-                  categoryName={category ? t(category.nameKey) : undefined}
+                  categoryName={category?.name}
                 />
               );
             })}

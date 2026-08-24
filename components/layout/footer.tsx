@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NewsletterBar } from "@/components/layout/newsletter-bar";
-import { getAllCategories } from "@/lib/categories";
+import { getVisibleCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 
 const helpLinks = [
@@ -18,13 +18,14 @@ const aboutLinks = [
   { href: "/contact", labelKey: "footer.contactUs" },
 ];
 
-// FooterColumn — renders one labeled column of links in the footer
+// FooterColumn — renders one labeled column of links in the footer. Pass `label` for
+// already-resolved display text (e.g. a category's plain name), or `labelKey` for an i18n key.
 function FooterColumn({
   headingKey,
   links,
 }: {
   headingKey: string;
-  links: { href: string; labelKey: string }[];
+  links: { href: string; label?: string; labelKey?: string }[];
 }) {
   return (
     <div>
@@ -33,7 +34,7 @@ function FooterColumn({
         {links.map((link) => (
           <li key={link.href}>
             <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
-              {t(link.labelKey)}
+              {link.label ?? t(link.labelKey!)}
             </Link>
           </li>
         ))}
@@ -44,10 +45,10 @@ function FooterColumn({
 
 // Footer — site-wide footer with category/help/about links and trust badges
 export async function Footer() {
-  const categories = await getAllCategories();
+  const categories = await getVisibleCategories();
   const categoryLinks = categories.map((category) => ({
     href: `/category/${category.slug}`,
-    labelKey: category.nameKey,
+    label: category.name,
   }));
 
   return (

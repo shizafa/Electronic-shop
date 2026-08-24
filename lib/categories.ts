@@ -5,12 +5,23 @@ import type { Category } from "@/types/category";
 
 const CATEGORY_SELECT = "*, spec_fields(*)";
 
-// Returns every product category
+// Returns every product category (active and inactive), ordered for display. Used by admin
+// screens and by anywhere that needs to resolve a product's category regardless of visibility.
 export const getAllCategories = cache(async (): Promise<Category[]> => {
   const supabase = createClient();
-  const { data, error } = await supabase.from("categories").select(CATEGORY_SELECT);
+  const { data, error } = await supabase
+    .from("categories")
+    .select(CATEGORY_SELECT)
+    .order("display_order", { ascending: true });
   if (error) throw new Error(`getAllCategories: ${error.message}`);
   return (data ?? []).map(mapCategoryRow);
+});
+
+// Storefront-facing categories only: excludes anything the admin has hidden. Use this for
+// browsing surfaces (nav, footer, homepage tiles) rather than getAllCategories.
+export const getVisibleCategories = cache(async (): Promise<Category[]> => {
+  const categories = await getAllCategories();
+  return categories.filter((category) => category.isActive);
 });
 
 // Looks up a category by its URL-friendly slug. Cached per-request so pages that call this from

@@ -86,7 +86,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
         <div className="flex flex-col gap-4">
           <div>
             <Link href={`/category/${category.slug}`} className="text-sm font-medium text-primary hover:underline">
-              {t(category.nameKey)}
+              {category.name}
             </Link>
             <h1 className="mt-1 text-2xl font-semibold text-foreground sm:text-3xl">{product.name}</h1>
             <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
@@ -253,7 +253,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
           <div className="mt-5">
             <ProductGrid>
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard key={relatedProduct.id} product={relatedProduct} categoryName={t(category.nameKey)} />
+                <ProductCard key={relatedProduct.id} product={relatedProduct} categoryName={category.name} />
               ))}
             </ProductGrid>
           </div>

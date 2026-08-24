@@ -31,7 +31,7 @@ export default async function DealsPage() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  categoryName={category ? t(category.nameKey) : undefined}
+                  categoryName={category?.name}
                 />
               );
             })}
