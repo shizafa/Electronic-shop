@@ -69,13 +69,15 @@ export function ProductCard({ product, badge, categoryName }: ProductCardProps) 
       className="group flex flex-col overflow-hidden rounded-xl border border-border bg-background transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-square overflow-hidden bg-muted">
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+        {product.images[0] && (
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
 
         {topLeftBadge && (
           <span className="absolute top-2 left-2 rounded-full bg-destructive px-2.5 py-1 text-[11px] font-bold text-white uppercase">

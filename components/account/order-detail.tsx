@@ -55,7 +55,9 @@ export function OrderDetail({ orderId }: { orderId: string }) {
           {order.items.map((item) => (
             <div key={item.variantId} className="flex items-center gap-3 py-3">
               <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                <Image src={item.image} alt={item.productName} fill sizes="56px" className="object-cover" />
+                {item.image && (
+                  <Image src={item.image} alt={item.productName} fill sizes="56px" className="object-cover" />
+                )}
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">{item.productName}</p>

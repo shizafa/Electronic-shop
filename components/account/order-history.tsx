@@ -128,7 +128,9 @@ export function OrderHistory() {
                 {order.items.map((item) => (
                   <div key={item.variantId} className="flex items-center gap-3">
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      <Image src={item.image} alt={item.productName} fill sizes="56px" className="object-cover" />
+                      {item.image && (
+                        <Image src={item.image} alt={item.productName} fill sizes="56px" className="object-cover" />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{item.productName}</p>

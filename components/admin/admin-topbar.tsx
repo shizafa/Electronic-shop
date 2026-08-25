@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, ChevronRight } from "lucide-react";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,13 +35,25 @@ export function AdminTopbar() {
   const title = t(getActiveAdminNavItem(pathname)?.labelKey ?? "admin.dashboard");
 
   return (
-    <header className="flex h-14 items-center justify-between gap-2 border-b border-border px-4">
-      <div className="flex items-center gap-2">
+    <header className="flex h-14 items-center justify-between gap-4 border-b border-border px-4">
+      <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger />
-        <h1 className="text-base font-semibold">{title}</h1>
+        <nav className="flex min-w-0 items-center gap-1.5 text-sm" aria-label="Breadcrumb">
+          <Link href="/admin" className="shrink-0 text-muted-foreground hover:text-foreground">
+            {t("site.name")}
+          </Link>
+          <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+          <span className="shrink-0 text-muted-foreground">{t("admin.dashboard")}</span>
+          <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+          <span className="truncate font-medium text-foreground">{title}</span>
+        </nav>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="hidden flex-1 justify-center md:flex">
+        <AdminSearch />
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">

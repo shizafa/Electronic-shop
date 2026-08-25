@@ -60,13 +60,15 @@ export function WishlistView() {
             href={`/product/${product.slug}`}
             className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-muted"
           >
-            <Image
-              src={variant.images?.[0] ?? product.images[0]}
-              alt={product.name}
-              fill
-              sizes="80px"
-              className="object-cover"
-            />
+            {(variant.images?.[0] ?? product.images[0]) && (
+              <Image
+                src={variant.images?.[0] ?? product.images[0]}
+                alt={product.name}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            )}
           </Link>
 
           <div className="flex-1">

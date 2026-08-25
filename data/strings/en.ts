@@ -334,6 +334,17 @@ const en: TranslationDictionary = {
   "admin.nav.orders": "Orders",
   "admin.nav.customers": "Customers",
   "admin.nav.settings": "Settings",
+  "admin.nav.group.general": "General",
+  "admin.nav.group.catalog": "Catalog",
+  "admin.nav.group.sales": "Sales",
+  "admin.nav.group.settings": "Settings",
+
+  "admin.search.placeholder": "Search products, orders, customers...",
+  "admin.search.hint": "Start typing to search.",
+  "admin.search.noResults": "No results found.",
+  "admin.search.products": "Products",
+  "admin.search.orders": "Orders",
+  "admin.search.customers": "Customers",
   "admin.dashboard": "Dashboard",
 
   "admin.orders.order": "Order",

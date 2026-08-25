@@ -45,14 +45,16 @@ export function ImageGallery({ images, alt, badge }: ImageGalleryProps) {
       )}
 
       <div className="relative aspect-square flex-1 overflow-hidden rounded-2xl bg-muted">
-        <Image
-          src={activeImage}
-          alt={alt}
-          fill
-          sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-cover"
-          priority
-        />
+        {activeImage && (
+          <Image
+            src={activeImage}
+            alt={alt}
+            fill
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="object-cover"
+            priority
+          />
+        )}
 
         {badge && (
           <span className="absolute top-3 left-3 rounded-full bg-destructive px-2.5 py-1 text-[11px] font-bold text-white uppercase">
@@ -60,15 +62,17 @@ export function ImageGallery({ images, alt, badge }: ImageGalleryProps) {
           </span>
         )}
 
-        <a
-          href={activeImage}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={t("product.viewFullImage")}
-          className="absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-lg bg-background/90 shadow-sm hover:bg-background"
-        >
-          <Maximize2 className="size-4" />
-        </a>
+        {activeImage && (
+          <a
+            href={activeImage}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t("product.viewFullImage")}
+            className="absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-lg bg-background/90 shadow-sm hover:bg-background"
+          >
+            <Maximize2 className="size-4" />
+          </a>
+        )}
 
         {images.length > 1 && (
           <>

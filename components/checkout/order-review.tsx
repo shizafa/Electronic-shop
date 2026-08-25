@@ -39,13 +39,15 @@ export function OrderReview({
           {lineItems.map(({ product, variant, quantity }) => (
             <div key={variant.id} className="flex items-center gap-3 py-3">
               <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                <Image
-                  src={variant.images?.[0] ?? product.images[0]}
-                  alt={product.name}
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                />
+                {(variant.images?.[0] ?? product.images[0]) && (
+                  <Image
+                    src={variant.images?.[0] ?? product.images[0]}
+                    alt={product.name}
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                  />
+                )}
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">{product.name}</p>

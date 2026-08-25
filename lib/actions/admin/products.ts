@@ -105,7 +105,7 @@ export async function createVariant(productId: string, input: VariantFormInput):
     price: input.price,
     compare_at_price: input.compareAtPrice ?? null,
     stock: input.stock,
-    images: input.images ?? null,
+    images: input.images?.length ? input.images : null,
   });
 
   if (error) {
@@ -127,7 +127,7 @@ export async function updateVariant(id: string, input: VariantFormInput): Promis
       price: input.price,
       compare_at_price: input.compareAtPrice ?? null,
       stock: input.stock,
-      images: input.images ?? null,
+      images: input.images?.length ? input.images : null,
     })
     .eq("id", id);
 

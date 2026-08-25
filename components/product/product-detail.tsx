@@ -42,7 +42,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
   const inWishlist = isInWishlist(product.id, selectedVariant.id);
   const inCompare = isInCompare(product.id);
   const isOutOfStock = selectedVariant.stock === 0;
-  const images = selectedVariant.images ?? product.images;
+  const images = selectedVariant.images?.length ? selectedVariant.images : product.images;
   const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
 
   const discountPercent = selectedVariant.compareAtPrice
