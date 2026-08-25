@@ -1,22 +1,35 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
+import { toast } from "sonner";
+import { submitContactMessage } from "@/lib/actions/contact";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { t } from "@/lib/i18n";
 
-// ContactForm — mock contact form; no backend, just shows a confirmation message on submit
+// ContactForm — submits to contact_messages via a Server Action; admins review submissions
+// in the /admin/messages inbox.
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitted(true); // no backend to send to — just simulate success
+    setIsSubmitting(true);
+
+    const result = await submitContactMessage({ name, email, subject, message });
+
+    setIsSubmitting(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    setIsSubmitted(true);
   }
 
   if (isSubmitted) {
@@ -74,7 +87,7 @@ export function ContactForm() {
         />
       </div>
 
-      <Button type="submit" size="lg" className="self-start">
+      <Button type="submit" size="lg" className="self-start" disabled={isSubmitting}>
         {t("contact.send")}
       </Button>
     </form>

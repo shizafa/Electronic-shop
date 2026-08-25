@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   Users,
   Settings,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,6 +41,10 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { href: "/admin/orders", labelKey: "admin.nav.orders", icon: ShoppingCart },
       { href: "/admin/customers", labelKey: "admin.nav.customers", icon: Users },
     ],
+  },
+  {
+    labelKey: "admin.nav.group.support",
+    items: [{ href: "/admin/messages", labelKey: "admin.nav.messages", icon: MessageSquare }],
   },
   {
     labelKey: "admin.nav.group.settings",
