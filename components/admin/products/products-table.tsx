@@ -22,7 +22,7 @@ function formatPriceRange(product: Product): string {
   return min === max ? formatPrice(min) : `${formatPrice(min)} – ${formatPrice(max)}`;
 }
 
-function totalStock(product: Product): number {
+export function totalStock(product: Product): number {
   return product.variants.reduce((sum, variant) => sum + variant.stock, 0);
 }
 

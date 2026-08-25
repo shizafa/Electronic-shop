@@ -33,34 +33,36 @@ export function AdminSearch() {
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Resets the query/results whenever the palette opens, whether triggered by the button's
+  // onClick or the Cmd/Ctrl+K shortcut below — done here (an event handler), not in an effect
+  // reacting to `open`, since synchronous setState in an effect body causes an extra render.
+  function openPalette() {
+    setQuery("");
+    setResults([]);
+    setOpen(true);
+  }
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setOpen((current) => !current);
+        if (open) setOpen(false);
+        else openPalette();
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    if (open) {
-      setQuery("");
-      setResults([]);
-    }
   }, [open]);
 
+  // Debounced search. The empty-query case intentionally does nothing (no setState) — the
+  // JSX below already shows the "start typing" hint whenever the query is blank, regardless
+  // of stale results/isSearching state, so there's nothing to synchronously clear here.
   useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) {
-      setResults([]);
-      setIsSearching(false);
-      return;
-    }
+    if (!trimmed) return;
 
-    setIsSearching(true);
     const timeout = setTimeout(() => {
+      setIsSearching(true);
       searchAdmin(trimmed).then((found) => {
         setResults(found);
         setIsSearching(false);
@@ -84,7 +86,7 @@ export function AdminSearch() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openPalette}
         className="flex w-full max-w-sm items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/50"
       >
         <Search className="size-4 shrink-0" />

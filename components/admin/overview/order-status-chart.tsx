@@ -1,6 +1,8 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Cell, Pie, PieChart } from "recharts";
+import { PeriodFilter } from "@/components/admin/overview/period-filter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -10,8 +12,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { buildOrderStatusBreakdown, getPeriodRange, type DashboardPeriod, type DateRange } from "@/lib/admin/dashboard-filters";
 import { t } from "@/lib/i18n";
-import type { OrderStatusBreakdownEntry } from "@/lib/admin/dashboard";
+import type { Order } from "@/types/order";
 
 // Order status is genuine state (good/warning/critical outcomes), not arbitrary series
 // identity, so this reuses the reserved status palette rather than the categorical one —
@@ -23,7 +26,13 @@ const chartConfig = {
   cancelled: { label: t("admin.orderStatusBucket.cancelled"), color: "var(--status-critical)" },
 } satisfies ChartConfig;
 
-export function OrderStatusChart({ data }: { data: OrderStatusBreakdownEntry[] }) {
+export function OrderStatusChart({ orders }: { orders: Order[] }) {
+  const [period, setPeriod] = useState<DashboardPeriod>("year");
+  const [customRange, setCustomRange] = useState<DateRange>();
+
+  const { range } = useMemo(() => getPeriodRange(period, customRange), [period, customRange]);
+  const data = useMemo(() => buildOrderStatusBreakdown(orders, range), [orders, range]);
+
   const total = data.reduce((sum, entry) => sum + entry.count, 0);
   const chartData = data.map((entry) => ({
     bucket: entry.bucket,
@@ -33,8 +42,14 @@ export function OrderStatusChart({ data }: { data: OrderStatusBreakdownEntry[] }
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-col items-start gap-2">
         <CardTitle>{t("admin.overview.orderStatus")}</CardTitle>
+        <PeriodFilter
+          period={period}
+          onPeriodChange={setPeriod}
+          customRange={customRange}
+          onCustomRangeChange={setCustomRange}
+        />
       </CardHeader>
       <CardContent>
         {total > 0 ? (

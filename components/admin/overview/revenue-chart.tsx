@@ -1,11 +1,14 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { PeriodFilter } from "@/components/admin/overview/period-filter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { buildRevenueSeries, getPeriodRange, type DashboardPeriod, type DateRange } from "@/lib/admin/dashboard-filters";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import type { MonthlyRevenuePoint } from "@/lib/admin/dashboard";
+import type { Order } from "@/types/order";
 
 const chartConfig = {
   revenue: {
@@ -14,21 +17,24 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function formatMonthLabel(month: string): string {
-  const [year, monthNumber] = month.split("-").map(Number);
-  return new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("en-US", {
-    month: "short",
-    year: "2-digit",
-  });
-}
+export function RevenueChart({ orders }: { orders: Order[] }) {
+  const [period, setPeriod] = useState<DashboardPeriod>("year");
+  const [customRange, setCustomRange] = useState<DateRange>();
 
-export function RevenueChart({ data }: { data: MonthlyRevenuePoint[] }) {
+  const { range, granularity } = useMemo(() => getPeriodRange(period, customRange), [period, customRange]);
+  const data = useMemo(() => buildRevenueSeries(orders, range, granularity), [orders, range, granularity]);
   const hasData = data.some((point) => point.revenue > 0);
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
         <CardTitle>{t("admin.overview.salesStatistics")}</CardTitle>
+        <PeriodFilter
+          period={period}
+          onPeriodChange={setPeriod}
+          customRange={customRange}
+          onCustomRangeChange={setCustomRange}
+        />
       </CardHeader>
       <CardContent>
         {hasData ? (
@@ -41,17 +47,10 @@ export function RevenueChart({ data }: { data: MonthlyRevenuePoint[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={formatMonthLabel}
-              />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={24} />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    labelFormatter={(value) => formatMonthLabel(String(value))}
                     formatter={(value, name) => (
                       <div className="flex flex-1 justify-between gap-4">
                         <span className="text-muted-foreground">{name}</span>
