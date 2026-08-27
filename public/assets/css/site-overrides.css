@@ -95,3 +95,66 @@ html body .container-page {
   font-size: 28px;
   font-weight: 700;
 }
+
+/* Blurs the page content behind the megamenu while it's open. nav-menu.tsx's dropdown is
+   pure CSS (li.with-rbt-megamenu:hover .rbt-megamenu, no JS state per CLAUDE.md), so this
+   stays CSS-only too via :has() rather than adding a hover listener. header and main/footer
+   are siblings directly under <body> (app/layout.tsx), so :has() on body is what lets a
+   hover deep inside <header> reach the content sitting outside it. */
+body:has(.rbt-header .mainmenu > li.with-rbt-megamenu:hover) main,
+body:has(.rbt-header .mainmenu > li.with-rbt-megamenu:hover) footer {
+  filter: blur(6px);
+  transition: filter 0.2s ease;
+}
+
+/* Shop megamenu now gives each category its own column (nav-menu.tsx's megaMenuColumnClass),
+   narrower than the template's original 4-wide layout — sized down from the template's
+   default b1 (16px) list items so a longer product name doesn't wrap inside the tighter
+   column. --font-size-b4/line-height-b4 are style.min.css's own smallest body-text tokens. */
+.rbt-megamenu .mega-menu-item li a {
+  font-size: var(--font-size-b4);
+  line-height: var(--line-height-b4);
+}
+
+/* Megamenu brand strip: logos bigger than style.min.css's own nav-brand-list sizing
+   (max-height 12-14px, gap 4-32px depending on breakpoint, meant for a persistent header
+   row) — !important beats those breakpoint-scoped rules, since this list sits in the
+   roomier megamenu instead. gap is on the <ul> itself, not each <li>, since the list is
+   left-aligned (justify-content-start in nav-menu.tsx) rather than spread edge to edge. */
+.rbt-megamenu .rbt-nav-brand-list {
+  gap: 20px !important;
+}
+
+/* padding:0 so the 20px gap above is the only space between logos — style.min.css's own
+   padding:8px (each side, at >=1600px viewport) would otherwise stack on top of it. */
+.rbt-megamenu .rbt-nav-brand-list li a {
+  padding: 0 !important;
+}
+
+.rbt-megamenu .rbt-nav-brand-list li a img {
+  max-height: 40px !important;
+}
+
+/* Promo card ("New Aurora Watch"): style.min.css's own default is min-height:140px on
+   .mega-top-banner (the actual card box inside .rbt-menu-offer-card) — a modifier class
+   exists for a taller card (.min-h-500, 500px/425px responsive) but nothing near 400px, so
+   this sets it directly rather than reaching for the wrong preset. Scoped to .rbt-megamenu
+   since mega-top-banner is only ever used in this card today. */
+.rbt-megamenu .mega-top-banner {
+  min-height: 400px;
+}
+
+@media only screen and (min-width: 1200px) and (max-width: 1599px) {
+  .rbt-megamenu .mega-top-banner {
+    min-height: 340px;
+  }
+}
+
+/* "See All Our Products" link: style.min.css's .rbt-btn.rbt-btn-sm default is
+   padding:0 32px with a fixed height/line-height:36px (built for a full-size CTA) — shrunk
+   here to hug the text with ~5px padding instead, since this is a small in-menu link. */
+.rbt-see-all-products-btn.rbt-btn.rbt-btn-sm {
+  padding: 5px !important;
+  height: auto !important;
+  line-height: normal !important;
+}

@@ -1,38 +1,15 @@
-import fs from "node:fs";
-import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
+import { resolveBrandLogo } from "@/lib/brand-logo";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
 import { getAllProducts } from "@/lib/products";
 import type { Product } from "@/types/product";
 
-const BRAND_LOGO_DIR = path.join(process.cwd(), "public", "assets", "images", "brands");
-const BRAND_LOGO_EXTENSIONS = ["webp", "png", "jpg", "jpeg"];
-
 function discountPercentFor(product: Product): number | undefined {
   const variant = getDisplayVariant(product);
   if (variant.compareAtPrice === undefined || variant.compareAtPrice <= variant.price) return undefined;
   return Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100);
-}
-
-// Upload a brand's logo to /public/assets/images/brands/{slug}.{ext}, where {slug} is the
-// brand name lowercased with runs of non-alphanumeric characters collapsed to a single "-"
-// (e.g. "Sony" -> "sony", "Gree" -> "gree") and {ext} is whatever format the file is in —
-// webp/png/jpg/jpeg are all resolved automatically, since real uploads arrived as a mix.
-function slugifyBrand(brand: string): string {
-  return brand
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function resolveBrandLogo(brand: string): string | undefined {
-  const slug = slugifyBrand(brand);
-  const extension = BRAND_LOGO_EXTENSIONS.find((candidate) =>
-    fs.existsSync(path.join(BRAND_LOGO_DIR, `${slug}.${candidate}`))
-  );
-  return extension ? `/assets/images/brands/${slug}.${extension}` : undefined;
 }
 
 // Homepage brand strip: real brands pulled from the catalog, with each tile's discount

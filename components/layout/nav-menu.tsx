@@ -1,17 +1,33 @@
 import Link from "next/link";
 import { getVisibleCategories } from "@/lib/categories";
+import { resolveBrandLogo } from "@/lib/brand-logo";
 import { getAllProducts } from "@/lib/products";
 import { t } from "@/lib/i18n";
 
+// One category per column, always in a single row (never wrapping a category under another
+// one's column) — col-xl-1-5 etc are style.min.css's own "fifths" grid, sitting alongside
+// bootstrap's standard col-xl-2/3/4/6/12, used elsewhere for the same 5-across layout
+// (components/home/brand-logos.tsx's col-lg-1-5). 6+ falls back to six-per-row and wraps.
+function megaMenuColumnClass(categoryCount: number): string {
+  if (categoryCount <= 1) return "col-xl-12";
+  if (categoryCount === 2) return "col-xl-6";
+  if (categoryCount === 3) return "col-xl-4";
+  if (categoryCount === 4) return "col-xl-3";
+  if (categoryCount === 5) return "col-xl-1-5";
+  return "col-xl-2";
+}
+
 // Unbacked promo content from the megamenu pattern (mega-menue.tsx) — no campaign/banner
 // data model exists, so this is kept verbatim rather than deleted, per "match the template
-// exactly, don't delete markup."
+// exactly, don't delete markup." promoImage originally pointed at the template's own file
+// (assets/images/splash/menu-banner/menu-prd-03-lg.webp), which was never pasted into
+// public/ and 404s — swapped for the decorative asset actually uploaded for this card.
 // TODO: wire to backend
 const PLACEHOLDER = {
   promoTitle: "New Aurora Watch",
   promoDesc: "Send your idea, appear Unimart.",
   promoHref: "/shop",
-  promoImage: "/assets/images/splash/menu-banner/menu-prd-03-lg.webp",
+  promoImage: "/assets/images/promo-banner.webp",
 };
 
 // The reusable nav content: <nav class="rbt-mainmenu-nav"><ul class="mainmenu">...</ul></nav>.
@@ -35,6 +51,18 @@ export async function NavMenu() {
     return { category, topProducts: featuredFirst.slice(0, 4) };
   });
 
+  // Megamenu brand strip: real brands from the catalog (most products first), logo-only —
+  // same source as the homepage BrandLogos section, just brands with no uploaded logo file
+  // are skipped here instead of rendering a blank slot.
+  const brandCounts = new Map<string, number>();
+  for (const product of products) {
+    brandCounts.set(product.brand, (brandCounts.get(product.brand) ?? 0) + 1);
+  }
+  const menuBrands = Array.from(brandCounts.keys())
+    .sort((a, b) => (brandCounts.get(b) ?? 0) - (brandCounts.get(a) ?? 0))
+    .map((brand) => ({ brand, logo: resolveBrandLogo(brand) }))
+    .filter((entry): entry is { brand: string; logo: string } => Boolean(entry.logo));
+
   return (
     <nav className="rbt-mainmenu-nav">
       {/* has-nav-bg-shape-hover: style.min.css's translucent-white (rgba(255,255,255,.15))
@@ -47,18 +75,20 @@ export async function NavMenu() {
             <i className="fa-regular fa-chevron-down" />
           </a>
           {/* Start Mega Menu */}
-          <div className="rbt-megamenu container pl_sm--0 pl_md--0 pl_lg--0">
+          {/* rbt-width-fullscreen (real style.min.css class:
+              .rbt-megamenu.rbt-width-fullscreen{width:100%;margin:0;padding:0}) replaces the
+              bootstrap .container that was capping this at the page container's max-width —
+              paired with the li's existing position-static, the megamenu's position:absolute
+              left:0/right:0 then resolves against .rbt-header-middle (position:relative,
+              full-bleed) instead of the small <li>, giving true edge-to-edge width. */}
+          <div className="rbt-megamenu rbt-width-fullscreen">
             <div className="rbt-megamenu-wrapper">
               <div className="row row--12 d-flex justify-content-between">
                 <div className="col-xl-9">
                   <div className="h-100 d-flex flex-column justify-content-between">
                     <div className="row row--12">
-                      {/* Pattern only covers up to 4 columns (mega-menue.tsx: 1 given +
-                          "3 more .col-xl-3 columns here" comment). categories.length is 3
-                          today, so this fits — but there's no wrapping pattern for a 5th+
-                          category once one gets added. */}
                       {topProductsByCategory.map(({ category, topProducts }, index) => (
-                        <div key={category.id} className={`col-xl-3 single-mega-item rbt-scroll-trigger fade_in animation-order-${index + 1}`}>
+                        <div key={category.id} className={`${megaMenuColumnClass(topProductsByCategory.length)} single-mega-item rbt-scroll-trigger fade_in animation-order-${index + 1}`}>
                           <p className="rbt-short-title h5">
                             <Link href={`/category/${category.slug}`}>
                               {category.name}
@@ -76,6 +106,17 @@ export async function NavMenu() {
                         </div>
                       ))}
                     </div>
+                    {/* rbt-btn/rbt-btn-sm: same button classes as the promo card's "View
+                        Details" link to its right, so this reads as one consistent button
+                        style. justify-content-between on this column's flex-column parent
+                        pushes it to the bottom, level with the promo card beside it.
+                        align-self-start (bootstrap) stops that same flex-column parent from
+                        stretching the link to the column's full width. rbt-see-all-products-
+                        btn: site-overrides.css shrinks rbt-btn-sm's default padding:0
+                        32px/height:36px down to hug the text. */}
+                    <Link className="rbt-btn rbt-btn-sm rbt-see-all-products-btn align-self-start ml--20" href="/shop">
+                      See All Our Products
+                    </Link>
                   </div>
                 </div>
                 <div className="col-xl-3 single-mega-item rbt-scroll-trigger fade_in animation-order-1">
@@ -101,6 +142,25 @@ export async function NavMenu() {
                   </div>
                 </div>
               </div>
+              {/* Brand strip: real catalog brands (lib/brand-logo.ts), full megamenu width —
+                  mirrors the "brand-strip row" the template ships below the same two-column
+                  layout (mega-menue.tsx pattern), left unbuilt until now for lack of a brand
+                  data source; rbt-nav-brand-list is style.min.css's own nav-brand-row class. */}
+              {menuBrands.length > 0 && (
+                <div className="row row--12 rbt-border-top mt--20 pt--20">
+                  <div className="col-lg-12">
+                    <ul className="rbt-nav-brand-list d-flex align-items-center justify-content-start flex-wrap">
+                      {menuBrands.map(({ brand, logo }) => (
+                        <li key={brand}>
+                          <Link href={`/search?q=${encodeURIComponent(brand)}`}>
+                            <img src={logo} alt={brand} />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* End Mega Menu */}

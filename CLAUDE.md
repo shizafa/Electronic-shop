@@ -1,4 +1,4 @@
-@AGENTS.md
+<!-- @AGENTS.md
 
 # Storefront re-skin phase
 
@@ -99,4 +99,4 @@ pasted in piece by piece). The Supabase layer does not change.
 
 - One component per turn.
 - After each component, list any className used in the new file that did
-  not appear in the markup that was pasted in.
+  not appear in the markup that was pasted in. -->
