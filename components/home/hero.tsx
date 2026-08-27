@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Button } from "@/components/ui/button";
+import { PromoBannerMagneticButton } from "@/components/home/promo-banner-magnetic-button";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -13,162 +11,185 @@ import "swiper/css/pagination";
 
 type HeroSlide = {
   image: string;
-  cardClassName: string;
+  fadeOrder: number;
+  zoomOrder: number;
+  curved: boolean;
   eyebrow: string;
   titleBold: string;
   titleRest: string;
-  originalPrice: string;
   salePrice: string;
-  discountLabel: string;
-  href: string;
 };
 
+// Homepage hero banner slides — unbacked marketing content, same as PromoBanner and
+// CategoryTiles: no campaign/promotions data model exists yet.
+// TODO: wire to a real source once one exists.
 const HERO_SLIDES: HeroSlide[] = [
   {
     image: "/hero/product-banner-img-17.webp",
-    cardClassName: "bg-amber-50",
+    fadeOrder: 1,
+    zoomOrder: 1,
+    curved: false,
     eyebrow: "Exclusive Offer Going",
     titleBold: "GOPRO",
     titleRest: "HERO 10",
-    originalPrice: "$295.00",
     salePrice: "$189.00",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
   {
     image: "/hero/product-banner-img-18.webp",
-    cardClassName: "bg-blue-50",
+    fadeOrder: 2,
+    zoomOrder: 2,
+    curved: true,
     eyebrow: "Limited Weekend Deal",
     titleBold: "OSMO MINI",
     titleRest: "PRO",
-    originalPrice: "$295.00",
     salePrice: "$249.00",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
   {
     image: "/hero/product-banner-img-20.webp",
-    cardClassName: "bg-rose-50",
+    fadeOrder: 3,
+    zoomOrder: 4,
+    curved: false,
     eyebrow: "Limited Weekend Deal",
     titleBold: "AIRPODS",
     titleRest: "PRO",
-    originalPrice: "$295.00",
     salePrice: "$179.98",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
   {
     image: "/hero/product-banner-img-19.webp",
-    cardClassName: "bg-emerald-50",
+    fadeOrder: 4,
+    zoomOrder: 3,
+    curved: true,
     eyebrow: "Exclusive Offer Going",
     titleBold: "DSLR",
     titleRest: "PERFORS",
-    originalPrice: "$295.00",
     salePrice: "$179.98",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
   {
     image: "/hero/product-banner-img-21.webp",
-    cardClassName: "bg-violet-50",
+    fadeOrder: 3,
+    zoomOrder: 3,
+    curved: false,
     eyebrow: "Exclusive Offer Going",
     titleBold: "IPAD",
     titleRest: "PRO M1",
-    originalPrice: "$295.00",
     salePrice: "$179.98",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
   {
     image: "/hero/product-banner-img-22.webp",
-    cardClassName: "bg-slate-100",
+    fadeOrder: 4,
+    zoomOrder: 4,
+    curved: true,
     eyebrow: "Limited Weekend Deal",
     titleBold: "MACBOOK",
     titleRest: "PRO M1",
-    originalPrice: "$295.00",
     salePrice: "$179.98",
-    discountLabel: "Save 30%",
-    href: "/search",
   },
 ];
 
-// Homepage hero banner: rotating product spotlights with pricing and a shop-now CTA
 export function Hero() {
+  // Swiper needs the arrow/pagination elements themselves, not refs, and must re-init when
+  // they resolve — state (rather than useRef) is what makes that re-render happen.
+  const [prevEl, setPrevEl] = useState<HTMLDivElement | null>(null);
+  const [nextEl, setNextEl] = useState<HTMLDivElement | null>(null);
+  const [paginationEl, setPaginationEl] = useState<HTMLDivElement | null>(null);
+  // The template's CSS hides arrows/pagination (visibility:hidden) until an
+  // `is-swiper-ready` class lands on the container — main.min.js added that class once its
+  // vanilla Swiper instance finished initializing. We add it the same way, once React's
+  // Swiper instance is ready, instead of rendering it unconditionally.
+  const [isReady, setIsReady] = useState(false);
+
   return (
-    <section className="container-page py-8 sm:py-12">
-      <div className="relative isolate px-12">
-        <Swiper
-          modules={[Autoplay, Navigation, Pagination]}
-          autoplay={{ delay: 5500, disableOnInteraction: false }}
-          loop
-          spaceBetween={24}
-          slidesPerView={1}
-          breakpoints={{ 768: { slidesPerView: 2 } }}
-          navigation={{ prevEl: ".hero-arrow-prev", nextEl: ".hero-arrow-next" }}
-          pagination={{ clickable: true, el: ".hero-pagination" }}
-        >
-          {HERO_SLIDES.map((slide, index) => (
-            <SwiperSlide key={slide.image}>
-              <div
-                className={`relative aspect-[3/4] overflow-hidden rounded-2xl sm:aspect-[11/8] ${slide.cardClassName}`}
-              >
-                <Image
-                  src={slide.image}
-                  alt={`${slide.titleBold} ${slide.titleRest}`}
-                  fill
-                  priority={index === 0}
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover mix-blend-multiply"
-                />
-
-                <div className="relative z-10 flex h-full max-w-[85%] flex-col justify-center gap-2 p-5 sm:max-w-[65%] sm:gap-3 sm:p-10">
-                  <p className="text-xs font-medium tracking-wide text-foreground/60 uppercase sm:text-sm">
-                    {slide.eyebrow}
-                  </p>
-                  <h2 className="text-xl leading-tight font-semibold tracking-tight text-foreground sm:text-3xl">
-                    <span className="font-extrabold">{slide.titleBold}</span> {slide.titleRest}
-                  </h2>
-                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <del className="text-xs text-foreground/50 sm:text-sm">{slide.originalPrice}</del>
-                    <span className="text-lg font-bold text-primary sm:text-2xl">{slide.salePrice}</span>
-                    <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold text-destructive sm:px-2.5 sm:py-1 sm:text-xs">
-                      {slide.discountLabel}
-                    </span>
+    <>
+      <h1 className="visually-hidden">
+        Home Electronics
+      </h1>
+      {/* Start Component Area */}
+      <div className="rbt-component-area rbt-product-banner-area rbt-section-gap2 rbt-bg-color-gray-light rbt-elctro-hero-banner">
+        <div className="container">
+          {/* Start Product Banner Area */}
+          <div className="row row--12 mt_dec--24">
+            <div className="col-lg-12 col-md-12 col-sm-12 col-12 mt--24 d-flex justify-content-center">
+              <div className={`rbt-swiper-container-one rbt-arrow-between${isReady ? " is-swiper-ready" : ""}`}>
+                <Swiper
+                  className="rbt-hero-banner-activation-1 rbt-dot-bottom-center rbt-slideshow-content-inner"
+                  modules={[Autoplay, Navigation, Pagination]}
+                  autoplay={{ delay: 5000, disableOnInteraction: false }}
+                  loop
+                  slidesPerView={1}
+                  spaceBetween={24}
+                  breakpoints={{ 768: { slidesPerView: 2 } }}
+                  navigation={{ prevEl, nextEl }}
+                  pagination={{ el: paginationEl, clickable: true }}
+                  onSwiper={() => setIsReady(true)}
+                >
+                  {HERO_SLIDES.map((slide) => (
+                    <SwiperSlide key={slide.image}>
+                      <div
+                        className={`rbt-product-banner rbt-product-banner-style-four rbt-banner-four-var-one rbt-curved-style-box rbt-scroll-trigger fade_in animation-order-${slide.fadeOrder}${slide.curved ? " rbt-curved-style-box-2" : ""}`}
+                      >
+                        <div className="rbt-banner-inner">
+                          <div className={`rbt-product-banner-img rbt-full-width-img rbt-scroll-trigger zoom_in animation-order-${slide.zoomOrder}`}>
+                            <img src={slide.image} alt="Ecommerce Product Banner Image" />
+                          </div>
+                          <div className="rbt-product-banner-content">
+                            <div className="rbt-content-section">
+                              <p className="rbt-banner-subtitle mb-0">
+                                {slide.eyebrow}
+                              </p>
+                              <h2 className="rbt-banner-title rbt-banner-title-lg mb-0">
+                                <span className="rbt-bold--text">
+                                  {slide.titleBold}
+                                </span>
+                                {slide.titleRest}
+                              </h2>
+                              <div className="rbt-pricing-part">
+                                <del className="rbt-dis-price-text">
+                                  $295.00
+                                </del>
+                                <span className="d-flex align-items-center rbt-gap--8">
+                                  <span className="rbt-price-text offer-price">
+                                    {slide.salePrice}
+                                  </span>
+                                  <span className="rbt-offer-badge">
+                                    Save 30%
+                                  </span>
+                                </span>
+                              </div>
+                              <div className="rbt-banner-btn">
+                                <PromoBannerMagneticButton href="/shop" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        {slide.curved && (
+                          <div className="rbt-curved-portion rbt-right-corner-portion">
+                            <div className="rbt-wrapper" />
+                          </div>
+                        )}
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                  <div slot="container-end" ref={setPaginationEl} className="rbt-swiper-pagination rbt-swiper-pagination-var-one" />
+                  <div slot="container-end" ref={setPrevEl} className="rbt-swiper-arrow rbt-arrow-left rbt-arrow-gray rbt-arrow-lg">
+                    <div className="custom-overflow">
+                      <i className="rbt-icon fa-regular fa-arrow-left" />
+                      <i className="rbt-icon-top fa-regular fa-arrow-left" />
+                    </div>
                   </div>
-                  <Button
-                    className="mt-1 flex size-14 flex-col items-center justify-center gap-0.5 rounded-full p-0 text-[10px] leading-tight font-bold uppercase sm:mt-2 sm:size-[84px] sm:text-xs"
-                    asChild
-                  >
-                    <Link href={slide.href}>
-                      <ArrowUpRight className="mb-0.5 size-3 sm:size-3.5" />
-                      Shop
-                      <br />
-                      Now
-                    </Link>
-                  </Button>
-                </div>
+                  <div slot="container-end" ref={setNextEl} className="rbt-swiper-arrow rbt-arrow-right rbt-arrow-gray rbt-arrow-lg">
+                    <div className="custom-overflow">
+                      <i className="rbt-icon fa-regular fa-arrow-right" />
+                      <i className="rbt-icon-top fa-regular fa-arrow-right" />
+                    </div>
+                  </div>
+                </Swiper>
               </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-
-        <button
-          type="button"
-          aria-label="Previous slide"
-          className="hero-arrow-prev absolute top-1/2 left-0 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-foreground shadow-sm hover:bg-muted/70"
-        >
-          <ChevronLeft className="size-4" />
-        </button>
-        <button
-          type="button"
-          aria-label="Next slide"
-          className="hero-arrow-next absolute top-1/2 right-0 z-10 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-muted text-foreground shadow-sm hover:bg-muted/70"
-        >
-          <ChevronRight className="size-4" />
-        </button>
-
-        <div className="hero-pagination mt-5 flex justify-center gap-1.5 [&_.swiper-pagination-bullet]:h-1.5 [&_.swiper-pagination-bullet]:w-1.5 [&_.swiper-pagination-bullet]:rounded-full [&_.swiper-pagination-bullet]:bg-foreground/20 [&_.swiper-pagination-bullet]:transition-all [&_.swiper-pagination-bullet-active]:w-6 [&_.swiper-pagination-bullet-active]:bg-primary" />
+            </div>
+          </div>
+          {/* End Product Banner Area */}
+        </div>
       </div>
-    </section>
+      {/* End Component Area */}
+    </>
   );
 }

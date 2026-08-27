@@ -1,49 +1,22 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  Palette,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-  Star,
-  Truck,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/category/filter-sidebar";
-import { SortControl } from "@/components/category/sort-control";
-import { PromoBanner } from "@/components/home/promo-banner";
+import { PromoBanner } from "@/components/shop/promo-banner";
+import { QuickLink } from "@/components/shop/quick-link";
+import { PRICE_BUCKETS, SidebarFilter, type ChecklistWidgetData } from "@/components/shop/sidebar-filter";
+import { ShopToolbar } from "@/components/shop/shop-toolbar";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
 import { applyFilters, getFilterFieldsForCategory, sortProducts, type FilterField, type SortOption } from "@/lib/filters";
 import { t } from "@/lib/i18n";
+import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
-
-const PAGE_SIZE_OPTIONS = [8, 16, 24, 32];
-
-// UI-only quick filters — not wired to real criteria yet (no ratings/color/"popularity" data
-// exists in the schema). They toggle visually and show as removable chips; filtering logic
-// for each will be added once that data exists.
-const FAST_FILTERS = [
-  { id: "featured", labelKey: "shop.fastFilter.featured", icon: Truck },
-  { id: "bestSellers", labelKey: "shop.fastFilter.bestSellers", icon: Star },
-  { id: "topRated", labelKey: "shop.fastFilter.topRated", icon: BadgeCheck },
-  { id: "new", labelKey: "shop.fastFilter.new", icon: Sparkles },
-  { id: "topItems", labelKey: "shop.fastFilter.topItems", icon: Star },
-  { id: "popularItem", labelKey: "shop.fastFilter.popularItem", icon: BadgeCheck },
-  { id: "bestColors", labelKey: "shop.fastFilter.bestColors", icon: Palette },
-];
 
 interface ShopListingProps {
   products: Product[];
@@ -53,6 +26,7 @@ interface ShopListingProps {
 export function ShopListing({ products, categories }: ShopListingProps) {
   const [activeCategoryIds, setActiveCategoryIds] = useState<string[]>([]);
   const [activeFieldValues, setActiveFieldValues] = useState<Record<string, string[]>>({});
+  const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState<SortOption>("featured");
@@ -87,6 +61,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
   function clearAll() {
     setActiveCategoryIds([]);
     setActiveFieldValues({});
+    setActiveBrand(null);
     setMinPrice("");
     setMaxPrice("");
     setActiveFastFilterIds([]);
@@ -101,6 +76,56 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     }
     return counts;
   }, [products]);
+
+  // sidebar's checklist widgets — /shop only has one: the Categories checklist
+  const checklistWidgets: ChecklistWidgetData[] = useMemo(
+    () => [
+      {
+        id: "categories",
+        title: "Categories",
+        options: categories.map((category) => ({
+          id: category.id,
+          label: category.name,
+          count: categoryCounts[category.id] ?? 0,
+        })),
+        activeIds: activeCategoryIds,
+        onToggle: toggleCategory,
+      },
+    ],
+    [categories, categoryCounts, activeCategoryIds]
+  );
+
+  // brand options + product counts, computed from the full catalog (not the currently filtered set)
+  const brands = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const product of products) {
+      counts.set(product.brand, (counts.get(product.brand) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
+
+  // cheapest/priciest displayed-variant price across the full catalog, for the price slider's range
+  const priceBounds = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 0 };
+    const prices = products.map((product) => getDisplayVariant(product).price);
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }, [products]);
+
+  // product count per PRICE_BUCKETS tier, computed from the full catalog (not the currently filtered set)
+  const priceBucketCounts = useMemo(
+    () =>
+      PRICE_BUCKETS.map((bucket) => {
+        return products.filter((product) => {
+          const price = getDisplayVariant(product).price;
+          if (bucket.min !== undefined && price < bucket.min) return false;
+          if (bucket.max !== undefined && price >= bucket.max) return false;
+          return true;
+        }).length;
+      }),
+    [products]
+  );
 
   // spec filter fields, drawn from whichever categories are currently checked; when more than
   // one is checked, each field is labeled with its category so they don't blur together
@@ -141,13 +166,22 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       fields: activeFieldValues,
       minPrice: minPrice ? Number(minPrice) : undefined,
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      brand: activeBrand ?? undefined,
     });
 
     return sortProducts(result, sort);
-  }, [products, activeCategoryIds, searchQuery, activeFieldValues, minPrice, maxPrice, sort]);
+  }, [products, activeCategoryIds, searchQuery, activeFieldValues, activeBrand, minPrice, maxPrice, sort]);
 
   // reset to page 1 whenever the result set changes shape, so we don't strand the user on an empty page
-  const filterKey = JSON.stringify([activeCategoryIds, activeFieldValues, minPrice, maxPrice, searchQuery, pageSize]);
+  const filterKey = JSON.stringify([
+    activeCategoryIds,
+    activeFieldValues,
+    activeBrand,
+    minPrice,
+    maxPrice,
+    searchQuery,
+    pageSize,
+  ]);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (filterKey !== prevFilterKey) {
     setPrevFilterKey(filterKey);
@@ -173,194 +207,43 @@ export function ShopListing({ products, categories }: ShopListingProps) {
   };
 
   return (
-    <div className="container-page py-8">
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">
-          {t("shop.breadcrumbHome")}
-        </Link>
-        <ChevronRight className="size-3.5" />
-        <span className="text-foreground">{t("shop.breadcrumbShop")}</span>
-      </nav>
+    <>
+      <PromoBanner />
 
-      <div className="mt-4">
-        <PromoBanner />
-      </div>
+      <QuickLink categories={categories} products={products} />
 
-      {/* Quick category nav — same categories as the sidebar checkboxes below */}
-      <div className="mt-2 flex flex-wrap justify-center gap-6 py-6 sm:justify-start">
-        {categories.map((category) => {
-          const thumbnail = category.thumbnailUrl ?? products.find((product) => product.categoryId === category.id)?.images[0];
-          const isActive = activeCategoryIds.includes(category.id);
-          return (
-            <button
-              key={category.id}
-              type="button"
-              onClick={() => toggleCategory(category.id)}
-              className="flex flex-col items-center gap-2"
-            >
-              <span
-                className={`relative size-24 overflow-hidden rounded-full bg-muted ring-2 ${isActive ? "ring-primary" : "ring-transparent"}`}
-              >
-                {thumbnail && (
-                  <Image src={thumbnail} alt={category.name} fill sizes="96px" className="object-cover" />
-                )}
-              </span>
-              <span className="text-sm font-medium text-foreground">{category.name}</span>
-            </button>
-          );
-        })}
-      </div>
+      <div className="container">
+      <div className="row mt-2 border-t border-border pt-6">
+        <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 d-none d-lg-block">
+          <SidebarFilter
+            checklistWidgets={checklistWidgets}
+            brands={brands}
+            activeBrand={activeBrand}
+            onSelectBrand={setActiveBrand}
+            priceBounds={priceBounds}
+            priceBucketCounts={priceBucketCounts}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onMinPriceChange={setMinPrice}
+            onMaxPriceChange={setMaxPrice}
+          />
+        </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-8 border-t border-border pt-6 lg:grid-cols-[260px_1fr]">
-        <aside className="hidden lg:block">
-          <div className="mb-4 flex items-center gap-2">
-            <SlidersHorizontal className="size-4" />
-            <p className="text-sm font-semibold text-foreground">{t("common.filters")}</p>
-          </div>
-
-          <div className="mb-6">
-            <p className="mb-2 text-sm font-medium text-foreground">{t("shop.categories")}</p>
-            <div className="flex flex-col gap-2">
-              {categories.map((category) => (
-                <label key={category.id} className="flex items-center gap-2 text-sm text-foreground">
-                  <Checkbox
-                    checked={activeCategoryIds.includes(category.id)}
-                    onCheckedChange={() => toggleCategory(category.id)}
-                  />
-                  <span>{category.name}</span>
-                  <span className="text-xs text-muted-foreground">({categoryCounts[category.id] ?? 0})</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <FilterSidebar {...sidebarProps} />
-        </aside>
-
-        <div>
-          {/* Mobile filter trigger */}
-          <div className="mb-4 lg:hidden">
-            <Sheet open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <SlidersHorizontal className="size-4" />
-                  {t("common.filters")}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-3/4 overflow-y-auto sm:max-w-xs">
-                <SheetHeader>
-                  <SheetTitle>{t("common.filters")}</SheetTitle>
-                </SheetHeader>
-                <div className="px-4 pb-4">
-                  <p className="mb-2 text-sm font-medium text-foreground">{t("shop.categories")}</p>
-                  <div className="mb-6 flex flex-col gap-2">
-                    {categories.map((category) => (
-                      <label key={category.id} className="flex items-center gap-2 text-sm text-foreground">
-                        <Checkbox
-                          checked={activeCategoryIds.includes(category.id)}
-                          onCheckedChange={() => toggleCategory(category.id)}
-                        />
-                        <span>{category.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({categoryCounts[category.id] ?? 0})
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  <FilterSidebar {...sidebarProps} />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">{t("shop.fastFilter")}</span>
-            {FAST_FILTERS.map((filter) => {
-              const Icon = filter.icon;
-              const isActive = activeFastFilterIds.includes(filter.id);
-              return (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => toggleFastFilter(filter.id)}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                    isActive
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Icon className="size-3.5" />
-                  {t(filter.labelKey)}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-y border-border py-3">
-            <p className="text-sm text-muted-foreground">
-              {total === 0
-                ? t("common.noResults")
-                : t("shop.showingResults")
-                    .replace("{from}", String(pageStart))
-                    .replace("{to}", String(pageEnd))
-                    .replace("{total}", String(total))}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <SortControl value={sort} onChange={setSort} />
-
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <span>{t("shop.show")}</span>
-                <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-                  <SelectTrigger className="w-28" aria-label={t("shop.show")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map((size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size} {t("shop.items")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="relative">
-                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder={t("shop.searchPlaceholder")}
-                  className="w-48 pl-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          {activeFastFilterIds.length > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {activeFastFilterIds.map((id) => {
-                const filter = FAST_FILTERS.find((candidate) => candidate.id === id);
-                if (!filter) return null;
-                return (
-                  <span
-                    key={id}
-                    className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground"
-                  >
-                    {t(filter.labelKey)}
-                    <button type="button" onClick={() => toggleFastFilter(id)} aria-label={t("common.remove")}>
-                      <X className="size-3" />
-                    </button>
-                  </span>
-                );
-              })}
-              <button type="button" onClick={clearAll} className="text-xs font-medium text-primary hover:underline">
-                {t("shop.clearAll")}
-              </button>
-            </div>
-          )}
-
+        <ShopToolbar
+          total={total}
+          pageStart={pageStart}
+          pageEnd={pageEnd}
+          sort={sort}
+          onSortChange={setSort}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          activeFastFilterIds={activeFastFilterIds}
+          onToggleFastFilter={toggleFastFilter}
+          onClearAll={clearAll}
+          onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
+        >
           <div className="mt-6">
             {pageItems.length === 0 ? (
               <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-16 text-center">
@@ -416,8 +299,37 @@ export function ShopListing({ products, categories }: ShopListingProps) {
               </Button>
             </div>
           )}
-        </div>
+        </ShopToolbar>
       </div>
-    </div>
+      </div>
+
+      {/* Mobile filter drawer — bridge until a template off-canvas filter piece is pasted;
+          ShopToolbar's "Show Filter" button (mobile only) opens this. */}
+      <Sheet open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
+        <SheetContent side="left" className="w-3/4 overflow-y-auto sm:max-w-xs">
+          <SheetHeader>
+            <SheetTitle>{t("common.filters")}</SheetTitle>
+          </SheetHeader>
+          <div className="px-4 pb-4">
+            <p className="mb-2 text-sm font-medium text-foreground">{t("shop.categories")}</p>
+            <div className="mb-6 flex flex-col gap-2">
+              {categories.map((category) => (
+                <label key={category.id} className="flex items-center gap-2 text-sm text-foreground">
+                  <Checkbox
+                    checked={activeCategoryIds.includes(category.id)}
+                    onCheckedChange={() => toggleCategory(category.id)}
+                  />
+                  <span>{category.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({categoryCounts[category.id] ?? 0})
+                  </span>
+                </label>
+              ))}
+            </div>
+            <FilterSidebar {...sidebarProps} />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

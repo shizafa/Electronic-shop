@@ -70,6 +70,7 @@ export interface ActiveFilters {
   fields: Record<string, string[]>;
   minPrice?: number;
   maxPrice?: number;
+  brand?: string;
 }
 
 // Narrows a product list down to only those matching all selected filters and the price range
@@ -85,6 +86,8 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
 
       if (!matches) return false;
     }
+
+    if (filters.brand && product.brand !== filters.brand) return false;
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       const price = getDisplayVariant(product).price; // use the cheapest in-stock variant's price

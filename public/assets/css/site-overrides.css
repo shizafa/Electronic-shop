@@ -3,7 +3,14 @@
    template CSS and pasted markup stay untouched per CLAUDE.md). Loaded only by
    app/(site)/layout.tsx, so app/admin/** is unaffected. */
 
-html {
+/* style.min.css sets html{font-size:10px} (the template's intended base) AND a separate,
+   higher-specificity :root{font-size:calc(16px + 4*(100vw - 320px)/960)} fluid-typography
+   rule elsewhere in the same file. :root is a pseudo-class (specificity 0,1,0), which beats
+   the plain `html` type selector (0,0,1) regardless of source order, so the fluid rule was
+   silently winning everywhere — growing the whole site's rem scale up to 20px at 1280px
+   viewport width instead of the intended ~9-10px. Matching the selector here (also :root)
+   ties the specificity, so this later rule wins on source order instead. */
+:root {
   font-size: 9.25px;
 }
 
@@ -45,6 +52,19 @@ html body .container-page {
   max-width: 72rem;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+/* style.min.css floors .rbt-single-widget (the sidebar filter widgets) at min-width:270px
+   between 1200-1599px viewport width, assuming stock Bootstrap's wider container at that
+   breakpoint. Our .container override above is narrower there (1060px vs Bootstrap's stock
+   1140px), so a 3-of-12 sidebar column (~261px) falls short of that floor and widget content
+   (checkbox labels, counts) overflows past the sidebar's right edge. The widgets' actual
+   content (short labels + a count) fits comfortably well under 261px, so the floor is just
+   dropped for our narrower container rather than widening containers site-wide to fit it. */
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .rbt-sidebar-widget-wrapper .rbt-single-widget {
+    min-width: 0;
+  }
 }
 
 @media (min-width: 640px) {
@@ -157,4 +177,16 @@ body:has(.rbt-header .mainmenu > li.with-rbt-megamenu:hover) footer {
   padding: 5px !important;
   height: auto !important;
   line-height: normal !important;
+}
+
+/* Tailwind's utility scanner sees the literal class name "collapse" in the Bootstrap-collapse
+   widgets we rebuild with useState (sidebar-filter.tsx, per CLAUDE.md's no-Bootstrap-JS rule)
+   and generates its own `.collapse{visibility:collapse}` (Tailwind's table-row-hiding
+   utility) — same name, unrelated purpose. That stylesheet loads before bootstrap.min.css/
+   style.min.css, and neither of those sets `visibility` on `.collapse`/`.collapse.show`, so
+   Tailwind's value silently wins and the widget content renders invisible (but still takes up
+   layout space). Resets it to the default so `.collapse`/`.collapse.show` go back to only
+   controlling `display`, as the template intends. */
+.collapse {
+  visibility: visible;
 }

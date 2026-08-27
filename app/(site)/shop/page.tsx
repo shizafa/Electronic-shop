@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BreadCrumb } from "@/components/shop/bread-crumb";
 import { ShopListing } from "@/components/shop/shop-listing";
 import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 export default async function ShopPage() {
   const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
 
-  return <ShopListing products={products} categories={categories} />;
+  return (
+    <>
+      <BreadCrumb />
+      <ShopListing products={products} categories={categories} />
+    </>
+  );
 }
