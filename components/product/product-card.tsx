@@ -1,160 +1,230 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { type MouseEvent } from "react";
-import { GitCompare, Heart, ShoppingCart, Star, Tag, Truck } from "lucide-react";
-import { Price } from "@/components/product/price";
-import { useCart } from "@/context/cart-context";
-import { useCompare } from "@/context/compare-context";
-import { useWishlist } from "@/context/wishlist-context";
+import { ProductCardActions } from "@/components/product/product-card-actions";
+import { ProductCardDetails } from "@/components/product/product-card-details";
+import { ProductCardHoverImage } from "@/components/product/product-card-hover-image";
+import { ProductCardTextSwiper } from "@/components/product/product-card-text-swiper";
+import { ProductCardWishlistButton } from "@/components/product/product-card-wishlist-button";
+import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
+
+// Every value in the template's card markup that has no field behind it yet. Kept in one
+// block (rather than inline in the JSX) so the whole backlog is visible in one place.
+// Rating and review count render neutral — empty stars, (0) — rather than the template's
+// 5-star/(46) demo values, since those would read as real product data. Same DOM either way.
+// TODO: wire to backend
+const PLACEHOLDER = {
+  newBadge: "NEW",
+  starCount: 5,
+  emptyStarIcon: "fa-regular fa-star",
+  ratingCount: 0,
+  quickView: "Quick View",
+  shipsLabel: "Ships :",
+  shipsText: "2–3 weeks Free Shipping",
+  shipsLink: "Get delivery dates",
+  pickupLabel: "Pickup :",
+  pickupLink: "Check Availability",
+};
+
+// The demo product images the template ships with are 1246x976; next/image needs explicit
+// intrinsic dimensions here because the template's containers take their height from the image.
+const IMAGE_WIDTH = 1246;
+const IMAGE_HEIGHT = 976;
+
+// The template's `.rbt-card-img a img` rule sets width:100% and object-fit:cover but no
+// height — it gets away with that because every demo image is exactly IMAGE_WIDTH x
+// IMAGE_HEIGHT. Real product photos vary, so without pinning the ratio each card's image
+// box (and therefore the whole card) ends up a different height. Locking it to the demo
+// ratio lets the template's existing object-fit:cover do the cropping.
+const IMAGE_RATIO = { aspectRatio: `${IMAGE_WIDTH} / ${IMAGE_HEIGHT}` };
+
+// Matches the card's Bootstrap column ladder exactly:
+//   col-6 / col-sm-6 / col-md-6  -> 50vw  (up to 991px)
+//   col-lg-4                     -> 33vw  (992-1199px)
+//   col-xl-3 / col-xxl-3         -> 25vw  (1200px+)
+// TODO: revisit after the layout port — once the Tailwind container-page wrappers are
+// replaced by the template's Bootstrap containers, a fixed px cap at the widest breakpoint
+// (e.g. "(min-width: 1400px) 320px") will be worth adding, since the content width will
+// then be known and stable.
+const IMAGE_SIZES = "(max-width: 991px) 50vw, (max-width: 1199px) 33vw, 25vw";
 
 interface ProductCardProps {
   product: Product;
   badge?: string;
   categoryName?: string;
+  categorySlug?: string;
+  // Set by ProductGrid for the first row of cards, which are above the fold on load.
+  priority?: boolean;
 }
 
 // Product thumbnail card used in grids/listings (home, category, search, related products).
-export function ProductCard({ product, badge, categoryName }: ProductCardProps) {
-  const { addToCart } = useCart();
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+//
+// This is a server component. The interactive pieces live in three sibling client
+// components (product-card-actions, product-card-wishlist-button, product-card-details)
+// because they sit in three different subtrees of the template markup and can't share one.
+//
+// The reason for the split is re-render scope rather than bundle size: most callers are
+// already client components, so the card reaches the browser regardless. What matters is
+// that the cart/wishlist/compare subscriptions now sit on small leaves. Previously every
+// card subscribed to all three contexts, so one cart update re-rendered every card in the
+// grid in full; now it re-renders only the button that cares.
+export function ProductCard({ product, badge, categoryName, categorySlug, priority = false }: ProductCardProps) {
   const displayVariant = getDisplayVariant(product); // representative variant used for the card's price
-  const inWishlist = isInWishlist(product.id);
-  const inCompare = isInCompare(product.id);
   const hasMultipleVariants = product.variants.length > 1;
   const isOutOfStock = product.variants.every((variant) => variant.stock === 0);
 
-  const discountPercent = displayVariant.compareAtPrice
-    ? Math.round(
-        ((displayVariant.compareAtPrice - displayVariant.price) / displayVariant.compareAtPrice) * 100
-      )
-    : undefined;
+  // Products without a second image reuse the first, so the hover swap is a no-op rather than a gap.
+  const hoverImage = product.images[1] ?? product.images[0];
 
-  const topLeftBadge = isOutOfStock ? t("common.outOfStock") : (badge ?? (discountPercent ? t("common.sale") : undefined));
-
-  function handleWishlistToggle(event: MouseEvent) {
-    event.preventDefault();
-    if (inWishlist) {
-      removeFromWishlist({ productId: product.id });
-    } else {
-      addToWishlist({ productId: product.id });
-    }
-  }
-
-  function handleCompareToggle(event: MouseEvent) {
-    event.preventDefault();
-    if (inCompare) {
-      removeFromCompare(product.id);
-    } else {
-      // addToCompare shows a toast itself if the 4-item cap is hit or the
-      // product is from a different category than what's already compared.
-      addToCompare(product.id, product.categoryId);
-    }
-  }
-
-  function handleAddToCart(event: MouseEvent) {
-    event.preventDefault();
-    if (isOutOfStock) return;
-    addToCart(product.id, displayVariant.id);
-  }
+  // The template's spec list is 4 rows: brand, then three specs. A 4th spec, when the product
+  // has one, fills the continuation line the template's last row carries.
+  const specEntries = Object.entries(product.specs);
+  const specRows = specEntries.slice(0, 3);
+  const specContinuation = specEntries[3];
 
   return (
-    <Link
-      href={`/product/${product.slug}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-background transition-shadow hover:shadow-md"
-    >
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        {product.images[0] && (
-          <Image
+      <div className="col-xxl-3 col-xl-3 col-lg-4 col-md-6 col-sm-6 col-6 mt--24">
+  <div className="rbt-card rbt-product-card has-hover-box-shadow">
+    <div className="inner rbt-scroll-trigger fade_in animation-order-2">
+      <div className="rbt-card-img rbt-has-hover-img rbt-bg-color-default">
+        <Link href={`/product/${product.slug}`}>
+          <ProductCardHoverImage
             src={product.images[0]}
+            hoverSrc={hoverImage}
             alt={product.name}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            width={IMAGE_WIDTH}
+            height={IMAGE_HEIGHT}
+            sizes={IMAGE_SIZES}
+            style={IMAGE_RATIO}
+            priority={priority}
           />
-        )}
-
-        {topLeftBadge && (
-          <span className="absolute top-2 left-2 rounded-full bg-destructive px-2.5 py-1 text-[11px] font-bold text-white uppercase">
-            {topLeftBadge}
-          </span>
-        )}
-
-        {discountPercent !== undefined && (
-          <div className="absolute -top-1 -right-9 w-32 rotate-45 bg-primary py-1 text-center text-[10px] font-bold text-primary-foreground shadow-sm">
-            <Tag className="mr-0.5 inline size-3" />-{discountPercent}%
-          </div>
-        )}
-
-        <button
-          type="button"
-          onClick={handleWishlistToggle}
-          aria-label={inWishlist ? t("common.removeFromWishlist") : t("common.addToWishlist")}
-          className="absolute right-2 bottom-2 flex size-8 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-background"
-        >
-          <Heart className={`size-4 ${inWishlist ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-        </button>
+        </Link>
+        <div className="rbt-badge-wrapper rbt-content-top-left">
+          {(isOutOfStock || !badge) && (
+            <div className="rbt-product-badge rbt-product-badge-bg-green border-rounded">
+              {isOutOfStock ? t("common.outOfStock") : PLACEHOLDER.newBadge}
+            </div>
+          )}
+          {badge && (
+            <div className="rbt-product-badge rbt-product-badge-bg-secondary-gradient border-rounded">
+              {badge}
+            </div>
+          )}
+        </div>
+        <div className="rbt-quick-btn-grp has-mixup-midlayer bottom-right--position">
+          <button className="rbt-search-btn rbt-quick-btn tooltips" type="button" aria-label={PLACEHOLDER.quickView} data-tooltip="Quick View" data-tooltip-position="left">
+            <i className="fa-regular fa-magnifying-glass-plus" />
+          </button>
+          <ProductCardWishlistButton productId={product.id} />
+        </div>
       </div>
-
-      <div className="flex flex-col gap-1 p-3">
+      <div className="rbt-card-body">
         {categoryName && (
-          <span className="text-xs font-medium text-primary">{categoryName}</span>
+          <Link href={`/category/${categorySlug}`} className="rbt-card-subtitle rbt-card-catagories-text">
+            {categoryName}
+          </Link>
         )}
-        <p className="line-clamp-2 text-sm font-medium text-foreground">{product.name}</p>
-
-        <div className="mt-0.5 flex items-center gap-2">
-          <div className="flex items-center gap-0.5" aria-hidden="true">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <Star key={index} className="size-3 fill-amber-400 text-amber-400" />
+        <h2 className="rbt-card-title">
+          <Link href={`/product/${product.slug}`}>
+            {product.name}
+          </Link>
+        </h2>
+        <div className="rbt-card-rating">
+          <ul className="rbt-rating-icon-list">
+            {Array.from({ length: PLACEHOLDER.starCount }).map((_, index) => (
+              <li key={index}>
+                <i className={PLACEHOLDER.emptyStarIcon} />
+              </li>
             ))}
-          </div>
-          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Truck className="size-3" />
-            {t("common.freeShipping")}
+          </ul>
+          <p className="rating-digit">
+            ({PLACEHOLDER.ratingCount})
+          </p>
+          <ProductCardTextSwiper />
+        </div>
+        <div className="pricing-part">
+          <span className="price-text">
+            {hasMultipleVariants && `${t("common.priceFrom")} `}
+            {formatPrice(displayVariant.price)}
           </span>
-        </div>
-
-        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-sm">
-          {hasMultipleVariants && (
-            <span className="text-xs text-muted-foreground">{t("common.priceFrom")}</span>
-          )}
-          <Price price={displayVariant.price} compareAtPrice={displayVariant.compareAtPrice} />
-          {discountPercent !== undefined && (
-            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-semibold text-destructive">
-              -{discountPercent}%
-            </span>
-          )}
           {!isOutOfStock && (
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+            <div className="rbt-badge rbt-badge-bg-green rbt-badge-border rbt-badge-small rbt-badge-rounded">
               {t("common.inStockCount").replace("{count}", String(displayVariant.stock))}
-            </span>
+            </div>
           )}
         </div>
-
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isOutOfStock}
-          className="mt-2 flex items-center justify-center gap-1.5 rounded-full border border-primary py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-primary"
-        >
-          <ShoppingCart className="size-3.5" />
-          {t("common.addToCart")}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleCompareToggle}
-          className={`mt-1 flex items-center justify-center gap-1.5 text-xs font-medium transition-colors hover:text-primary ${inCompare ? "text-primary" : "text-muted-foreground"}`}
-        >
-          <GitCompare className="size-3.5" />
-          {t("common.addToCompare")}
-        </button>
+        <ProductCardActions
+          productId={product.id}
+          variantId={displayVariant.id}
+          categoryId={product.categoryId}
+          isOutOfStock={isOutOfStock}
+        />
       </div>
-    </Link>
+    </div>
+    <ProductCardDetails>
+      <div className="wrapper rbt-has-show-more-inner-content">
+        <ul className="product-details-list">
+          <li>
+            <span className="rbt-bold--text">
+              {t("common.brand")} :
+            </span>
+            <span className="text">
+              {product.brand}
+            </span>
+          </li>
+          {specRows.map(([specKey, specValue], index) => (
+            <li key={specKey}>
+              <span className="rbt-bold--text">
+                {specKey} :
+              </span>
+              <span className="text">
+                {String(specValue)}
+              </span>
+              {index === specRows.length - 1 && specContinuation && (
+                <span className="text d-block">
+                  {String(specContinuation[1])}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        <ul className="product-details-list shipment-details-list">
+          <li>
+            <span className="icon">
+              <i className="fa-sharp fa-regular fa-truck" />
+            </span>
+            <div className="right-content">
+              <span className="rbt-bold--text">
+                {PLACEHOLDER.shipsLabel}
+              </span>
+              <span className="text">
+                {PLACEHOLDER.shipsText}
+              </span>
+              <br />
+              <a href="#" className="shipment-quick-link rbt-btn-link">
+                {PLACEHOLDER.shipsLink}
+              </a>
+            </div>
+          </li>
+          <li>
+            <span className="icon">
+              <i className="fa-regular fa-bag-shopping" />
+            </span>
+            <div className="right-content">
+              <span className="rbt-bold--text">
+                {PLACEHOLDER.pickupLabel}
+              </span>
+              <a href="#" className="shipment-quick-link rbt-btn-link">
+                {PLACEHOLDER.pickupLink}
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </ProductCardDetails>
+  </div>
+{/* End Single Card */}
+</div>
   );
 }

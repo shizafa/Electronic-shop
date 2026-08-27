@@ -50,6 +50,7 @@ export function SearchResults({ query, products, categories }: SearchResultsProp
                   key={product.id}
                   product={product}
                   categoryName={category?.name}
+                  categorySlug={category?.slug}
                 />
               );
             })}

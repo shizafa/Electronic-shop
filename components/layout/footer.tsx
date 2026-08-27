@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { NewsletterBar } from "@/components/layout/newsletter-bar";
 import { getVisibleCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 
@@ -18,32 +17,45 @@ const aboutLinks = [
   { href: "/contact", labelKey: "footer.contactUs" },
 ];
 
-// FooterColumn — renders one labeled column of links in the footer. Pass `label` for
-// already-resolved display text (e.g. a category's plain name), or `labelKey` for an i18n key.
-function FooterColumn({
-  headingKey,
-  links,
-}: {
-  headingKey: string;
-  links: { href: string; label?: string; labelKey?: string }[];
-}) {
-  return (
-    <div>
-      <p className="text-sm font-semibold text-foreground">{t(headingKey)}</p>
-      <ul className="mt-3 flex flex-col gap-2">
-        {links.map((link) => (
-          <li key={link.href}>
-            <Link href={link.href} className="text-sm text-muted-foreground hover:text-foreground">
-              {link.label ?? t(link.labelKey!)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+const policyLinks = [
+  { href: "/policies/returns-warranty", labelKey: "footer.returnsWarranty" },
+  { href: "/policies/privacy", labelKey: "footer.privacyPolicy" },
+  { href: "/policies/terms", labelKey: "footer.termsOfService" },
+];
 
-// Footer — site-wide footer with category/help/about links and trust badges
+// Template copy and store details with no field behind them yet. Phone and email are the
+// real values already used on /contact; the rest is template demo copy kept so the layout
+// matches until there is somewhere real to read it from.
+// TODO: wire to backend
+const PLACEHOLDER = {
+  storeName: "Electronics",
+  phoneNote: "Free from fixed and mobile phones.",
+  phone: "021-111-000-000",
+  phoneHref: "tel:021111000000",
+  callCenterLabel: "Call Center hours",
+  callCenterHours: "Mon-Sun 09:00-19:00",
+  emailLabel: "Email :",
+  email: "support@electronics.pk",
+  followUsLabel: "Follow Us :",
+  downloadAppLabel: "Download App :",
+  bannerHref: "/shop",
+  socialIcons: [
+    "fa-brands fa-x-twitter",
+    "fa-brands fa-youtube",
+    "fa-brands fa-facebook-f",
+    "fa-brands fa-whatsapp",
+    "fa-brands fa-instagram",
+    "fa-brands fa-telegram",
+  ],
+  appStoreBadges: [
+    { src: "/assets/images/footer/apple-store-logo.webp", alt: "App Store" },
+    { src: "/assets/images/footer/play-store-logo.webp", alt: "App Store" },
+  ],
+};
+
+// Footer — site-wide footer with contact details, link columns and trust badges.
+// Fully static apart from the category column, so it stays a Server Component: there is no
+// state, handler or browser API anywhere in this markup.
 export async function Footer() {
   const categories = await getVisibleCategories();
   const categoryLinks = categories.map((category) => ({
@@ -52,52 +64,195 @@ export async function Footer() {
   }));
 
   return (
-    <footer className="border-t border-border">
-      <NewsletterBar />
-
-      <div className="bg-muted/40">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-          <div className="border-border sm:col-span-2 sm:border-r sm:pr-8 lg:col-span-1">
-            <p className="text-lg font-semibold text-foreground">{t("site.name")}</p>
-            <p className="mt-2 max-w-xs text-sm text-muted-foreground">{t("footer.tagline")}</p>
-
-            <div className="mt-4 flex flex-col gap-1">
-              <p className="text-sm font-semibold text-foreground">{t("contact.phone")}</p>
-              <a href="tel:+021111000000" className="text-sm text-muted-foreground hover:text-foreground">
-                021-111-000-000
+    <>
+    <footer className="rbt-footer rbt-footer-style-one rbt-bg-color-gray-light">
+  <div className="rbt-footer-top rbt-section-gap2Top">
+    <div className="container">
+      <div className="row justify-content-between row--12 mt_dec--24 pb--40 pb_sm--24">
+        <div className="col-lg-4 col-md-6 col-sm-6 col-12 mt--24 border-end rbt-border-color-border-2">
+          <div className="footer-widget">
+            {/* The template ships only Unimart-branded logo files, so the store's own
+                wordmark is rendered as text here — same source of truth as the header.
+                Swap back to an <img> once there is a real logo asset in public/. */}
+            <div className="logo">
+              <Link href="/" className="rbt-text-semi-bold rbt-text-color-heading has-lg-fsize">
+                {t("site.name")}
+              </Link>
+            </div>
+            <p className="description pr--140 pr_sm--0">
+              {t("footer.tagline")}
+            </p>
+            <div className="rbt-quick-contact-info">
+              <p className="b2 title">
+                {PLACEHOLDER.phoneNote}
+              </p>
+              <a className="contact-link has-lg-fsize" href={PLACEHOLDER.phoneHref}>
+                {PLACEHOLDER.phone}
               </a>
             </div>
-
-            <div className="mt-3 flex flex-col gap-1">
-              <p className="text-sm font-semibold text-foreground">{t("contact.email")}</p>
-              <a
-                href="mailto:support@electronics.pk"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                support@electronics.pk
+            <div className="rbt-quick-contact-info">
+              <p className="b2 title">
+                {PLACEHOLDER.callCenterLabel}
+              </p>
+              <p className="text-inf">
+                {PLACEHOLDER.callCenterHours}
+              </p>
+            </div>
+            <div className="rbt-quick-contact-info d-flex rbt-gap--4 align-items-center">
+              <p className="b2 title mb--0">
+                {PLACEHOLDER.emailLabel}
+              </p>
+              <a className="contact-link" href={`mailto:${PLACEHOLDER.email}`}>
+                <span>
+                  {PLACEHOLDER.email}
+                </span>
               </a>
             </div>
           </div>
-
-          <FooterColumn headingKey="footer.letUsHelpYou" links={helpLinks} />
-          <FooterColumn headingKey="footer.categories" links={categoryLinks} />
-          <FooterColumn headingKey="footer.getToKnowUs" links={aboutLinks} />
         </div>
-      </div>
-
-      <div className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} {t("site.name")}. {t("footer.copyright")}
-            </p>
-            <p>
-              {t("checkout.codAvailable")} · {t("checkout.installationService")} ·{" "}
-              {t("checkout.secureCheckout")}
-            </p>
+        <div className="col-lg-2 col-md-6 col-sm-6 col-12 mt--24">
+          <div className="footer-widget rbt-link-hover">
+            <h3 className="ft-title">
+              {t("footer.letUsHelpYou")}
+            </h3>
+            <ul className="ft-link">
+              {helpLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    {t(link.labelKey)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="col-lg-2 col-md-6 col-sm-6 col-12 mt--24">
+          <div className="footer-widget rbt-link-hover">
+            <h3 className="ft-title">
+              {t("footer.categories")}
+            </h3>
+            <ul className="ft-link">
+              {categoryLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="col-lg-2 col-md-6 col-sm-6 col-12 mt--24">
+          <div className="footer-widget rbt-link-hover">
+            <h3 className="ft-title">
+              {t("footer.getToKnowUs")}
+            </h3>
+            <ul className="ft-link">
+              {aboutLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    {t(link.labelKey)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
-    </footer>
+      <div className="row pb--40 pb_sm--24">
+        <div className="col-12">
+          <Link href={PLACEHOLDER.bannerHref}>
+            <img src="/assets/images/footer/banner-image1.png" alt="Banner Image" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className="rbt-separator-mid">
+    <div className="container">
+      <hr className="rbt-separator m-0" />
+    </div>
+  </div>
+  <div className="footer-bottom">
+    <div className="container">
+      <div className="row row--12 align-items-center mt_dec--24">
+        <div className="col-lg-6 mt--24">
+          <div className="rbt-footer-social-area justify-content-center justify-content-lg-start">
+            <p className="title">
+              {PLACEHOLDER.followUsLabel}
+            </p>
+            <ul className="social-icon social-icon-md rbt-social-default with-bg-primary justify-content-start justify-content-lg-end">
+              {PLACEHOLDER.socialIcons.map((icon) => (
+                <li key={icon}>
+                  <a href="#">
+                    <i className={icon} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="col-lg-6 mt--20">
+          <div className="rbt-app-store-area justify-content-center justify-content-lg-end">
+            <p className="title">
+              {PLACEHOLDER.downloadAppLabel}
+            </p>
+            <ul className="rbt-app-store-list">
+              {PLACEHOLDER.appStoreBadges.map((badge) => (
+                <li key={badge.src}>
+                  <a href="#">
+                    <img src={badge.src} alt={badge.alt} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+{/* Start Copyright Area */}
+<div className="copyright-area copyright-style-1">
+  <div className="container">
+    <div className="row row--12 align-items-center justify-content-between mt_dec--24">
+      <div className="col-xxl-3 col-xl-3 col-lg-6 col-md-12 col-12 mt--24">
+        <p className="rbt-link-hover text-center text-lg-start">
+          Copyright
+          <span className="copyright-year">
+            {new Date().getFullYear()}
+          </span>
+          ©
+          <Link href="/" className="rbt-text-semi-bold rbt-text-color-heading">
+            {t("site.name")}
+          </Link>
+          {t("footer.copyright")}
+        </p>
+      </div>
+      <div className="col-xxl-4 col-xl-4 col-lg-6 col-md-12 col-12 mt--24">
+        <ul className="payment-img-link">
+          <li>
+            <a href="#">
+              <img src="/assets/images/payment-brand/image-01.webp" alt="Payment Brand Image" />
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div className="col-xxl-4 col-xl-4 col-lg-12 col-md-12 col-12 mt--24">
+        <ul className="copyright-link rbt-link-hover justify-content-center justify-content-xl-end mt_sm--12 mt_md--12 mt_lg--12">
+          {policyLinks.map((link) => (
+            <li key={link.href}>
+              <Link href={link.href}>
+                {t(link.labelKey)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{/* End Copyright Area */}
+    </>
   );
 }

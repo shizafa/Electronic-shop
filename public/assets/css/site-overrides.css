@@ -1,0 +1,89 @@
+/* Storefront-only spacing/scale tweaks: a little extra side gap and slightly smaller
+   overall sizing, layered on top of the template stylesheet rather than editing it (the
+   template CSS and pasted markup stay untouched per CLAUDE.md). Loaded only by
+   app/(site)/layout.tsx, so app/admin/** is unaffected. */
+
+html {
+  font-size: 9.25px;
+}
+
+:root {
+  --bs-gutter-x: 1.5rem;
+}
+
+@media (min-width: 576px) {
+  .container {
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 660px;
+  }
+}
+
+@media (min-width: 992px) {
+  .container {
+    max-width: 880px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1060px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1220px;
+  }
+}
+
+html body .container-page {
+  max-width: 72rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  html body .container-page {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* Tailwind's preflight (globals.css, kept enabled per CLAUDE.md) forces every raw <svg>
+   to display:block. The template's animated icon-buttons (e.g. category-tiles.tsx's
+   "View All Categories") assume the browser default (inline) so the icon sits beside the
+   button text instead of dropping to its own line below it. */
+.animated-icon svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* main-bar-search.tsx's category <select>: style.min.css's own dropdown-caret rules
+   (.rbt-modern-select .bootstrap-select .dropdown-toggle::after) only fire on the
+   button/dropdown markup the bootstrap-select JS plugin generates. We render a plain
+   <select> instead (no jQuery plugin, per CLAUDE.md), so it needs its own caret — placed
+   over the already-position:absolute .search-by-category container, pointer-events:none
+   so clicks still reach the <select> beneath it. */
+.search-by-category {
+  display: flex;
+  align-items: center;
+}
+
+.search-by-category .rbt-select-activation {
+  padding-left: 20px;
+}
+
+.search-by-category-caret {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--color-gray-400);
+  pointer-events: none;
+}

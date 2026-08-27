@@ -41,6 +41,32 @@ export function VariantSelector({ product, selectedVariant, onSelectVariant }: V
           new Set(product.variants.map((variant) => variant.axisValues[axis.id]))
         );
 
+        const isAvailable = (value: string) =>
+          product.variants.some((variant) => variant.axisValues[axis.id] === value && variant.stock > 0);
+
+        if (axis.type === "dropdown") {
+          return (
+            <div key={axis.id}>
+              <label className="mb-2 block text-sm font-medium text-foreground" htmlFor={`axis-${axis.id}`}>
+                {t(axis.labelKey)}
+                {axis.unit ? ` (${axis.unit})` : ""}
+              </label>
+              <select
+                id={`axis-${axis.id}`}
+                value={selectedVariant.axisValues[axis.id]}
+                onChange={(event) => handleSelect(axis.id, event.target.value)}
+                className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground"
+              >
+                {values.map((value) => (
+                  <option key={value} value={value} disabled={!isAvailable(value)}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        }
+
         return (
           <div key={axis.id}>
             <p className="mb-2 text-sm font-medium text-foreground">
@@ -50,17 +76,31 @@ export function VariantSelector({ product, selectedVariant, onSelectVariant }: V
             <div className="flex flex-wrap gap-2">
               {values.map((value) => {
                 const isSelected = selectedVariant.axisValues[axis.id] === value;
-                // disable the option if no in-stock variant offers this value at all
-                const isAvailable = product.variants.some(
-                  (variant) => variant.axisValues[axis.id] === value && variant.stock > 0
-                );
+                const available = isAvailable(value);
+
+                if (axis.type === "color") {
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => handleSelect(axis.id, value)}
+                      disabled={!available}
+                      aria-label={value}
+                      title={value}
+                      style={{ backgroundColor: value }}
+                      className={`size-8 rounded-full border-2 transition-colors ${
+                        isSelected ? "border-primary" : "border-border"
+                      } disabled:cursor-not-allowed disabled:opacity-40`}
+                    />
+                  );
+                }
 
                 return (
                   <button
                     key={value}
                     type="button"
                     onClick={() => handleSelect(axis.id, value)}
-                    disabled={!isAvailable}
+                    disabled={!available}
                     className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                       isSelected
                         ? "border-primary bg-primary text-primary-foreground"

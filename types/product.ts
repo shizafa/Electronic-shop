@@ -3,6 +3,9 @@ export interface VariantAxisDefinition {
   id: string;
   labelKey: string;
   unit?: string;
+  // How to render this axis's options on the product page. Optional — no admin UI sets this
+  // yet, so real axes are undefined today and fall back to the plain button style.
+  type?: "color" | "dropdown" | "button";
 }
 
 // One purchasable option of a product (e.g. "128GB / Black") with its own price and stock

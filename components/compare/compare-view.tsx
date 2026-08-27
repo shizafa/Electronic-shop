@@ -99,7 +99,7 @@ export function CompareView() {
         <div className="flex gap-4">
           {products.map((product) => (
             <div key={product.id} className="w-56 shrink-0">
-              <ProductCard product={product} categoryName={category?.name} />
+              <ProductCard product={product} categoryName={category?.name} categorySlug={category?.slug} />
             </div>
           ))}
         </div>

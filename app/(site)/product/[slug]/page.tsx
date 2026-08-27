@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProductBreadcrumb } from "@/components/product/product-breadcrumb";
 import { ProductDetail } from "@/components/product/product-detail";
 import { getCategoryById } from "@/lib/categories";
-import { t } from "@/lib/i18n";
 import { getProductBySlug, getProductsByCategory } from "@/lib/products";
 
 // Sets the tab title to the matched product's name
@@ -22,27 +21,31 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const category = await getCategoryById(product.categoryId);
   if (!category) notFound(); // data integrity guard, shouldn't normally happen
 
+  // Ordered deterministically (by id) so "previous"/"next" is stable across requests —
+  // Supabase doesn't guarantee row order without an explicit .order().
+  const categoryProducts = (await getProductsByCategory(category.id)).sort((a, b) =>
+    a.id.localeCompare(b.id)
+  );
+  const currentIndex = categoryProducts.findIndex((candidate) => candidate.id === product.id);
+  const hasSiblings = categoryProducts.length > 1;
+  const previousProduct = hasSiblings
+    ? categoryProducts[(currentIndex - 1 + categoryProducts.length) % categoryProducts.length]
+    : undefined;
+  const nextProduct = hasSiblings
+    ? categoryProducts[(currentIndex + 1) % categoryProducts.length]
+    : undefined;
+
   // Up to 4 other products from the same category, excluding this one
-  const relatedProducts = (await getProductsByCategory(category.id))
-    .filter((candidate) => candidate.id !== product.id)
-    .slice(0, 4);
+  const relatedProducts = categoryProducts.filter((candidate) => candidate.id !== product.id).slice(0, 4);
 
   return (
-    <div className="container-page py-6">
-      <nav
-        aria-label="Breadcrumb"
-        className="mb-4 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"
-      >
-        <Link href="/" className="hover:text-foreground">
-          {t("nav.home")}
-        </Link>
-        <span>/</span>
-        <Link href={`/category/${category.slug}`} className="hover:text-foreground">
-          {category.name}
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">{product.name}</span>
-      </nav>
+    <div>
+      <ProductBreadcrumb
+        product={product}
+        category={category}
+        previousProduct={previousProduct}
+        nextProduct={nextProduct}
+      />
 
       <ProductDetail product={product} category={category} relatedProducts={relatedProducts} />
     </div>

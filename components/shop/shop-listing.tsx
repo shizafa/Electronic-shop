@@ -376,6 +376,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
                       key={product.id}
                       product={product}
                       categoryName={category?.name}
+                      categorySlug={category?.slug}
                     />
                   );
                 })}

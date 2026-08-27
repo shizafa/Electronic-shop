@@ -1,46 +1,42 @@
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { PromoBannerMagneticButton } from "@/components/home/promo-banner-magnetic-button";
 
-// Homepage single promo banner (static, no countdown)
+// Homepage single static promo banner (image + headline + CTA), unbacked marketing content —
+// PLACEHOLDER: no campaign/promotions data model exists yet. TODO: wire to a real source
+// once one exists, same as the category-tiles and megamenu promo cards.
 export function PromoBanner() {
   return (
-    <section className="container-page py-8">
-      <div className="relative flex min-h-[280px] items-center overflow-hidden rounded-2xl bg-muted">
-        <Image
-          src="/promo/product-banner-img-03.webp"
-          alt="Drone accessories bundle"
-          fill
-          sizes="100vw"
-          className="object-cover"
-        />
-
-        <div className="relative z-10 flex max-w-md flex-col gap-3 p-8 sm:p-12">
-          <p className="text-sm font-medium tracking-wide text-foreground/60 uppercase">
-            Exclusive Weekend Discount
-          </p>
-          <h2 className="text-2xl leading-tight font-semibold tracking-tight text-foreground sm:text-3xl">
-            Feel the good shopping <span className="font-extrabold">up to 50% discount</span>
-          </h2>
-          <p className="text-sm text-foreground/60">Incredibly slim designs.</p>
-          <div className="flex items-center gap-3">
-            <del className="text-sm text-foreground/50">$295.00</del>
-            <span className="text-xl font-bold text-primary">$179.98</span>
+    <div className="container">
+      <div className="row row--12">
+        <div className="col-lg-12 col-md-12 col-sm-12 col-12 mt--32 mt_sm--0">
+          <div className="rbt-product-banner rbt-product-banner-style-one">
+            <div className="rbt-product-banner-img rbt-scroll-trigger zoom_in animation-order-1">
+              <img src="/assets/images/product-banner/product-banner-img-01.webp" alt="Ecommerce Product Banner Image" />
+            </div>
+            <div className="rbt-banner-inner rbt-curved-style-box">
+              <div className="rbt-product-banner-content">
+                <div className="rbt-content-section rbt-scroll-trigger fade_in animation-order-1">
+                  <p className="rbt-banner-subtitle mb-0">
+                    Power Up Deals
+                  </p>
+                  <h2 className="rbt-banner-title title-capitalize-text mb-0">
+                    <span className="rbt-bold--text">
+                      New
+                                      Device
+                    </span>
+                    coming Soon
+                  </h2>
+                  <h3 className="rbt-secondery-subtitle mb-0">
+                    Land major deals
+                  </h3>
+                </div>
+                <div className="rbt-banner-btn rbt-magnet-area rbt-banner-btn rbt-scroll-trigger fade_in animation-order-2">
+                  <PromoBannerMagneticButton href="/shop" />
+                </div>
+              </div>
+            </div>
           </div>
-          <Button
-            className="mt-2 flex size-[84px] flex-col items-center justify-center gap-0.5 rounded-full p-0 text-xs leading-tight font-bold uppercase"
-            asChild
-          >
-            <Link href="/search">
-              <ArrowUpRight className="mb-0.5 size-3.5" />
-              Shop
-              <br />
-              Now
-            </Link>
-          </Button>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
