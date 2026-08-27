@@ -1,8 +1,19 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/actions/admin/guard";
 import { slugify } from "@/lib/utils";
 import type { VariantAxisDefinition } from "@/types/product";
+
+// Products are fetched with lib/supabase/public.ts (no cookies), so Next.js statically
+// prerenders the pages that show them. Without this, an edit would only appear after a rebuild.
+function revalidateProductPaths(id: string) {
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${id}`);
+  revalidatePath("/");
+  revalidatePath("/shop");
+  revalidatePath(`/product/${id}`);
+}
 
 export interface ProductFormInput {
   name: string;
@@ -42,6 +53,7 @@ export async function createProduct(input: ProductFormInput): Promise<ProductAct
     if (error.code === "23505") return { success: false, error: "A product with this name already exists" };
     return { success: false, error: "Failed to create product" };
   }
+  revalidateProductPaths(id);
   return { success: true, id };
 }
 
@@ -64,6 +76,7 @@ export async function updateProduct(id: string, input: ProductFormInput): Promis
     .eq("id", id);
 
   if (error) return { success: false, error: "Failed to save product" };
+  revalidateProductPaths(id);
   return { success: true, id };
 }
 
@@ -80,6 +93,7 @@ export async function deleteProduct(id: string): Promise<DeleteActionResult> {
     }
     return { success: false, error: "Failed to delete product" };
   }
+  revalidateProductPaths(id);
   return { success: true };
 }
 

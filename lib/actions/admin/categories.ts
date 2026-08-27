@@ -1,8 +1,19 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/actions/admin/guard";
 import { slugify } from "@/lib/utils";
 import type { SpecFieldType } from "@/types/category";
+
+// Categories/products are fetched with lib/supabase/public.ts (no cookies), so Next.js statically
+// prerenders the pages that show them. Without this, an edit would only appear after a rebuild.
+function revalidateCategoryPaths(id: string) {
+  revalidatePath("/admin/categories");
+  revalidatePath(`/admin/categories/${id}`);
+  revalidatePath("/");
+  revalidatePath("/shop");
+  revalidatePath(`/category/${id}`);
+}
 
 export interface CategoryFormInput {
   name: string;
@@ -40,6 +51,7 @@ export async function createCategory(input: CategoryFormInput): Promise<Category
     if (error.code === "23505") return { success: false, error: "A category with this name already exists" };
     return { success: false, error: "Failed to create category" };
   }
+  revalidateCategoryPaths(id);
   return { success: true, id };
 }
 
@@ -61,6 +73,7 @@ export async function updateCategory(id: string, input: CategoryFormInput): Prom
     .eq("id", id);
 
   if (error) return { success: false, error: "Failed to save category" };
+  revalidateCategoryPaths(id);
   return { success: true, id };
 }
 
@@ -77,6 +90,7 @@ export async function deleteCategory(id: string): Promise<DeleteActionResult> {
     }
     return { success: false, error: "Failed to delete category" };
   }
+  revalidateCategoryPaths(id);
   return { success: true };
 }
 
