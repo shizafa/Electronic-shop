@@ -87,3 +87,11 @@ html body .container-page {
   color: var(--color-gray-400);
   pointer-events: none;
 }
+
+/* main-bar.tsx's .logo renders the site name as plain text (t("site.name")) since there's
+   no real logo image yet, so it just inherits body copy's font-size. Sized up here to read
+   as a wordmark instead of a nav link. */
+.logo a {
+  font-size: 28px;
+  font-weight: 700;
+}

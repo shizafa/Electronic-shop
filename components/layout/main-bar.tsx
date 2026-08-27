@@ -22,8 +22,11 @@ const PLACEHOLDER = {
 // Two triggers are left inert on purpose, matching the build order (topbar -> main bar ->
 // nav shell -> nav data -> sticky -> search dropdown -> mobile menu -> cart drawer):
 //   - .hamberger-button (mobile-menu-bar): wired in the "mobile menu" step
-//   - .rbt-cat-offcanvas-activation: a category off-canvas panel not in the build order at all
 //   - .search-trigger-active (mobile search icon): wired in the "search dropdown" step
+//
+// The desktop category off-canvas trigger (.rbt-cat-offcanvas-activation, the burger icon
+// that sat next to the logo) was dropped at the user's request — it was never wired to a
+// panel anyway (not in the build order), and its removal frees up room for the wordmark.
 export async function MainBar() {
   const categories = await getVisibleCategories();
 
@@ -49,18 +52,6 @@ export async function MainBar() {
                     {t("site.name")}
                   </Link>
                 </div>
-              </div>
-              <div className="header-info p-0 d-none d-xl-block ml--28">
-                <a className="rbt-offcanvas-trigger-btn rbt-offcanvas-trigger-transparent-btn rbt-cat-offcanvas-activation rbt-burger-menu-bar" href="#!">
-                  <div className="rbt-burger-menu-bar-wrapper">
-                    <i className="rbt-line-btn">
-                      <span className="rbt-lines" />
-                    </i>
-                    <i className="rbt-line-btn rbt-hover-effect">
-                      <span className="rbt-lines" />
-                    </i>
-                  </div>
-                </a>
               </div>
             </div>
           </div>

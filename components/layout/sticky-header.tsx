@@ -44,18 +44,6 @@ export function StickyHeader() {
     <div className="mainbar-row rbt-mainbar-row-md-height  align-items-center">
       <div className="header-left">
         <div className="rbt-header-content d-flex">
-          <div className="header-info p-0 d-none d-xxl-flex mr--24">
-            <a className="rbt-offcanvas-trigger-btn rbt-cat-offcanvas-activation rbt-burger-menu-bar" href="#!">
-              <div className="rbt-burger-menu-bar-wrapper">
-                <i className="rbt-line-btn">
-                  <span className="rbt-lines" />
-                </i>
-                <i className="rbt-line-btn rbt-hover-effect">
-                  <span className="rbt-lines" />
-                </i>
-              </div>
-            </a>
-          </div>
           <div className="header-info d-xl-block d-none">
             {/* Text wordmark, same fix as the footer/main bar: the template only ships
                 Unimart-branded logo files, no real logo exists in public/ yet. */}
