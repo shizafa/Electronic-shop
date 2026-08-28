@@ -28,7 +28,20 @@ export async function proxy(request: NextRequest) {
   // Refreshes the session cookie if it's expired — must be called to keep
   // Server Components' auth reads valid. Do not remove even though the
   // return value is unused here.
-  await supabase.auth.getUser();
+  //
+  // Bounded with a timeout: this runs on every request (including the POST
+  // requests behind Week Highlights / Brand Logos' lazy loading), so an
+  // unbounded await here means one Supabase network blip stalls the entire
+  // site — Supabase's auth client retries slow/failed fetches with backoff,
+  // which turned a few seconds of bad network into 5+ minute page loads.
+  // Racing it against a timeout lets the request proceed either way; the
+  // getUser() call keeps running in the background and still refreshes the
+  // cookie via setAll if it eventually resolves.
+  const AUTH_REFRESH_TIMEOUT_MS = 5000;
+  await Promise.race([
+    supabase.auth.getUser().catch(() => undefined),
+    new Promise((resolve) => setTimeout(resolve, AUTH_REFRESH_TIMEOUT_MS)),
+  ]);
 
   return response;
 }
