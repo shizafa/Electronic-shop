@@ -24,6 +24,7 @@ export function WishlistView() {
       const product = getProductById(item.productId);
       if (!product) return null;
       const variant = (item.variantId ? getVariantById(item.variantId) : undefined) ?? getDisplayVariant(product);
+      if (!variant) return null; // product has no variants at all — nothing sellable to show
       return { item, product, variant };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);

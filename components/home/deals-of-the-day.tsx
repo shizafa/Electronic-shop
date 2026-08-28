@@ -40,7 +40,7 @@ export function DealsOfTheDay({ products, categories }: DealsOfTheDayProps) {
   const bestSellers = products.filter((product) => product.featured).slice(0, TAB_PRODUCT_LIMIT);
   const newArrivals = products.filter((product) => !product.featured).slice(0, TAB_PRODUCT_LIMIT);
   const onSale = products
-    .filter((product) => getDisplayVariant(product).compareAtPrice !== undefined)
+    .filter((product) => getDisplayVariant(product)?.compareAtPrice !== undefined)
     .slice(0, TAB_PRODUCT_LIMIT);
 
   return (

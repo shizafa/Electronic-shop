@@ -90,7 +90,8 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
     if (filters.brand && product.brand !== filters.brand) return false;
 
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      const price = getDisplayVariant(product).price; // use the cheapest in-stock variant's price
+      const price = getDisplayVariant(product)?.price; // use the cheapest in-stock variant's price
+      if (price === undefined) return false; // no variants at all — can't match a price range
       if (filters.minPrice !== undefined && price < filters.minPrice) return false;
       if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
     }
@@ -104,13 +105,23 @@ export type SortOption = "featured" | "price_asc" | "price_desc" | "name_asc";
 // Returns a new sorted array of products according to the chosen sort option
 export function sortProducts(products: Product[], sort: SortOption): Product[] {
   const sorted = [...products];
+  const priceOf = (product: Product) => getDisplayVariant(product)?.price;
+  // Products with no variants at all have no price to sort by — sink them to the end
+  // regardless of direction, rather than letting them jump to the top of a descending sort.
+  function comparePrices(a: Product, b: Product, ascending: boolean): number {
+    const priceA = priceOf(a);
+    const priceB = priceOf(b);
+    if (priceA === undefined) return priceB === undefined ? 0 : 1;
+    if (priceB === undefined) return -1;
+    return ascending ? priceA - priceB : priceB - priceA;
+  }
 
   switch (sort) {
     case "price_asc":
-      sorted.sort((a, b) => getDisplayVariant(a).price - getDisplayVariant(b).price);
+      sorted.sort((a, b) => comparePrices(a, b, true));
       break;
     case "price_desc":
-      sorted.sort((a, b) => getDisplayVariant(b).price - getDisplayVariant(a).price);
+      sorted.sort((a, b) => comparePrices(a, b, false));
       break;
     case "name_asc":
       sorted.sort((a, b) => a.name.localeCompare(b.name));

@@ -108,8 +108,10 @@ export function ShopListing({ products, categories }: ShopListingProps) {
 
   // cheapest/priciest displayed-variant price across the full catalog, for the price slider's range
   const priceBounds = useMemo(() => {
-    if (products.length === 0) return { min: 0, max: 0 };
-    const prices = products.map((product) => getDisplayVariant(product).price);
+    const prices = products
+      .map((product) => getDisplayVariant(product)?.price)
+      .filter((price): price is number => price !== undefined);
+    if (prices.length === 0) return { min: 0, max: 0 };
     return { min: Math.min(...prices), max: Math.max(...prices) };
   }, [products]);
 
@@ -118,7 +120,8 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     () =>
       PRICE_BUCKETS.map((bucket) => {
         return products.filter((product) => {
-          const price = getDisplayVariant(product).price;
+          const price = getDisplayVariant(product)?.price;
+          if (price === undefined) return false;
           if (bucket.min !== undefined && price < bucket.min) return false;
           if (bucket.max !== undefined && price >= bucket.max) return false;
           return true;

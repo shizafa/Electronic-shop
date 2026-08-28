@@ -21,9 +21,11 @@ export function CompareView() {
   // drop any compared items whose product no longer exists in the catalog
   const products = items
     .map((item) => getProductById(item.productId))
-    .filter((product): product is NonNullable<typeof product> => product !== undefined);
+    .filter((product): product is NonNullable<typeof product> => product !== undefined)
+    .filter((product) => product.variants.length > 0); // nothing to compare without a variant
 
-  const entries = products.map((product) => ({ product, variant: getDisplayVariant(product) }));
+  // Non-null: every product here was just filtered to have at least one variant.
+  const entries = products.map((product) => ({ product, variant: getDisplayVariant(product)! }));
   const category = getCategoryById(products[0]?.categoryId ?? "");
   const specRows = buildSpecRows(entries, category); // flattens each product's specs into aligned table rows
 

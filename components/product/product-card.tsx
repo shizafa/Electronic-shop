@@ -71,6 +71,7 @@ interface ProductCardProps {
 // grid in full; now it re-renders only the button that cares.
 export function ProductCard({ product, badge, categoryName, categorySlug, priority = false }: ProductCardProps) {
   const displayVariant = getDisplayVariant(product); // representative variant used for the card's price
+  if (!displayVariant) return null; // no variants at all — nothing sellable to show
   const hasMultipleVariants = product.variants.length > 1;
   const isOutOfStock = product.variants.every((variant) => variant.stock === 0);
 

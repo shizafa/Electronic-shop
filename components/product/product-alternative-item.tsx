@@ -27,7 +27,9 @@ interface ProductAlternativeItemProps {
 // categories have no icon field to back it.
 export function ProductAlternativeItem({ product, categoryName, categorySlug }: ProductAlternativeItemProps) {
   const { addToCart } = useCart();
-  const { id, price, compareAtPrice } = getDisplayVariant(product);
+  const displayVariant = getDisplayVariant(product);
+  if (!displayVariant) return null; // no variants at all — nothing sellable to show
+  const { id, price, compareAtPrice } = displayVariant;
 
   return (
     <div className="rbt-single-element d-flex align-items-center">

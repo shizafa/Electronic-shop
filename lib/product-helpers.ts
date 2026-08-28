@@ -4,8 +4,11 @@ import type { Product, Variant } from "@/types/product";
 // (which now does server-only Supabase queries) so client components can still import these
 // without pulling in a next/headers dependency.
 
-// Picks the variant shown by default on a product card: cheapest among in-stock ones (or cheapest overall if none in stock)
-export function getDisplayVariant(product: Product): Variant {
+// Picks the variant shown by default on a product card: cheapest among in-stock ones (or
+// cheapest overall if none in stock). Returns undefined for a product with no variants at all
+// (a data-entry gap, not a normal state) — callers treat that product as unsellable/unlistable.
+export function getDisplayVariant(product: Product): Variant | undefined {
+  if (product.variants.length === 0) return undefined;
   const inStockVariants = product.variants.filter((variant) => variant.stock > 0);
   const candidates = inStockVariants.length > 0 ? inStockVariants : product.variants;
   return candidates.reduce((cheapest, variant) => (variant.price < cheapest.price ? variant : cheapest));

@@ -28,7 +28,9 @@ interface ComboProductProps {
 // (".rbt-img.selected::before/::after"), so that class is toggled here from the same React
 // state that drives the running total.
 export function ComboProduct({ relatedProducts }: ComboProductProps) {
-  const bundleItems = relatedProducts.slice(0, MAX_BUNDLE_ITEMS);
+  // Excludes products with no variants at all up front, so every getDisplayVariant(item) call
+  // below is guaranteed to resolve — nothing sellable to bundle otherwise.
+  const bundleItems = relatedProducts.filter((product) => product.variants.length > 0).slice(0, MAX_BUNDLE_ITEMS);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set(bundleItems.map((item) => item.id)));
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -45,14 +47,15 @@ export function ComboProduct({ relatedProducts }: ComboProductProps) {
   }
 
   const checkedItems = bundleItems.filter((item) => checkedIds.has(item.id));
-  const total = checkedItems.reduce((sum, item) => sum + getDisplayVariant(item).price, 0);
+  // Non-null: every item here came from bundleItems, already filtered to products with variants.
+  const total = checkedItems.reduce((sum, item) => sum + getDisplayVariant(item)!.price, 0);
 
   function handleAddAllToCart() {
-    checkedItems.forEach((item) => addToCart(item.id, getDisplayVariant(item).id, 1));
+    checkedItems.forEach((item) => addToCart(item.id, getDisplayVariant(item)!.id, 1));
   }
 
   function handleAddAllToWishlist() {
-    checkedItems.forEach((item) => addToWishlist({ productId: item.id, variantId: getDisplayVariant(item).id }));
+    checkedItems.forEach((item) => addToWishlist({ productId: item.id, variantId: getDisplayVariant(item)!.id }));
   }
 
   return (
@@ -123,7 +126,7 @@ export function ComboProduct({ relatedProducts }: ComboProductProps) {
                   <div className="rbt-pricing-box-bottom">
                     <ul className="rbt-combo-prd-list  liststyle">
                       {bundleItems.map((item) => {
-                        const { price, compareAtPrice } = getDisplayVariant(item);
+                        const { price, compareAtPrice } = getDisplayVariant(item)!;
                         return (
                           <li className="rbt-single-prd" key={item.id}>
                             <div className="input-part">

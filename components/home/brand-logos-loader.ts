@@ -8,7 +8,7 @@ import type { Product } from "@/types/product";
 
 function discountPercentFor(product: Product): number {
   const variant = getDisplayVariant(product);
-  if (variant.compareAtPrice === undefined || variant.compareAtPrice <= variant.price) return 0;
+  if (!variant || variant.compareAtPrice === undefined || variant.compareAtPrice <= variant.price) return 0;
   return Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100);
 }
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryListing } from "@/components/category/category-listing";
-import { getCategoryBySlug } from "@/lib/categories";
-import { getProductsByCategory } from "@/lib/products";
+import { getAllCategories, getCategoryBySlug } from "@/lib/categories";
+import { getAllProducts, getProductsByCategory } from "@/lib/products";
 
 // Sets the tab title to the matched category's name
 export async function generateMetadata({
@@ -19,7 +19,13 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
   const category = await getCategoryBySlug(slug);
   if (!category || !category.isActive) notFound(); // unknown or hidden slug -> 404
 
-  const products = await getProductsByCategory(category.id);
+  const [products, allCategories, allProducts] = await Promise.all([
+    getProductsByCategory(category.id),
+    getAllCategories(),
+    getAllProducts(),
+  ]);
 
-  return <CategoryListing category={category} products={products} />;
+  return (
+    <CategoryListing category={category} products={products} allCategories={allCategories} allProducts={allProducts} />
+  );
 }

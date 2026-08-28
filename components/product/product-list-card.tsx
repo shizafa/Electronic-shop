@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/currency";
 import { getDisplayVariant } from "@/lib/product-helpers";
-import type { Product } from "@/types/product";
+import type { Product, Variant } from "@/types/product";
 
 const IMAGE_WIDTH = 278;
 const IMAGE_HEIGHT = 212;
@@ -32,8 +32,12 @@ interface ProductListCardProps {
   variant?: ProductListCardVariant;
 }
 
-function ProductListCardBody({ product, variant }: Required<ProductListCardProps>) {
-  const { price, compareAtPrice } = getDisplayVariant(product);
+function ProductListCardBody({
+  product,
+  variant,
+  displayVariant,
+}: Required<ProductListCardProps> & { displayVariant: Variant }) {
+  const { price, compareAtPrice } = displayVariant;
 
   return (
     <div className={ROOT_CLASS[variant]}>
@@ -84,11 +88,16 @@ function ProductListCardBody({ product, variant }: Required<ProductListCardProps
 }
 
 export function ProductListCard({ product, variant = "grid" }: ProductListCardProps) {
-  if (variant === "preview") return <ProductListCardBody product={product} variant={variant} />;
+  const displayVariant = getDisplayVariant(product);
+  if (!displayVariant) return null; // no variants at all — nothing sellable to show
+
+  if (variant === "preview") {
+    return <ProductListCardBody product={product} variant={variant} displayVariant={displayVariant} />;
+  }
 
   return (
     <div className="col-lg-6 col-md-6 col-sm-6 col-12 mt--24">
-      <ProductListCardBody product={product} variant={variant} />
+      <ProductListCardBody product={product} variant={variant} displayVariant={displayVariant} />
     </div>
   );
 }

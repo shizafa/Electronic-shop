@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function DealsPage() {
   const [allProducts, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
   const deals = allProducts.filter(
-    (product) => product.featured || getDisplayVariant(product).compareAtPrice !== undefined
+    (product) => product.featured || getDisplayVariant(product)?.compareAtPrice !== undefined
   );
 
   return (
