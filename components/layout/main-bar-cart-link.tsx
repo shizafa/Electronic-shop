@@ -14,11 +14,10 @@ import { getVariantById } from "@/lib/products";
 // a number here. CartItem doesn't carry price — it's just {productId, variantId, quantity}.
 //
 // Split out as its own client leaf so the cart subscription + price effect don't force the
-// rest of the main bar to be client-rendered. The template's rbt-cart-sidenav-activation
-// class opened a slide-in drawer via JS; no drawer exists yet, so this links straight to
-// /cart — the class stays for when that drawer is built.
+// rest of the main bar to be client-rendered. Click opens CartSideNav (via CartContext's
+// isCartOpen) instead of navigating — href="/cart" stays as a no-JS fallback.
 export function MainBarCartLink() {
-  const { items, itemCount } = useCart();
+  const { items, itemCount, openCart } = useCart();
   const [variantPrices, setVariantPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -46,7 +45,14 @@ export function MainBarCartLink() {
 
   return (
           <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 rbt-access-box-has-bg-hover rbt-mini-cart">
-            <Link href="/cart" className="rbt-access-box-wrapper rbt-cart-sidenav-activation">
+            <Link
+              href="/cart"
+              className="rbt-access-box-wrapper rbt-cart-sidenav-activation"
+              onClick={(event) => {
+                event.preventDefault();
+                openCart();
+              }}
+            >
               <div className="rbt-round-btn rbt-bg-static-gray">
                 <i className="fa-regular fa-bag-shopping" />
                 {itemCount > 0 && (

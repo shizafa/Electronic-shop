@@ -1,5 +1,8 @@
+import { CartSideNav } from "@/components/cart/cart-side-nav";
+import { CompareModal } from "@/components/compare/compare-model";
 import { Footer } from "@/components/layout/footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { WishlistModal } from "@/components/wishlist/wishlist-model";
 
 // Layout for every customer-facing route: adds the storefront header/footer.
 // Scoped to the (site) route group so app/admin/** doesn't inherit this chrome.
@@ -28,6 +31,9 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       <SiteHeader />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
+      <CartSideNav />
+      <WishlistModal />
+      <CompareModal />
     </>
   );
 }

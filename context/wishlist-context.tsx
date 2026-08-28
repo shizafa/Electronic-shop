@@ -14,6 +14,9 @@ interface WishlistContextValue {
   addToWishlist: (item: WishlistItem) => void;
   removeFromWishlist: (item: WishlistItem) => void;
   isInWishlist: (productId: string, variantId?: string) => boolean;
+  isWishlistModalOpen: boolean;
+  openWishlistModal: () => void;
+  closeWishlistModal: () => void;
 }
 
 const WishlistContext = createContext<WishlistContextValue | undefined>(undefined);
@@ -23,6 +26,7 @@ const WishlistContext = createContext<WishlistContextValue | undefined>(undefine
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
+  const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
   const previousUserId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -63,7 +67,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <WishlistContext.Provider value={{ items, addToWishlist, removeFromWishlist, isInWishlist }}>
+    <WishlistContext.Provider
+      value={{
+        items,
+        addToWishlist,
+        removeFromWishlist,
+        isInWishlist,
+        isWishlistModalOpen,
+        openWishlistModal: () => setIsWishlistModalOpen(true),
+        closeWishlistModal: () => setIsWishlistModalOpen(false),
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );

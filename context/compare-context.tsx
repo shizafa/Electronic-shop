@@ -14,6 +14,9 @@ interface CompareContextValue {
   removeFromCompare: (productId: string) => void;
   clearCompare: () => void;
   isInCompare: (productId: string) => boolean;
+  isCompareModalOpen: boolean;
+  openCompareModal: () => void;
+  closeCompareModal: () => void;
 }
 
 const CompareContext = createContext<CompareContextValue | undefined>(undefined);
@@ -21,6 +24,7 @@ const CompareContext = createContext<CompareContextValue | undefined>(undefined)
 // Tracks the product-comparison list in state and syncs it to localStorage via lib/compare
 export function CompareProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CompareItem[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   useEffect(() => {
     // localStorage doesn't exist during SSR, so state must start empty on both
@@ -61,7 +65,16 @@ export function CompareProvider({ children }: { children: ReactNode }) {
 
   return (
     <CompareContext.Provider
-      value={{ items, addToCompare, removeFromCompare, clearCompare, isInCompare }}
+      value={{
+        items,
+        addToCompare,
+        removeFromCompare,
+        clearCompare,
+        isInCompare,
+        isCompareModalOpen,
+        openCompareModal: () => setIsCompareModalOpen(true),
+        closeCompareModal: () => setIsCompareModalOpen(false),
+      }}
     >
       {children}
     </CompareContext.Provider>

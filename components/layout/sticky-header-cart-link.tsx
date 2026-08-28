@@ -10,9 +10,10 @@ import { getVariantById } from "@/lib/products";
 // in the cart) — duplicated rather than shared, since the two markups differ enough
 // (label/price layout) that a shared component would need branching just to re-skin itself.
 //
-// rbt-cart-sidenav-activation kept (no drawer yet, same as the main bar); links to /cart.
+// Click opens CartSideNav (via CartContext's isCartOpen), same as the main bar's cart link;
+// href="/cart" stays as a no-JS fallback.
 export function StickyHeaderCartLink() {
-  const { items, itemCount } = useCart();
+  const { items, itemCount, openCart } = useCart();
   const [variantPrices, setVariantPrices] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -40,7 +41,14 @@ export function StickyHeaderCartLink() {
 
   return (
           <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-5 rbt-access-box-has-bg-hover rbt-mini-cart tooltips tooltip-distance-lg" data-tooltip="Cart" data-tooltip-position="bottom">
-            <Link className="rbt-cart-sidenav-activation" href="/cart">
+            <Link
+              className="rbt-cart-sidenav-activation"
+              href="/cart"
+              onClick={(event) => {
+                event.preventDefault();
+                openCart();
+              }}
+            >
               <span className="rbt-round-btn has-rbt-md-fsize">
                 <i className="fa-regular fa-bag-shopping" />
                 {itemCount > 0 && (

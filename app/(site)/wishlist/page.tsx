@@ -8,9 +8,5 @@ export const metadata: Metadata = {
 
 // /wishlist route: renders the wishlist view (guest-accessible, unlike /account/wishlist)
 export default function WishlistPage() {
-  return (
-    <div className="container-page py-8">
-      <WishlistView />
-    </div>
-  );
+  return <WishlistView />;
 }

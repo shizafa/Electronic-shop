@@ -15,6 +15,9 @@ interface CartContextValue {
   updateQuantity: (variantId: string, quantity: number) => void;
   removeFromCart: (variantId: string) => void;
   clearCart: () => void;
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -24,6 +27,7 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const previousUserId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -84,7 +88,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, itemCount, addToCart, updateQuantity, removeFromCart, clearCart }}
+      value={{
+        items,
+        itemCount,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        clearCart,
+        isCartOpen,
+        openCart: () => setIsCartOpen(true),
+        closeCart: () => setIsCartOpen(false),
+      }}
     >
       {children}
     </CartContext.Provider>

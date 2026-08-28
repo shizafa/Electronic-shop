@@ -146,6 +146,18 @@ body:has(.rbt-header .mainmenu > li.with-rbt-megamenu:hover) footer {
   transition: filter 0.2s ease;
 }
 
+/* Same treatment for the cart side-nav (cart-side-nav.tsx): blurs header/main/footer while
+   it's open. Its "side-menu-active" activation class is real style.min.css (not invented
+   here) — see .rbt-cart-side-menu.side-menu-active. Unlike the megamenu, the drawer opens on
+   click rather than hover, so header is included too (no risk of blurring the trigger you're
+   still pointing at). */
+body:has(.rbt-cart-side-menu.side-menu-active) header,
+body:has(.rbt-cart-side-menu.side-menu-active) main,
+body:has(.rbt-cart-side-menu.side-menu-active) footer {
+  filter: blur(6px);
+  transition: filter 0.2s ease;
+}
+
 /* Shop megamenu now gives each category its own column (nav-menu.tsx's megaMenuColumnClass),
    narrower than the template's original 4-wide layout — sized down from the template's
    default b1 (16px) list items so a longer product name doesn't wrap inside the tighter
