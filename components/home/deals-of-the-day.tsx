@@ -33,6 +33,9 @@ function renderGrid(products: Product[], categories: Category[], priorityCount: 
 // Homepage "Deals of The Day" section: same product data used elsewhere on the page
 // (featured products, non-featured as "new arrivals", anything with a live discount as
 // "on sale" — same definition as /deals), split across three tabs instead of one list.
+//
+// Always rendered below-the-fold via DealsOfTheDayLazy, so no tab gets priority-loaded images
+// — by the time this mounts, nothing here is above the fold to begin with.
 export function DealsOfTheDay({ products, categories }: DealsOfTheDayProps) {
   const bestSellers = products.filter((product) => product.featured).slice(0, TAB_PRODUCT_LIMIT);
   const newArrivals = products.filter((product) => !product.featured).slice(0, TAB_PRODUCT_LIMIT);
@@ -43,7 +46,7 @@ export function DealsOfTheDay({ products, categories }: DealsOfTheDayProps) {
   return (
     <div id="rbt-product-block-01" className="rbt-component-area rbt-catagories-area rbt-section-gap2 rbt-bg-color-gray-light">
       <DealsOfTheDayTabs
-        bestSellers={renderGrid(bestSellers, categories, 4)}
+        bestSellers={renderGrid(bestSellers, categories, 0)}
         newArrivals={renderGrid(newArrivals, categories, 0)}
         onSale={renderGrid(onSale, categories, 0)}
         viewAllHref="/deals"

@@ -1,37 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
-import { resolveBrandLogo } from "@/lib/brand-logo";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant } from "@/lib/product-helpers";
-import { getAllProducts } from "@/lib/products";
-import type { Product } from "@/types/product";
 
-function discountPercentFor(product: Product): number | undefined {
-  const variant = getDisplayVariant(product);
-  if (variant.compareAtPrice === undefined || variant.compareAtPrice <= variant.price) return undefined;
-  return Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100);
+// One brand tile's worth of already-resolved, plain data. Logo resolution (resolveBrandLogo)
+// and the discount aggregation both need server-only APIs (fs, the Supabase read), so both
+// happen in brand-logos-loader.ts — this component only ever renders plain data, which is what
+// lets it be invoked from the client-side BrandLogosLazy after it scrolls into view.
+export interface BrandTile {
+  brandName: string;
+  logoSrc?: string;
+  maxDiscount: number;
+}
+
+interface BrandLogosProps {
+  brands: BrandTile[];
 }
 
 // Homepage brand strip: real brands pulled from the catalog, with each tile's discount
 // computed from that brand's actual products (not invented per-brand promo numbers)
-export async function BrandLogos() {
-  const products = await getAllProducts();
-
-  const brands = new Map<string, { count: number; maxDiscount: number }>();
-  for (const product of products) {
-    const existing = brands.get(product.brand) ?? { count: 0, maxDiscount: 0 };
-    const discount = discountPercentFor(product) ?? 0;
-    brands.set(product.brand, {
-      count: existing.count + 1,
-      maxDiscount: Math.max(existing.maxDiscount, discount),
-    });
-  }
-
-  // Template ships exactly 10 brand tiles; show the 10 brands with the most products.
-  const brandList = Array.from(brands.entries())
-    .sort(([, a], [, b]) => b.count - a.count)
-    .slice(0, 10);
-  if (brandList.length === 0) return null;
+export function BrandLogos({ brands }: BrandLogosProps) {
+  if (brands.length === 0) return null;
 
   return (
     <div className="rbt-component-area rbt-catagories-area rbt-section-gap2 rbt-bg-color-gray-light">
@@ -58,9 +46,7 @@ export async function BrandLogos() {
           </div>
           <div className="rbt-fshape-box rbt-fshape-box-py-inc">
             <div className="row row--12 mt_dec--24">
-              {brandList.map(([brandName, { maxDiscount }]) => {
-                const logoSrc = resolveBrandLogo(brandName);
-                return (
+              {brands.map(({ brandName, logoSrc, maxDiscount }) => (
                 <div className="col-lg-1-5 col-lg-4 col-md-4 col-sm-6 col-6 mt--24" key={brandName}>
                   <div className="rbt-brand text-center style-one rbt-scroll-trigger fade_in animation-order-1">
                     <Link href={`/search?q=${encodeURIComponent(brandName)}`}>
@@ -87,8 +73,7 @@ export async function BrandLogos() {
                     </Link>
                   </div>
                 </div>
-                );
-              })}
+              ))}
             </div>
           </div>
         </div>

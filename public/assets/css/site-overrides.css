@@ -179,6 +179,39 @@ body:has(.rbt-header .mainmenu > li.with-rbt-megamenu:hover) footer {
   line-height: normal !important;
 }
 
+/* Skeleton loading primitives (components/ui/skeleton-box.tsx, skeleton-text.tsx): shimmer
+   built from style.min.css's own gray tokens rather than hardcoded greys, so it sits on the
+   template's palette. Kept here (not globals.css) so it's storefront-only like every other
+   rule in this file — the fallback values after each var() keep it inert-but-visible if this
+   class is ever reached from outside a page that loads the template stylesheet. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-gray-150, #f6f6f6);
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(90deg, transparent, var(--color-gray-200, #e6e6e6), transparent);
+  animation: skeleton-shimmer-sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    content: none;
+    animation: none;
+  }
+}
+
 /* Tailwind's utility scanner sees the literal class name "collapse" in the Bootstrap-collapse
    widgets we rebuild with useState (sidebar-filter.tsx, per CLAUDE.md's no-Bootstrap-JS rule)
    and generates its own `.collapse{visibility:collapse}` (Tailwind's table-row-hiding
