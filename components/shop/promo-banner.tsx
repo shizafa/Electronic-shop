@@ -33,7 +33,10 @@ export function PromoBanner() {
                     </Link>
                   </div>
                   <a href="#" className="product-img position-bottom d-none d-xl-block">
-                    <img src="/assets/images/splash/menu-banner/menu-prd-01.webp" alt="Eccommerce Product" />
+                    {/* Template src (assets/images/splash/menu-banner/menu-prd-01.webp) was never
+                        pasted into public/ and 404s — swapped for the decorative asset actually
+                        uploaded, same fix as components/layout/nav-menu.tsx. */}
+                    <img src="/assets/images/promo-banner.webp" alt="Eccommerce Product" />
                   </a>
                 </div>
               </div>

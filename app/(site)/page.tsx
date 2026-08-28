@@ -29,7 +29,7 @@ export default function Home() {
       <BrandLogosLazy />
 
       <div className="container-page flex justify-center py-4">
-        <Button size="lg" className="h-auto rounded-full px-6 py-2.5 text-sm" asChild>
+        <Button size="lg" className="h-auto gap-2 rounded-full px-10 py-3.5 text-lg [&_svg]:size-9" asChild>
           <Link href="/shop">
             {t("nav.showAllProducts")}
             <ArrowRight />

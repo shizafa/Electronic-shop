@@ -83,6 +83,25 @@ html body .container-page {
   vertical-align: middle;
 }
 
+/* Same Preflight rule (this time targeting <img>, not <svg>) breaks the topbar's language
+   switcher (header-topbar.tsx): the flag <img class="left-image"> becomes a block box, so it
+   drops onto its own line above the "English" text/chevron instead of sitting inline beside
+   them. style.min.css's own .left-image rule only sets width/height/margin, not display. */
+.left-image {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Topbar right-side links (Store Location / Track Your Order / currency / language,
+   header-topbar.tsx): style.min.css has a same-purpose font-size rule
+   (.rbt-header-wrapper-one .header-info{font-size:var(--font-size-b3)}), but it's scoped to
+   a ".rbt-header-wrapper-one" ancestor class this topbar variant doesn't use, so it never
+   matches and these links fall back to the 16px body default — oversized next to the 12px
+   ticker text on the topbar's left side. */
+.rbt-topbar-section .rbt-header-right {
+  font-size: var(--font-size-b3);
+}
+
 /* main-bar-search.tsx's category <select>: style.min.css's own dropdown-caret rules
    (.rbt-modern-select .bootstrap-select .dropdown-toggle::after) only fire on the
    button/dropdown markup the bootstrap-select JS plugin generates. We render a plain

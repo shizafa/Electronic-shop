@@ -81,7 +81,10 @@
                   View Details
                 </a>
                 <a href="#" className="product-img position-bottom mt--24">
-                  <img src="assets/images/splash/menu-banner/menu-prd-03-lg.webp" alt="Eccommerce Product" />
+                  {/* Template src (assets/images/splash/menu-banner/menu-prd-03-lg.webp) was never
+                      pasted into public/ and 404s — swapped for the decorative asset actually
+                      uploaded, same fix as components/layout/nav-menu.tsx. */}
+                  <img src="/assets/images/promo-banner.webp" alt="Eccommerce Product" />
                 </a>
               </div>
             </div>

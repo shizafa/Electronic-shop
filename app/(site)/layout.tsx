@@ -6,6 +6,16 @@ import { SiteHeader } from "@/components/layout/site-header";
 export default function SiteLayout({ children }: LayoutProps<"/">) {
   return (
     <>
+      {/* style.min.css sets --font-primary: "Cabin", sans-serif (and uses it on nearly every
+          rule) but never loads the actual webfont — it was silently falling back to the
+          browser's default sans-serif. Loaded first so it's ready before the template CSS
+          paints. */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap"
+      />
       {/* Template CSS, storefront-only: loaded here rather than in app/layout.tsx so
           app/admin/** doesn't inherit Bootstrap. Order matters — bootstrap, then icons,
           then the template stylesheet that overrides both. */}
