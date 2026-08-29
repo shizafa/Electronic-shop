@@ -7,7 +7,7 @@ const helpLinks = [
   { href: "/account/orders", labelKey: "footer.yourOrders" },
   { href: "/policies/returns-warranty", labelKey: "footer.returnsWarranty" },
   { href: "/policies/shipping-installation", labelKey: "footer.shippingInstallation" },
-  { href: "/policies/privacy", labelKey: "footer.privacyPolicy" },
+  { href: "/privacy", labelKey: "footer.privacyPolicy" },
   { href: "/policies/terms", labelKey: "footer.termsOfService" },
   { href: "/faqs", labelKey: "footer.faqs" },
 ];
@@ -19,7 +19,7 @@ const aboutLinks = [
 
 const policyLinks = [
   { href: "/policies/returns-warranty", labelKey: "footer.returnsWarranty" },
-  { href: "/policies/privacy", labelKey: "footer.privacyPolicy" },
+  { href: "/privacy", labelKey: "footer.privacyPolicy" },
   { href: "/policies/terms", labelKey: "footer.termsOfService" },
 ];
 
