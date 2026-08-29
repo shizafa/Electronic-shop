@@ -254,3 +254,13 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 .collapse {
   visibility: visible;
 }
+
+/* Account sidebar (app/(site)/account/layout.tsx): style.min.css never gives
+   .rbt-sidebar-nav-list's a/button rows an explicit width, so plain-content rows (no badge)
+   were sizing to their own icon+label content instead of filling the sidebar — only the
+   active row (which gets a background per .active) made its real width visible. Forces every
+   row to the same full-width box regardless of active state or content length. */
+.rbt-sidebar-nav-list a,
+.rbt-sidebar-nav-list button {
+  width: 100%;
+}
