@@ -41,7 +41,7 @@ export function CompareView() {
 
   if (isCatalogLoading) {
     return (
-      <div className="py-16 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
+      <div className="py-16 text-center text-base text-muted-foreground">{t("common.loading")}</div>
     );
   }
 

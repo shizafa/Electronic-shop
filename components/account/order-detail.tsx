@@ -27,7 +27,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 
   if (isAuthLoading || order === undefined) {
     return (
-      <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
+      <div className="container-page py-12 text-base text-muted-foreground">{t("common.loading")}</div>
     );
   }
 

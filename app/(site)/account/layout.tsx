@@ -62,7 +62,7 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
 
   if (isLoading || !user) {
     return (
-      <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
+      <div className="container-page py-12 text-base text-muted-foreground">{t("common.loading")}</div>
     );
   }
 

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cities } from "@/data/cities";
 import { t } from "@/lib/i18n";
 import type { Address } from "@/types/user";
@@ -40,7 +38,21 @@ interface AddressFormProps {
   savedAddresses?: Address[];
 }
 
-// AddressForm — collects a shipping/billing address, with quick-select buttons for saved addresses
+// AddressForm — collects a shipping/billing address (shipping.tsx's form fields, titled "Shipping
+// Options" in the template but structurally the real address form). Reconciled against the real
+// AddressFormValues model: First name/Last name are combined into one Full Name field (matching
+// the single-name-field precedent from login/signup), Email is dropped (addresses don't carry an
+// email — the account's own email is captured at signup, not per-address), and Postcode is dropped
+// (no postcode-based feature exists in the app, same reasoning as checkout-flow.tsx's inert
+// postcode field). A City-dependent Area select is added since the real model requires one and the
+// template has no equivalent field for it. City/Area use plain <select> instead of the template's
+// bootstrap-select live-search (that needs Bootstrap JS, which isn't loaded) — a native select
+// needs no JS plugin at all. The "Same as delivery address" checkbox is NOT reproduced here even
+// though the template nests it inside this form: this component is reused to render the billing
+// form too, so that decision has to live one level up, in checkout-flow.tsx.
+// The saved-addresses quick-select has no template equivalent (the template has no accounts
+// feature) — built from the same radio-accordion list treatment used elsewhere in this checkout
+// (installation-scheduler.tsx's shipping-method list).
 export function AddressForm({ idPrefix, values, onChange, savedAddresses = [] }: AddressFormProps) {
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
 
@@ -66,115 +78,155 @@ export function AddressForm({ idPrefix, values, onChange, savedAddresses = [] }:
   const selectedCity = cities.find((city) => city.name === values.city);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       {savedAddresses.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="rbt-shipping-method mb-lg-4" role="list">
           {savedAddresses.map((address) => (
-            <button
-              key={address.id}
-              type="button"
-              onClick={() => selectSavedAddress(address)}
-              className={`rounded-lg border p-3 text-left text-sm transition-colors ${
-                selectedSavedId === address.id ? "border-primary bg-primary/5" : "border-border"
-              }`}
-            >
-              <p className="font-medium text-foreground">{address.label}</p>
-              <p className="text-muted-foreground">
-                {address.fullName} · {address.phone}
-              </p>
-              <p className="text-muted-foreground">
-                {address.addressLine}, {address.area}, {address.city}
-              </p>
-            </button>
+            <div className="rbt-single-shipping-method rbt-radio-accordion border-bottom" key={address.id}>
+              <div className="form-check mb-0" role="listitem">
+                <label className="form-check-label d-flex align-items-center py-3">
+                  <input
+                    type="radio"
+                    className="rbt-form-check-input me-2 me-sm-3"
+                    name={`${idPrefix}-saved-address`}
+                    checked={selectedSavedId === address.id}
+                    onChange={() => selectSavedAddress(address)}
+                  />
+                  <span>
+                    <span className="d-block fw-semibold">
+                      {address.label}
+                    </span>
+                    <span className="d-block fs-sm text-body-secondary">
+                      {address.fullName} · {address.phone}
+                      <br />
+                      {address.addressLine}, {address.area}, {address.city}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
           ))}
-          <button
-            type="button"
-            onClick={selectNewAddress}
-            className={`rounded-lg border p-3 text-left text-sm font-medium transition-colors ${
-              selectedSavedId === null
-                ? "border-primary bg-primary/5 text-foreground"
-                : "border-border text-muted-foreground"
-            }`}
-          >
-            {t("checkout.useNewAddress")}
-          </button>
+          <div className="rbt-single-shipping-method rbt-radio-accordion border-bottom">
+            <div className="form-check mb-0" role="listitem">
+              <label className="form-check-label d-flex align-items-center py-3">
+                <input
+                  type="radio"
+                  className="rbt-form-check-input me-2 me-sm-3"
+                  name={`${idPrefix}-saved-address`}
+                  checked={selectedSavedId === null}
+                  onChange={selectNewAddress}
+                />
+                {t("checkout.useNewAddress")}
+              </label>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${idPrefix}-fullName`} className="text-sm font-medium text-foreground">
-            {t("checkout.fullName")}
-          </label>
-          <Input
-            id={`${idPrefix}-fullName`}
-            required
-            value={values.fullName}
-            onChange={(event) => onChange({ ...values, fullName: event.target.value })}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${idPrefix}-phone`} className="text-sm font-medium text-foreground">
-            {t("auth.phone")}
-          </label>
-          <Input
-            id={`${idPrefix}-phone`}
-            type="tel"
-            required
-            value={values.phone}
-            onChange={(event) => onChange({ ...values, phone: event.target.value })}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-foreground">{t("checkout.city")}</label>
-          <Select value={values.city} onValueChange={(city) => onChange({ ...values, city, area: "" })}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("checkout.selectCity")} />
-            </SelectTrigger>
-            <SelectContent>
+      <form className="needs-validation d-block" onSubmit={(event) => event.preventDefault()}>
+        <div className="row row-cols-1 row-cols-sm-2 g-3 g-sm-4 mb-4">
+          <div className="col">
+            <label htmlFor={`${idPrefix}-fullName`} className="rbt-field-label">
+              {t("checkout.fullName")}
+              <span className="rbt-text-color-danger">
+                *
+              </span>
+            </label>
+            <input
+              type="text"
+              className="form-control form-control-lg"
+              id={`${idPrefix}-fullName`}
+              placeholder="e.g. Ahmed Khan"
+              required
+              value={values.fullName}
+              onChange={(event) => onChange({ ...values, fullName: event.target.value })}
+            />
+          </div>
+          <div className="col">
+            <label htmlFor={`${idPrefix}-phone`} className="rbt-field-label">
+              {t("auth.phone")}
+              <span className="rbt-text-color-danger">
+                *
+              </span>
+            </label>
+            <input
+              type="tel"
+              className="form-control form-control-lg"
+              id={`${idPrefix}-phone`}
+              placeholder="e.g. 0300 1234567"
+              required
+              value={values.phone}
+              onChange={(event) => onChange({ ...values, phone: event.target.value })}
+            />
+          </div>
+          <div className="col">
+            <label htmlFor={`${idPrefix}-city`} className="rbt-field-label">
+              {t("checkout.city")}
+              <span className="rbt-text-color-danger">
+                *
+              </span>
+            </label>
+            <select
+              id={`${idPrefix}-city`}
+              className="form-control form-control-lg"
+              required
+              value={values.city}
+              onChange={(event) => onChange({ ...values, city: event.target.value, area: "" })}
+            >
+              <option value="">
+                {t("checkout.selectCity")}
+              </option>
               {cities.map((city) => (
-                <SelectItem key={city.id} value={city.name}>
+                <option key={city.id} value={city.name}>
                   {city.name}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-foreground">{t("checkout.area")}</label>
-          <Select
-            value={values.area}
-            onValueChange={(area) => onChange({ ...values, area })}
-            disabled={!selectedCity}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t("checkout.selectArea")} />
-            </SelectTrigger>
-            <SelectContent>
+            </select>
+          </div>
+          <div className="col">
+            <label htmlFor={`${idPrefix}-area`} className="rbt-field-label">
+              {t("checkout.area")}
+              <span className="rbt-text-color-danger">
+                *
+              </span>
+            </label>
+            <select
+              id={`${idPrefix}-area`}
+              className="form-control form-control-lg"
+              required
+              disabled={!selectedCity}
+              value={values.area}
+              onChange={(event) => onChange({ ...values, area: event.target.value })}
+            >
+              <option value="">
+                {t("checkout.selectArea")}
+              </option>
               {selectedCity?.areas.map((area) => (
-                <SelectItem key={area} value={area}>
+                <option key={area} value={area}>
                   {area}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+          </div>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${idPrefix}-addressLine`} className="text-sm font-medium text-foreground">
-          {t("checkout.addressLine")}
-        </label>
-        <Input
-          id={`${idPrefix}-addressLine`}
-          required
-          value={values.addressLine}
-          onChange={(event) => onChange({ ...values, addressLine: event.target.value })}
-        />
-      </div>
+        <div className="mb-3">
+          <label htmlFor={`${idPrefix}-addressLine`} className="rbt-field-label">
+            {t("checkout.addressLine")}
+            <span className="rbt-text-color-danger">
+              *
+            </span>
+          </label>
+          <input
+            type="text"
+            className="form-control form-control-lg"
+            id={`${idPrefix}-addressLine`}
+            placeholder="House #, Street, Area landmark"
+            required
+            value={values.addressLine}
+            onChange={(event) => onChange({ ...values, addressLine: event.target.value })}
+          />
+        </div>
+      </form>
     </div>
   );
 }

@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AddressForm,
   emptyAddressFormValues,
   type AddressFormValues,
 } from "@/components/checkout/address-form";
+import { CheckoutSidebar } from "@/components/checkout/checkout-sidebar";
 import { InstallationScheduler } from "@/components/checkout/installation-scheduler";
 import { OrderReview } from "@/components/checkout/order-review";
 import { PaymentMethodSelector } from "@/components/checkout/payment-method";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
@@ -21,6 +21,17 @@ import { t } from "@/lib/i18n";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
+
+// Titles for the numbered step shell (checkout-delivery-step-one.html's rbt-checkout-wrapper-box).
+// "Delivery Details"/"Shipping Options"/"Secure Payment" are the template's own wording for the
+// address/installation/payment steps; "review" has no template page yet, so it falls back to the
+// existing checkout.step.review translation until checkout-thankyou.html (or similar) is pasted.
+const STEP_TITLES: Record<CheckoutStep, string> = {
+  address: "Delivery Details",
+  installation: "Shipping Options",
+  payment: "Secure Payment",
+  review: t("checkout.step.review"),
+};
 
 // CheckoutFlow — multi-step checkout state machine: address -> (installation) -> payment -> review -> place order
 export function CheckoutFlow() {
@@ -81,7 +92,7 @@ export function CheckoutFlow() {
 
   if (isAuthLoading || isCatalogLoading || !user || items.length === 0) {
     return (
-      <div className="container-page py-12 text-sm text-muted-foreground">{t("common.loading")}</div>
+      <div className="container-page py-12 text-base text-muted-foreground">{t("common.loading")}</div>
     );
   }
 
@@ -149,108 +160,307 @@ export function CheckoutFlow() {
   }
 
   return (
-    <div className="container-page py-8">
-      <h1 className="text-2xl font-semibold sm:text-3xl">{t("common.checkout")}</h1>
-
-      <ol className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        {steps.map((step, index) => (
-          <li
-            key={step}
-            className={`font-medium ${
-              index === stepIndex
-                ? "text-primary"
-                : index < stepIndex
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-            }`}
-          >
-            {index + 1}. {t(`checkout.step.${step}`)}
-          </li>
-        ))}
-      </ol>
-
-      <div className="mt-6 max-w-2xl">
-        {currentStep === "address" && (
-          <div className="flex flex-col gap-6">
-            <div>
-              <p className="mb-2 text-sm font-semibold text-foreground">{t("checkout.shippingAddress")}</p>
-              <AddressForm
-                idPrefix="shipping"
-                values={shippingAddress}
-                onChange={setShippingAddress}
-                savedAddresses={user.addresses}
-              />
-            </div>
-
-            <label className="flex items-center gap-2 text-sm text-foreground">
-              <Checkbox
-                checked={billingSameAsShipping}
-                onCheckedChange={(checked) => setBillingSameAsShipping(checked === true)}
-              />
-              {t("checkout.billingSameAsShipping")}
-            </label>
-
-            {!billingSameAsShipping && (
-              <div>
-                <p className="mb-2 text-sm font-semibold text-foreground">{t("checkout.billingAddress")}</p>
-                <AddressForm idPrefix="billing" values={billingAddress} onChange={setBillingAddress} />
+    <>
+      <div className="rbt-breadcrumb-two rbt-bg-color-white">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="rbt-breadcrumb-inner text-left">
+                <ul className="rbt-breadcrumb-page-list justify-content-start mt--0">
+                  <li className="rbt-breadcrumb-item">
+                    <Link href="/">
+                      Home
+                    </Link>
+                  </li>
+                  <li>
+                    <div className="icon-right">
+                      <i className="fa-solid fa-chevron-right" />
+                    </div>
+                  </li>
+                  <li className="rbt-breadcrumb-item">
+                    <a href="#">
+                      Checkout
+                    </a>
+                  </li>
+                  <li>
+                    <div className="icon-right">
+                      <i className="fa-solid fa-chevron-right" />
+                    </div>
+                  </li>
+                  <li className="rbt-breadcrumb-item active">
+                    {STEP_TITLES[currentStep]}
+                  </li>
+                </ul>
               </div>
-            )}
-          </div>
-        )}
-
-        {currentStep === "installation" &&
-          (isInstallationCitySupported ? (
-            <InstallationScheduler value={installation} onChange={setInstallation} />
-          ) : (
-            <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-              {t("checkout.installationNotSupported")}
             </div>
-          ))}
-
-        {currentStep === "payment" && (
-          <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} orderTotal={total} />
-        )}
-
-        {currentStep === "review" && (
-          <OrderReview
-            lineItems={lineItems}
-            shippingAddress={shippingAddress}
-            billingAddress={billingSameAsShipping ? shippingAddress : billingAddress}
-            billingSameAsShipping={billingSameAsShipping}
-            installation={isInstallationCitySupported ? installation : undefined}
-            paymentMethod={paymentMethod}
-            subtotal={subtotal}
-            shippingFee={shippingFee}
-            total={total}
-          />
-        )}
-
-        {placeOrderError && <p className="mt-4 text-sm text-destructive">{placeOrderError}</p>}
-
-        <div className="mt-6 flex justify-between">
-          <Button variant="outline" onClick={goBack} disabled={stepIndex === 0}>
-            {t("checkout.back")}
-          </Button>
-
-          {currentStep === "review" ? (
-            <Button onClick={handlePlaceOrder} disabled={isPlacingOrder}>
-              {t("checkout.placeOrder")}
-            </Button>
-          ) : (
-            // "Continue" is blocked until the current step's required fields are valid
-            <Button
-              onClick={goNext}
-              disabled={
-                (currentStep === "address" && !isAddressValid) ||
-                (currentStep === "installation" && !isInstallationValid)
-              }
-            >
-              {t("checkout.continue")}
-            </Button>
-          )}
+          </div>
         </div>
       </div>
-    </div>
+      <div className="rbt-component-area rbt-cart-page rbt-section-gapBottom rbt-bg-color-white">
+        <div className="container">
+          <div className="row row--12 mt_dec--24">
+            <div className="col-12 col-md-12 col-lg-8 mt--24">
+              <div className="rbt-transparent-table-one-wrapper rbt-has-bg-gray">
+                <div className="rbt-checkout-wrapper-box">
+                  {steps.map((step, index) => {
+                    // upcoming steps (not reached yet) show only the numbered header, no content
+                    if (index > stepIndex) {
+                      return (
+                        <div className="rbt-checkout-single-content" key={step}>
+                          <span className="rbt-checkout-step">
+                            {index + 1}
+                          </span>
+                          <h3 className="title h5">
+                            {STEP_TITLES[step]}
+                          </h3>
+                        </div>
+                      );
+                    }
+
+                    // completed steps show a checkmark and a read-only recap of what was entered,
+                    // with an Edit link that jumps back to that step
+                    if (index < stepIndex) {
+                      return (
+                        <div className="rbt-checkout-single-content" key={step}>
+                          <span className="rbt-checkout-step">
+                            <i className="fa-regular fa-check" />
+                          </span>
+                          <div className="rbt-checkout-content-inner">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <h3 className="title h5">
+                                {STEP_TITLES[step]}
+                              </h3>
+                              <div className="rbt-link-hover">
+                                <a
+                                  href="#"
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    setStepIndex(index);
+                                  }}
+                                >
+                                  Edit
+                                </a>
+                              </div>
+                            </div>
+                            <div className="content">
+                              {step === "address" && (
+                                <p className="desc mt--12 mb--0">
+                                  {shippingAddress.fullName} · {shippingAddress.phone}
+                                  <br />
+                                  {shippingAddress.addressLine}, {shippingAddress.area}, {shippingAddress.city}
+                                </p>
+                              )}
+                              {step === "installation" && (
+                                <p className="desc mt--12 mb--0">
+                                  {isInstallationCitySupported && installation
+                                    ? `${installation.date} · ${installation.timeSlot}`
+                                    : t("checkout.installationNotSupported")}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="rbt-checkout-single-content active" key={step}>
+                        <span className="rbt-checkout-step">
+                          {index + 1}
+                        </span>
+                        <div className="rbt-checkout-content-inner">
+                          <h3 className="title h5">
+                            {STEP_TITLES[step]}
+                          </h3>
+                          <div className="content">
+                            {step === "address" && (
+                              <>
+                                <p className="desc">
+                                  Provide your shipping address to ensure a smooth and timely
+                                  arrival. 🚚
+                                </p>
+                                <div className="form-area">
+                                  <div className="w-100">
+                                    <label htmlFor="postcode" className="form-label">
+                                      Postcode :
+                                    </label>
+                                    <input type="text" className="form-control form-control-lg" id="postcode" placeholder="e.g. SH 5AP" />
+                                  </div>
+                                  <a href="#" className="rbt-btn splash-btn icon-reverse-right rbt-rounded--4 border-0">
+                                    <span className="icon-left">
+                                      <i className="fa-regular fa-calculator-simple mr--4" />
+                                    </span>
+                                    <span>
+                                      Calculate cost
+                                    </span>
+                                    <span className="icon-right">
+                                      <i className="fa-sharp fa-regular fa-arrow-right ml--4" />
+                                    </span>
+                                  </a>
+                                </div>
+
+                                <div className="mt--24">
+                                  <p className="mb--8 rbt-text-bold">{t("checkout.shippingAddress")}</p>
+                                  <AddressForm
+                                    idPrefix="shipping"
+                                    values={shippingAddress}
+                                    onChange={setShippingAddress}
+                                    savedAddresses={user.addresses}
+                                  />
+                                </div>
+
+                                <h3 className="h6 mb--8 mt--16">
+                                  {t("checkout.billingAddress")}
+                                  <i
+                                    className="fa-regular fa-circle-info align-middle ms-2 tooltips"
+                                    data-tooltip="Uncheck the checkbox below if your Billing address should be different from your Shipping address."
+                                    data-tooltip-position="right"
+                                  />
+                                </h3>
+                                <div className="form-check mb-lg-4">
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    id="same-address"
+                                    checked={billingSameAsShipping}
+                                    onChange={(event) => setBillingSameAsShipping(event.target.checked)}
+                                  />
+                                  <label htmlFor="same-address" className="form-check-label">
+                                    {t("checkout.billingSameAsShipping")}
+                                  </label>
+                                </div>
+
+                                {!billingSameAsShipping && (
+                                  <div className="mt--16">
+                                    <AddressForm idPrefix="billing" values={billingAddress} onChange={setBillingAddress} />
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {step === "installation" &&
+                              (isInstallationCitySupported ? (
+                                <>
+                                  <h3 className="h6 border-bottom pb-4 mb-0 mt--12">
+                                    Choose shipping method
+                                  </h3>
+                                  <InstallationScheduler value={installation} onChange={setInstallation} />
+                                </>
+                              ) : (
+                                <p className="desc">
+                                  {t("checkout.installationNotSupported")}
+                                </p>
+                              ))}
+
+                            {step === "payment" && (
+                              <>
+                                <PaymentMethodSelector
+                                  value={paymentMethod}
+                                  onChange={setPaymentMethod}
+                                  orderTotal={total}
+                                />
+                                {/* No coupon/promo-code system exists in the app — kept as inert
+                                    chrome, same treatment as Share Cart in checkout-sidebar.tsx. */}
+                                <div className="nav pb-3 mb-2 mb-sm-3 rbt-link-hover mt-2">
+                                  <a className="nav-link animate-underline rbt-text-color-gray-400 p-0 rbt-text-bold" href="#!">
+                                    <i className="fa-regular fa-circle-plus fs-xl ms-a me-2" />
+                                    <span className="animate-target">
+                                      Add a promo code or a gift card
+                                    </span>
+                                  </a>
+                                </div>
+                                {/* Orders have no notes/comments field — kept as an unwired,
+                                    cosmetic textarea, same treatment as the postcode field. */}
+                                <textarea className="mb-4" rows={3} placeholder="Additional comments" />
+                                <div className="form-check mb-lg-4">
+                                  <input type="checkbox" className="form-check-input" id="accept-terms" />
+                                  <label htmlFor="accept-terms" className="form-check-label nav align-items-center rbt-link-hover">
+                                    I accept the
+                                    <Link className="nav-link ms-1 p-0" href="/policies/terms">
+                                      Terms and
+                                      Conditions
+                                    </Link>
+                                  </label>
+                                </div>
+                              </>
+                            )}
+
+                            {step === "review" && (
+                              <OrderReview
+                                lineItems={lineItems}
+                                shippingAddress={shippingAddress}
+                                billingAddress={billingSameAsShipping ? shippingAddress : billingAddress}
+                                billingSameAsShipping={billingSameAsShipping}
+                                installation={isInstallationCitySupported ? installation : undefined}
+                                paymentMethod={paymentMethod}
+                                subtotal={subtotal}
+                                shippingFee={shippingFee}
+                                total={total}
+                              />
+                            )}
+
+                            {placeOrderError && (
+                              <p className="rbt-text-color-danger mt--16 mb--0">
+                                {placeOrderError}
+                              </p>
+                            )}
+
+                            <div className="rbt-btn-group mt--24">
+                              <button
+                                type="button"
+                                className="rbt-btn rbt-btn-border"
+                                onClick={goBack}
+                                disabled={stepIndex === 0}
+                              >
+                                {t("checkout.back")}
+                              </button>
+
+                              {currentStep === "review" ? (
+                                <button
+                                  type="button"
+                                  className="rbt-btn splash-btn icon-reverse-left rbt-rounded--4"
+                                  onClick={handlePlaceOrder}
+                                  disabled={isPlacingOrder}
+                                >
+                                  <span className="icon-left">
+                                    <i className="fa-sharp fa-regular fa-arrow-right mr--4" />
+                                  </span>
+                                  <span>
+                                    {t("checkout.placeOrder")}
+                                  </span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="rbt-btn splash-btn icon-reverse-left rbt-rounded--4"
+                                  onClick={goNext}
+                                  disabled={
+                                    (currentStep === "address" && !isAddressValid) ||
+                                    (currentStep === "installation" && !isInstallationValid)
+                                  }
+                                >
+                                  <span className="icon-left">
+                                    <i className="fa-sharp fa-regular fa-arrow-right mr--4" />
+                                  </span>
+                                  <span>
+                                    {t("checkout.continue")}
+                                  </span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <CheckoutSidebar lineItems={lineItems} subtotal={subtotal} shippingFee={shippingFee} total={total} />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

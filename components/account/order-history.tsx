@@ -54,13 +54,13 @@ export function OrderHistory() {
   }, [user]);
 
   if (isAuthLoading) {
-    return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
+    return <p className="text-base text-muted-foreground">{t("common.loading")}</p>;
   }
 
   if (!user) return null;
 
   if (isOrdersLoading) {
-    return <p className="text-sm text-muted-foreground">{t("common.loading")}</p>;
+    return <p className="text-base text-muted-foreground">{t("common.loading")}</p>;
   }
 
   const visibleOrders = orders.filter((order) => {
