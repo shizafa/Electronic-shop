@@ -127,6 +127,56 @@ html body .container-page {
   pointer-events: none;
 }
 
+/* main-bar-search.tsx: this template ships two demo looks for the same markup — the
+   "uni-header-swc-one" variant (a bordered select+input box with a separate, gapped round
+   button, style.min.css's own default for this modifier) and a plain "rbt-search-with-category"
+   pill (border-radius:500px, no gap, button flush against the right edge) used elsewhere in the
+   template's own demos. Re-pointed at the pill look here. .border-0 (Bootstrap utility) and
+   .rbt-bg-color-primary (template utility) both carry !important, so beating them needs
+   matching/higher specificity plus !important of our own, not just source order. */
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field {
+  gap: 0;
+  border: 2px solid var(--color-gray-200) !important;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  align-items: stretch;
+}
+
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field .rbt-search-input-section {
+  border: 0;
+  border-radius: 0;
+}
+
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field .rbt-search-input-section .search-by-category::after {
+  display: none;
+}
+
+/* .rbt-inner-search-field's own align-items:center (from style.min.css) sizes flex items to
+   their content by default, so a plain height:100% here can't resolve against the field's own
+   auto (content-driven) height per the CSS percentage-height spec — it silently falls back to
+   the button's intrinsic content height (~16px), leaving gaps above/below the blue background.
+   align-items:stretch above + height:auto here let the flex algorithm stretch the button to the
+   line's cross size instead, so the background fills the pill's full height flush to the edge. */
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field .search-btn.rbt-bg-color-primary {
+  color: var(--color-white);
+  height: auto;
+  border-radius: 0;
+}
+
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field .search-by-category,
+.rbt-search-with-category.uni-header-swc-one .rbt-inner-search-field .rbt-select-activation {
+  width: 150px;
+}
+
+.search-by-category .rbt-select-activation {
+  padding-right: 28px;
+}
+
+.search-by-category-caret {
+  left: auto;
+  right: 12px;
+}
+
 /* main-bar.tsx's .logo renders the site name as plain text (t("site.name")) since there's
    no real logo image yet, so it just inherits body copy's font-size. Sized up here to read
    as a wordmark instead of a nav link. */

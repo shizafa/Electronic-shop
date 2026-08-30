@@ -18,28 +18,43 @@ export default async function DealsPage() {
   );
 
   return (
-    <div className="container-page py-10">
-      <h1 className="text-3xl font-semibold tracking-tight text-foreground">{t("deals.title")}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{t("deals.subtitle")}</p>
-
-      {deals.length > 0 ? (
-        <div className="mt-8">
-          <ProductGrid>
-            {deals.map((product) => {
-              const category = categories.find((candidate) => candidate.id === product.categoryId);
-              return (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  categoryName={category?.name}
-                />
-              );
-            })}
-          </ProductGrid>
+    <div className="rbt-component-area rbt-catagories-area rbt-section-gap2">
+      <div className="container">
+        <div className="row">
+          <div className="col-lg-12">
+            <div className="rbt-component-section-title rbt-gap--4 mb--32 mb_sm--16 p-0 border-0 text-left">
+              <h2 className="rbt-title h4">
+                <span className="rbt-bold--text">{t("deals.title")}</span>
+              </h2>
+              <p className="desc mb--0">{t("deals.subtitle")}</p>
+            </div>
+          </div>
         </div>
-      ) : (
-        <p className="mt-8 text-sm text-muted-foreground">{t("deals.empty")}</p>
-      )}
+
+        {deals.length > 0 ? (
+          <div className="row row--12 mt_dec--24">
+            <ProductGrid>
+              {deals.map((product) => {
+                const category = categories.find((candidate) => candidate.id === product.categoryId);
+                return (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    categoryName={category?.name}
+                    categorySlug={category?.slug}
+                  />
+                );
+              })}
+            </ProductGrid>
+          </div>
+        ) : (
+          <div className="row">
+            <div className="col-12 text-center">
+              <p>{t("deals.empty")}</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
