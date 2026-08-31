@@ -213,7 +213,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     <>
       <PromoBanner />
 
-      <QuickLink categories={categories} products={products} />
+      <QuickLink categories={categories} products={products} activeCategoryIds={activeCategoryIds} />
 
       <div className="container">
       <div className="row mt-2 border-t border-border pt-6">

@@ -376,14 +376,15 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
   flex-wrap: nowrap;
 }
 
-/* /shop grid only (shop-listing.tsx's .shop-product-grid wrapper — not product-card.tsx
-   itself, which is shared by every page that renders ProductCard: home, /deals, /category,
-   search, wishlist, compare). Caps /shop at 3 cards per row instead of the card's own default
-   4-per-row at >=1200px (col-xl-3/col-xxl-3, both width:25%) by matching col-lg-4's real
-   33.33% width — same value bootstrap.min.css already uses for col-lg-4, just extended up
-   through the two wider breakpoints. Each rule stays inside the same min-width its
-   bootstrap.min.css counterpart uses so it doesn't also affect col-md-6/col-sm-6/col-6 below
-   1200px, where 3-or-fewer per row already holds without any override. */
+/* /shop and /category/[slug] grids only (shop-listing.tsx and category-listing.tsx's shared
+   .shop-product-grid wrapper class — not product-card.tsx itself, which is also rendered on
+   home, /deals, search, wishlist, compare, none of which carry this wrapper). Caps these two
+   pages at 3 cards per row instead of the card's own default 4-per-row at >=1200px
+   (col-xl-3/col-xxl-3, both width:25%) by matching col-lg-4's real 33.33% width — same value
+   bootstrap.min.css already uses for col-lg-4, just extended up through the two wider
+   breakpoints. Each rule stays inside the same min-width its bootstrap.min.css counterpart
+   uses so it doesn't also affect col-md-6/col-sm-6/col-6 below 1200px, where 3-or-fewer per
+   row already holds without any override. */
 @media (min-width: 1200px) {
   .shop-product-grid .col-xl-3 {
     width: 33.33333333%;
@@ -393,5 +394,46 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 @media (min-width: 1400px) {
   .shop-product-grid .col-xxl-3 {
     width: 33.33333333%;
+  }
+}
+
+/* components/shop/quick-link.tsx's category circles (.rbt-cat-box-1-rounded is the
+   style.min.css modifier that makes .rbt-image-portion a circle via width/height:100%,
+   border-radius:full). ".inner" is display:grid with no explicit column width, so that 100%
+   resolves against the grid track — which is sized to the widest cell in the column, i.e. the
+   category name text below the image, not the image itself. A long name (e.g. "Air
+   Conditioners") stretches the circle into an oval. Pinning the wrapper to the thumbnail's
+   own fixed 110x110 (quick-link.tsx's THUMBNAIL_WIDTH/HEIGHT) keeps it a true circle
+   regardless of sibling text width. Selector matches style.min.css's own
+   .rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion specificity exactly
+   (4 classes) — a shorter selector here loses to that rule's higher specificity even though
+   this file loads after it. */
+.rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion {
+  width: 110px;
+  height: 110px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Selected-category ring: quick-link.tsx adds is-active to the tile matching the current
+   /category/[slug] page, or any category checked in the /shop sidebar filter. Ring sits
+   outside the circle (outline, not border) so it doesn't eat into the 110x110 image box. */
+.rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded.is-active .rbt-image-portion {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+/* quick-link.tsx's own wrapper sets pt--0 (padding-top:0!important, active at >=992px — its
+   pt_sm--16/pt_md--16 responsive classes already cover the gap below that) assuming whatever
+   precedes it (PromoBanner on /shop, CategoryBanner on /category/[slug]) supplies its own
+   bottom spacing. Neither does, so the category row sits flush against the banner above it
+   with zero gap. .pt--0 alone is too generic to touch (it's also the base class other
+   sections reset to 0 before their own responsive override) — pairing it with
+   rbt-catagories-area scopes this to quick-link.tsx specifically, not
+   components/home/category-tiles.tsx's unrelated rbt-catagories-area section (which already
+   has its own rbt-section-gap2 spacing). */
+@media (min-width: 992px) {
+  .rbt-catagories-area.pt--0 {
+    padding-top: 32px !important;
   }
 }
