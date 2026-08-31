@@ -28,6 +28,8 @@ export const mobilePhoneProducts: Product[] = [
     },
     variantAxes: [storageAxis, colourAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-samsung-s24-128-black",
@@ -36,6 +38,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Onyx Black" },
         price: 249000,
         stock: 14,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-samsung-s24-128-gray",
@@ -44,6 +47,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Marble Gray" },
         price: 249000,
         stock: 9,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-samsung-s24-256-black",
@@ -53,6 +57,7 @@ export const mobilePhoneProducts: Product[] = [
         price: 279000,
         compareAtPrice: 295000,
         stock: 6,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-samsung-s24-256-gray",
@@ -61,6 +66,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Marble Gray" },
         price: 279000,
         stock: 0,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -86,6 +92,8 @@ export const mobilePhoneProducts: Product[] = [
     },
     variantAxes: [storageAxis, colourAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-iphone-15-128-black",
@@ -94,6 +102,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Black" },
         price: 349000,
         stock: 11,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-iphone-15-128-blue",
@@ -102,6 +111,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Blue" },
         price: 349000,
         stock: 8,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-iphone-15-256-black",
@@ -110,6 +120,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Black" },
         price: 389000,
         stock: 5,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-iphone-15-256-blue",
@@ -118,6 +129,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Blue" },
         price: 389000,
         stock: 3,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -143,6 +155,8 @@ export const mobilePhoneProducts: Product[] = [
     },
     variantAxes: [storageAxis, colourAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-redmi-note-13-128-black",
@@ -151,6 +165,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Midnight Black" },
         price: 62000,
         stock: 30,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-redmi-note-13-128-blue",
@@ -159,6 +174,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Ice Blue" },
         price: 62000,
         stock: 24,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-redmi-note-13-256-black",
@@ -168,6 +184,7 @@ export const mobilePhoneProducts: Product[] = [
         price: 74000,
         compareAtPrice: 79000,
         stock: 17,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-redmi-note-13-256-blue",
@@ -176,6 +193,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Ice Blue" },
         price: 74000,
         stock: 13,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -200,6 +218,8 @@ export const mobilePhoneProducts: Product[] = [
       fiveGSupport: false,
     },
     variantAxes: [storageAxis, colourAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-infinix-note-40-128-black",
@@ -208,6 +228,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Black" },
         price: 54000,
         stock: 26,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-infinix-note-40-128-green",
@@ -216,6 +237,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Green" },
         price: 54000,
         stock: 20,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-infinix-note-40-256-black",
@@ -224,6 +246,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Black" },
         price: 63000,
         stock: 15,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-infinix-note-40-256-green",
@@ -232,6 +255,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Green" },
         price: 63000,
         stock: 12,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -256,6 +280,8 @@ export const mobilePhoneProducts: Product[] = [
       fiveGSupport: true,
     },
     variantAxes: [storageAxis, colourAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-realme-12-128-blue",
@@ -264,6 +290,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Blue" },
         price: 58000,
         stock: 19,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-realme-12-128-gold",
@@ -272,6 +299,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "128GB", colour: "Gold" },
         price: 58000,
         stock: 16,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-realme-12-256-blue",
@@ -280,6 +308,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Blue" },
         price: 68000,
         stock: 10,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-realme-12-256-gold",
@@ -288,6 +317,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Gold" },
         price: 68000,
         stock: 8,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -312,6 +342,8 @@ export const mobilePhoneProducts: Product[] = [
       fiveGSupport: true,
     },
     variantAxes: [storageAxis, colourAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "phone-oppo-reno-11-256-black",
@@ -320,6 +352,7 @@ export const mobilePhoneProducts: Product[] = [
         axisValues: { storage: "256GB", colour: "Black" },
         price: 112000,
         stock: 13,
+        lowStockThreshold: 5,
       },
       {
         id: "phone-oppo-reno-11-256-purple",
@@ -329,6 +362,7 @@ export const mobilePhoneProducts: Product[] = [
         price: 112000,
         compareAtPrice: 119000,
         stock: 7,
+        lowStockThreshold: 5,
       },
     ],
   },

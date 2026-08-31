@@ -91,6 +91,7 @@ async function seedProducts() {
       price: v.price,
       compare_at_price: v.compareAtPrice ?? null,
       stock: v.stock,
+      low_stock_threshold: v.lowStockThreshold,
       images: v.images ?? null,
     })),
   );

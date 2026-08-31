@@ -37,6 +37,7 @@ interface ProductsFiltersProps {
 const STOCK_OPTIONS: { value: StockFilter; labelKey: string }[] = [
   { value: "all", labelKey: "admin.products.stockStatus.all" },
   { value: "inStock", labelKey: "admin.products.stockStatus.inStock" },
+  { value: "lowStock", labelKey: "admin.products.stockStatus.lowStock" },
   { value: "outOfStock", labelKey: "admin.products.stockStatus.outOfStock" },
 ];
 

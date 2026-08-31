@@ -10,16 +10,15 @@ import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
 
-// Every value in the template's card markup that has no field behind it yet. Kept in one
+// Every value in the template's card markup that still has no field behind it. Kept in one
 // block (rather than inline in the JSX) so the whole backlog is visible in one place.
-// Rating and review count render neutral — empty stars, (0) — rather than the template's
-// 5-star/(46) demo values, since those would read as real product data. Same DOM either way.
+// Rating/review count are real data now (product.averageRating/reviewCount) — see the
+// rbt-card-rating block below — everything else here is still template demo content.
 // TODO: wire to backend
 const PLACEHOLDER = {
   newBadge: "NEW",
   starCount: 5,
   emptyStarIcon: "fa-regular fa-star",
-  ratingCount: 0,
   shipsLabel: "Ships :",
   shipsText: "2–3 weeks Free Shipping",
   shipsLink: "Get delivery dates",
@@ -133,12 +132,18 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
           <ul className="rbt-rating-icon-list">
             {Array.from({ length: PLACEHOLDER.starCount }).map((_, index) => (
               <li key={index}>
-                <i className={PLACEHOLDER.emptyStarIcon} />
+                <i
+                  className={
+                    index < Math.round(product.averageRating)
+                      ? "fa-solid fa-star rbt-rated-icon"
+                      : PLACEHOLDER.emptyStarIcon
+                  }
+                />
               </li>
             ))}
           </ul>
           <p className="rating-digit">
-            ({PLACEHOLDER.ratingCount})
+            ({product.reviewCount})
           </p>
           <ProductCardTextSwiper />
         </div>

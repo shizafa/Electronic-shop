@@ -186,6 +186,7 @@ function VariantDialogForm({ axes, initialVariant, onSave, onCancel }: VariantDi
     initialVariant?.compareAtPrice !== undefined ? String(initialVariant.compareAtPrice) : ""
   );
   const [stock, setStock] = useState(String(initialVariant?.stock ?? "0"));
+  const [lowStockThreshold, setLowStockThreshold] = useState(String(initialVariant?.lowStockThreshold ?? "5"));
   const [images, setImages] = useState<string[]>(initialVariant?.images ?? []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -198,6 +199,7 @@ function VariantDialogForm({ axes, initialVariant, onSave, onCancel }: VariantDi
       price: Number(price) || 0,
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
       stock: Number(stock) || 0,
+      lowStockThreshold: Number(lowStockThreshold) || 0,
       images,
     });
     setIsSubmitting(false);
@@ -250,17 +252,31 @@ function VariantDialogForm({ axes, initialVariant, onSave, onCancel }: VariantDi
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="variant-stock">{t("admin.products.stock")}</Label>
-        <Input
-          id="variant-stock"
-          type="number"
-          min="0"
-          step="1"
-          required
-          value={stock}
-          onChange={(event) => setStock(event.target.value)}
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="variant-stock">{t("admin.products.stock")}</Label>
+          <Input
+            id="variant-stock"
+            type="number"
+            min="0"
+            step="1"
+            required
+            value={stock}
+            onChange={(event) => setStock(event.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="variant-low-stock-threshold">{t("admin.products.lowStockThreshold")}</Label>
+          <Input
+            id="variant-low-stock-threshold"
+            type="number"
+            min="0"
+            step="1"
+            required
+            value={lowStockThreshold}
+            onChange={(event) => setLowStockThreshold(event.target.value)}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-1.5">

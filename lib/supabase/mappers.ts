@@ -13,6 +13,7 @@ interface VariantRow {
   price: string | number;
   compare_at_price: string | number | null;
   stock: number;
+  low_stock_threshold: number;
   images: string[] | null;
 }
 
@@ -27,6 +28,8 @@ interface ProductRow {
   specs: Record<string, string | number | boolean>;
   variant_axes: Product["variantAxes"];
   featured: boolean;
+  average_rating: string | number;
+  review_count: number;
   variants?: VariantRow[] | null;
 }
 
@@ -65,6 +68,7 @@ export function mapVariantRow(row: VariantRow): Variant {
     price: Number(row.price),
     compareAtPrice: row.compare_at_price !== null ? Number(row.compare_at_price) : undefined,
     stock: row.stock,
+    lowStockThreshold: row.low_stock_threshold,
     images: row.images ?? undefined,
   };
 }
@@ -81,6 +85,8 @@ export function mapProductRow(row: ProductRow): Product {
     specs: row.specs,
     variantAxes: row.variant_axes,
     featured: row.featured,
+    averageRating: Number(row.average_rating),
+    reviewCount: row.review_count,
     variants: (row.variants ?? []).map(mapVariantRow),
   };
 }

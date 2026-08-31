@@ -4,9 +4,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, SlidersHorizontal } from "lucide-react";
 import { ProductsFilters } from "@/components/admin/products/products-filters";
-import { ProductsTable, totalStock } from "@/components/admin/products/products-table";
+import { ProductsTable } from "@/components/admin/products/products-table";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
+import { getProductStockStatus } from "@/lib/product-helpers";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
 
@@ -15,7 +16,7 @@ interface ProductsViewProps {
   categories: Category[];
 }
 
-export type StockFilter = "all" | "inStock" | "outOfStock";
+export type StockFilter = "all" | "inStock" | "lowStock" | "outOfStock";
 export type FeaturedFilter = "all" | "featured" | "notFeatured";
 
 function minPriceOf(product: Product): number | undefined {
@@ -24,9 +25,11 @@ function minPriceOf(product: Product): number | undefined {
 }
 
 function matchesStock(product: Product, stock: StockFilter): boolean {
-  if (stock === "inStock") return totalStock(product) > 0;
-  if (stock === "outOfStock") return totalStock(product) === 0;
-  return true;
+  if (stock === "all") return true;
+  const status = getProductStockStatus(product);
+  if (stock === "inStock") return status === "in";
+  if (stock === "lowStock") return status === "low";
+  return status === "out";
 }
 
 function matchesFeatured(product: Product, featured: FeaturedFilter): boolean {
@@ -101,8 +104,9 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
       .filter((p) => matchesPrice(p, minPrice, maxPrice));
     return {
       all: base.length,
-      inStock: base.filter((p) => totalStock(p) > 0).length,
-      outOfStock: base.filter((p) => totalStock(p) === 0).length,
+      inStock: base.filter((p) => getProductStockStatus(p) === "in").length,
+      lowStock: base.filter((p) => getProductStockStatus(p) === "low").length,
+      outOfStock: base.filter((p) => getProductStockStatus(p) === "out").length,
     };
   }, [searched, categoryId, featured, activeBrands, minPrice, maxPrice]);
 

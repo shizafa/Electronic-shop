@@ -9,6 +9,7 @@ import { t } from "@/lib/i18n";
 import type { SpecRow } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
+import type { Review } from "@/types/review";
 
 type TabId = "description" | "specification" | "reviews" | "question";
 
@@ -23,6 +24,7 @@ interface ProductTabsProps {
   product: Product;
   category: Category;
   specRows: SpecRow[];
+  reviews: Review[];
 }
 
 // Rebuilds the template's Bootstrap tab widget (data-bs-toggle="tab") with React state, since
@@ -32,7 +34,7 @@ interface ProductTabsProps {
 // (.rbt-fshape-portion, confirmed in style.min.css) are gated on a literal .active class —
 // two different mechanisms that don't compose, so plain state is simpler here. Matches
 // CLAUDE.md's rule to drop components/ui/* imports as each section gets ported to the template.
-export function ProductTabs({ product, category, specRows }: ProductTabsProps) {
+export function ProductTabs({ product, category, specRows, reviews }: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("description");
 
   return (
@@ -99,7 +101,7 @@ export function ProductTabs({ product, category, specRows }: ProductTabsProps) {
           )}
           {activeTab === "reviews" && (
             <div className="tab-pane fade show active" id="rbt-reviews" role="tabpanel" aria-labelledby="rbt-reviews-tab">
-              <ReviewsSection reviews={[]} />
+              <ReviewsSection productId={product.id} reviews={reviews} />
             </div>
           )}
           {activeTab === "question" && (

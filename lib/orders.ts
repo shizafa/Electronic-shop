@@ -24,6 +24,7 @@ interface OrderItemRow {
 interface OrderStatusHistoryRow {
   status: OrderStatus;
   changed_at: string;
+  note: string | null;
 }
 
 export interface OrderRow {
@@ -83,7 +84,11 @@ export function mapOrderRow(row: OrderRow): Order {
     statusHistory: (row.order_status_history ?? [])
       .slice()
       .sort((a, b) => new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime())
-      .map((entry) => ({ status: entry.status, changedAt: toDateOnly(entry.changed_at) })),
+      .map((entry) => ({
+        status: entry.status,
+        changedAt: toDateOnly(entry.changed_at),
+        note: entry.note ?? undefined,
+      })),
   };
 }
 
@@ -140,10 +145,50 @@ const mainLineWithoutInstallation: OrderStatus[] = [
   "delivered",
 ];
 
+// The order_status values that represent an order's linear (non-terminal) progress —
+// cancelled/return_requested/returned_refunded branch off this line rather than sitting on it.
+export function getOrderMainLine(order: Pick<Order, "items">): OrderStatus[] {
+  const requiresInstallation = order.items.some((item) => item.installationRequired);
+  return requiresInstallation ? mainLineWithInstallation : mainLineWithoutInstallation;
+}
+
+// Which status-change actions are valid for an order right now. Forward progress is
+// single-step only (no skipping stages, no going back to an earlier one). Cancelling is only
+// allowed before the order ships; the return flow is a separate two-step branch that only
+// opens up once an order is delivered.
+export interface OrderStatusActions {
+  nextStatus: OrderStatus | null;
+  canCancel: boolean;
+  canRequestReturn: boolean;
+  canMarkReturned: boolean;
+}
+
+export function getOrderStatusActions(order: Pick<Order, "status" | "items">): OrderStatusActions {
+  const mainLine = getOrderMainLine(order);
+  const index = mainLine.indexOf(order.status);
+  const shippedIndex = mainLine.indexOf("shipped");
+
+  return {
+    nextStatus: index !== -1 && index < mainLine.length - 1 ? mainLine[index + 1] : null,
+    canCancel: index !== -1 && index < shippedIndex,
+    canRequestReturn: order.status === "delivered",
+    canMarkReturned: order.status === "return_requested",
+  };
+}
+
+// Server-side re-check before writing a transition — the client only ever offers actions
+// getOrderStatusActions already approved, but the UI's view of the order can be stale.
+export function isValidStatusTransition(order: Pick<Order, "status" | "items">, next: OrderStatus): boolean {
+  const actions = getOrderStatusActions(order);
+  if (next === "cancelled") return actions.canCancel;
+  if (next === "return_requested") return actions.canRequestReturn;
+  if (next === "returned_refunded") return actions.canMarkReturned;
+  return actions.nextStatus === next;
+}
+
 // Builds the ordered list of timeline steps for an order, marking which are done/current
 export function getOrderTimeline(order: Order): OrderTimelineStep[] {
-  const requiresInstallation = order.items.some((item) => item.installationRequired);
-  const mainLine = requiresInstallation ? mainLineWithInstallation : mainLineWithoutInstallation;
+  const mainLine = getOrderMainLine(order);
 
   if (order.status === "cancelled") {
     // Show only the main-line steps actually reached before cancellation, then a final "cancelled" step

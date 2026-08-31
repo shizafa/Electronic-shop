@@ -103,12 +103,27 @@ export interface VariantFormInput {
   price: number;
   compareAtPrice?: number;
   stock: number;
+  lowStockThreshold: number;
   images?: string[];
+}
+
+// Stock/threshold come from a plain number input (no server-generated schema types in this
+// project to lean on for integer coercion), so the boundary check happens here rather than
+// trusting the client's HTML `min`/`step` attributes.
+function validateStockFields(stock: number, lowStockThreshold: number): string | null {
+  if (!Number.isInteger(stock) || stock < 0) return "Stock must be a whole number, 0 or greater";
+  if (!Number.isInteger(lowStockThreshold) || lowStockThreshold < 0) {
+    return "Low stock threshold must be a whole number, 0 or greater";
+  }
+  return null;
 }
 
 export async function createVariant(productId: string, input: VariantFormInput): Promise<ProductActionResult> {
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, error: guard.error };
+
+  const stockError = validateStockFields(input.stock, input.lowStockThreshold);
+  if (stockError) return { success: false, error: stockError };
 
   const id = crypto.randomUUID();
   const { error } = await guard.supabase.from("variants").insert({
@@ -119,6 +134,7 @@ export async function createVariant(productId: string, input: VariantFormInput):
     price: input.price,
     compare_at_price: input.compareAtPrice ?? null,
     stock: input.stock,
+    low_stock_threshold: input.lowStockThreshold,
     images: input.images?.length ? input.images : null,
   });
 
@@ -133,6 +149,9 @@ export async function updateVariant(id: string, input: VariantFormInput): Promis
   const guard = await requireAdmin();
   if (!guard.ok) return { success: false, error: guard.error };
 
+  const stockError = validateStockFields(input.stock, input.lowStockThreshold);
+  if (stockError) return { success: false, error: stockError };
+
   const { error } = await guard.supabase
     .from("variants")
     .update({
@@ -141,12 +160,34 @@ export async function updateVariant(id: string, input: VariantFormInput): Promis
       price: input.price,
       compare_at_price: input.compareAtPrice ?? null,
       stock: input.stock,
+      low_stock_threshold: input.lowStockThreshold,
       images: input.images?.length ? input.images : null,
     })
     .eq("id", id);
 
   if (error) return { success: false, error: "Failed to save variant" };
   return { success: true, id };
+}
+
+// Row-level quick stock edit (ProductsTable's inline popover), separate from updateVariant
+// so a one-number fix doesn't require resending the rest of the variant's fields.
+export async function adjustVariantStock(
+  productId: string,
+  variantId: string,
+  stock: number
+): Promise<ProductActionResult> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return { success: false, error: guard.error };
+
+  if (!Number.isInteger(stock) || stock < 0) {
+    return { success: false, error: "Stock must be a whole number, 0 or greater" };
+  }
+
+  const { error } = await guard.supabase.from("variants").update({ stock }).eq("id", variantId);
+  if (error) return { success: false, error: "Failed to update stock" };
+
+  revalidateProductPaths(productId);
+  return { success: true, id: variantId };
 }
 
 export async function deleteVariant(id: string): Promise<DeleteActionResult> {

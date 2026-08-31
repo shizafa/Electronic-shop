@@ -27,6 +27,8 @@ export const televisionProducts: Product[] = [
     },
     variantAxes: [screenSizeAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-samsung-crystal-43",
@@ -35,6 +37,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "43" },
         price: 89000,
         stock: 20,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-samsung-crystal-50",
@@ -44,6 +47,7 @@ export const televisionProducts: Product[] = [
         price: 119000,
         compareAtPrice: 129000,
         stock: 14,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-samsung-crystal-55",
@@ -52,6 +56,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "55" },
         price: 145000,
         stock: 10,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -77,6 +82,8 @@ export const televisionProducts: Product[] = [
     },
     variantAxes: [screenSizeAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-tcl-qled-55",
@@ -86,6 +93,7 @@ export const televisionProducts: Product[] = [
         price: 168000,
         compareAtPrice: 182000,
         stock: 8,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-tcl-qled-65",
@@ -94,6 +102,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "65" },
         price: 235000,
         stock: 5,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -118,6 +127,8 @@ export const televisionProducts: Product[] = [
       warrantyYears: 1,
     },
     variantAxes: [screenSizeAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-haier-le-32",
@@ -126,6 +137,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "32" },
         price: 42000,
         stock: 28,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-haier-le-43",
@@ -134,6 +146,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "43" },
         price: 68000,
         stock: 16,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -159,6 +172,8 @@ export const televisionProducts: Product[] = [
     },
     variantAxes: [screenSizeAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-sony-bravia-55",
@@ -167,6 +182,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "55" },
         price: 312000,
         stock: 6,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-sony-bravia-65",
@@ -175,6 +191,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "65" },
         price: 415000,
         stock: 3,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -199,6 +216,8 @@ export const televisionProducts: Product[] = [
       warrantyYears: 2,
     },
     variantAxes: [screenSizeAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-lg-uhd-43",
@@ -207,6 +226,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "43" },
         price: 92000,
         stock: 17,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-lg-uhd-50",
@@ -215,6 +235,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "50" },
         price: 122000,
         stock: 12,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-lg-uhd-55",
@@ -224,6 +245,7 @@ export const televisionProducts: Product[] = [
         price: 148000,
         compareAtPrice: 159000,
         stock: 9,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -248,6 +270,8 @@ export const televisionProducts: Product[] = [
       warrantyYears: 1,
     },
     variantAxes: [screenSizeAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "tv-ecostar-led-32",
@@ -256,6 +280,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "32" },
         price: 32000,
         stock: 35,
+        lowStockThreshold: 5,
       },
       {
         id: "tv-ecostar-led-40",
@@ -264,6 +289,7 @@ export const televisionProducts: Product[] = [
         axisValues: { screenSize: "40" },
         price: 48000,
         stock: 21,
+        lowStockThreshold: 5,
       },
     ],
   },

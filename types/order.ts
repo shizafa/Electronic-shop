@@ -53,6 +53,7 @@ export interface CourierInfo {
 export interface OrderStatusHistoryEntry {
   status: OrderStatus;
   changedAt: string;
+  note?: string;
 }
 
 // A full customer order: items, addresses, payment, and status

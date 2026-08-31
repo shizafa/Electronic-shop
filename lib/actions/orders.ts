@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { InstallationSchedule, OrderAddressSnapshot, PaymentMethod } from "@/types/order";
 
 export interface PlaceOrderLineItem {
@@ -98,6 +99,17 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       installation_required: category?.installation_required ?? false,
     });
   }
+
+  // Decrement stock before creating the order, so a sold-out item never leaves a half-placed
+  // order behind. decrement_variant_stock (supabase/migrations/0008) does this atomically per
+  // line — each line's `UPDATE ... WHERE stock >= quantity` row-locks that variant, so two
+  // checkouts racing for the last unit can't both succeed. Called via the service-role client
+  // because the function's execute grant is service_role-only (see the migration for why).
+  const admin = createAdminClient();
+  const { error: stockError } = await admin.rpc("decrement_variant_stock", {
+    items: input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity })),
+  });
+  if (stockError) return { success: false, error: "One or more items in your cart just sold out" };
 
   const shippingFee = 0; // shipping is currently free in this mock shop
   const total = subtotal + shippingFee;

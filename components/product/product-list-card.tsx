@@ -8,8 +8,6 @@ const IMAGE_WIDTH = 278;
 const IMAGE_HEIGHT = 212;
 const IMAGE_RATIO = { aspectRatio: `${IMAGE_WIDTH} / ${IMAGE_HEIGHT}` };
 
-// Rating renders as empty stars + (0) — same PLACEHOLDER precedent as ProductCard, since no
-// rating/review data model exists yet. TODO: wire to backend
 const STAR_COUNT = 5;
 
 type ProductListCardVariant = "grid" | "preview";
@@ -47,12 +45,16 @@ function ProductListCardBody({
             <ul className="rbt-rating-icon-list">
               {Array.from({ length: STAR_COUNT }).map((_, index) => (
                 <li key={index}>
-                  <i className="fa-regular fa-star" />
+                  <i
+                    className={
+                      index < Math.round(product.averageRating) ? "fa-solid fa-star rbt-rated-icon" : "fa-regular fa-star"
+                    }
+                  />
                 </li>
               ))}
             </ul>
             <p className="rating-digit">
-              (0)
+              ({product.reviewCount})
             </p>
           </div>
           <h2 className="rbt-card-title h6">

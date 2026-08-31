@@ -20,11 +20,13 @@ import { t } from "@/lib/i18n";
 import { buildSpecRows } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product, Variant } from "@/types/product";
+import type { Review } from "@/types/review";
 
 interface ProductDetailProps {
   product: Product;
   category: Category;
   relatedProducts: Product[];
+  reviews: Review[];
 }
 
 // Every value in the template's buybox markup that has no field behind it yet. Kept in one
@@ -33,7 +35,6 @@ interface ProductDetailProps {
 const PLACEHOLDER = {
   starCount: 5,
   emptyStarIcon: "fa-regular fa-star",
-  ratingCount: 0,
   // No deal-end-date, sales-velocity, or live-viewer tracking exists — same gap that got
   // product-countdown.tsx deleted earlier. Kept as static decoration per explicit instruction
   // rather than dropped, since this section already has actual real data (price, stock) doing
@@ -45,7 +46,7 @@ const PLACEHOLDER = {
 };
 
 // Full product detail page: gallery, price, variant picker, add-to-cart, specs, related items.
-export function ProductDetail({ product, category, relatedProducts }: ProductDetailProps) {
+export function ProductDetail({ product, category, relatedProducts, reviews }: ProductDetailProps) {
   const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<Variant>(
     // default to the first in-stock variant, falling back to the first variant if all are sold out
@@ -165,12 +166,18 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
                     <ul className="rbt-rating-icon-list">
                       {Array.from({ length: PLACEHOLDER.starCount }).map((_, index) => (
                         <li key={index}>
-                          <i className={PLACEHOLDER.emptyStarIcon} />
+                          <i
+                            className={
+                              index < Math.round(product.averageRating)
+                                ? "fa-solid fa-star rbt-rated-icon"
+                                : PLACEHOLDER.emptyStarIcon
+                            }
+                          />
                         </li>
                       ))}
                     </ul>
                     <p className="rating-digit">
-                      ({PLACEHOLDER.ratingCount})
+                      ({product.reviewCount})
                     </p>
                     <ProductCardTextSwiper />
                   </div>
@@ -478,7 +485,7 @@ export function ProductDetail({ product, category, relatedProducts }: ProductDet
       <div className="rbt-component-area rbt-section-gap">
         <div className="container">
           <div className="row">
-            <ProductTabs product={product} category={category} specRows={specRows} />
+            <ProductTabs product={product} category={category} specRows={specRows} reviews={reviews} />
           </div>
         </div>
       </div>

@@ -28,6 +28,8 @@ export const airConditionerProducts: Product[] = [
     },
     variantAxes: [tonnageAxis],
     featured: true, // shown in "featured"/home page sections
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-haier-hsu18-1.0",
@@ -37,6 +39,7 @@ export const airConditionerProducts: Product[] = [
         price: 98000,
         compareAtPrice: 108000, // original price shown struck-through when set
         stock: 22,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-haier-hsu18-1.5",
@@ -46,6 +49,7 @@ export const airConditionerProducts: Product[] = [
         price: 138000,
         compareAtPrice: 150000,
         stock: 15,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -71,6 +75,8 @@ export const airConditionerProducts: Product[] = [
     },
     variantAxes: [tonnageAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-gree-pular-1.5",
@@ -79,6 +85,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.5" },
         price: 145000,
         stock: 18,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-gree-pular-2.0",
@@ -87,6 +94,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "2.0" },
         price: 205000,
         stock: 9,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -111,6 +119,8 @@ export const airConditionerProducts: Product[] = [
       wifiEnabled: false,
     },
     variantAxes: [tonnageAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-dawlance-powercon-1.0",
@@ -119,6 +129,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.0" },
         price: 82000,
         stock: 30,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-dawlance-powercon-1.5",
@@ -127,6 +138,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.5" },
         price: 112000,
         stock: 0,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -152,6 +164,8 @@ export const airConditionerProducts: Product[] = [
     },
     variantAxes: [tonnageAxis],
     featured: true,
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-orient-ultron-x-1.5",
@@ -161,6 +175,7 @@ export const airConditionerProducts: Product[] = [
         price: 156000,
         compareAtPrice: 168000,
         stock: 12,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-orient-ultron-x-2.0",
@@ -170,6 +185,7 @@ export const airConditionerProducts: Product[] = [
         price: 218000,
         compareAtPrice: 232000,
         stock: 7,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -194,6 +210,8 @@ export const airConditionerProducts: Product[] = [
       wifiEnabled: false,
     },
     variantAxes: [tonnageAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-pel-inverteron-1.0",
@@ -202,6 +220,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.0" },
         price: 95000,
         stock: 25,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-pel-inverteron-1.5",
@@ -210,6 +229,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.5" },
         price: 132000,
         stock: 19,
+        lowStockThreshold: 5,
       },
       {
         id: "ac-pel-inverteron-2.0",
@@ -218,6 +238,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "2.0" },
         price: 192000,
         stock: 4,
+        lowStockThreshold: 5,
       },
     ],
   },
@@ -242,6 +263,8 @@ export const airConditionerProducts: Product[] = [
       wifiEnabled: true,
     },
     variantAxes: [tonnageAxis],
+    averageRating: 0,
+    reviewCount: 0,
     variants: [
       {
         id: "ac-kenwood-eicon-1.5",
@@ -250,6 +273,7 @@ export const airConditionerProducts: Product[] = [
         axisValues: { tonnage: "1.5" },
         price: 168000,
         stock: 11,
+        lowStockThreshold: 5,
       },
     ],
   },

@@ -6,6 +6,7 @@ import {
   Users,
   Settings,
   MessageSquare,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: "/admin/products", labelKey: "admin.nav.products", icon: Package },
       { href: "/admin/categories", labelKey: "admin.nav.categories", icon: FolderTree },
+      { href: "/admin/reviews", labelKey: "admin.nav.reviews", icon: Star },
     ],
   },
   {

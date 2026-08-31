@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StockQuickAdjust } from "@/components/admin/products/stock-quick-adjust";
+import { StockStatusBadge } from "@/components/admin/products/stock-status-badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
+import { getProductStockStatus } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
 
 interface ProductsTableProps {
@@ -45,6 +47,8 @@ export function ProductsTable({ products, categoryNameById }: ProductsTableProps
       <TableBody>
         {products.map((product) => {
           const stock = totalStock(product);
+          const status = getProductStockStatus(product);
+          const singleVariant = product.variants.length === 1 ? product.variants[0] : undefined;
           return (
             <TableRow key={product.id}>
               <TableCell>
@@ -65,7 +69,17 @@ export function ProductsTable({ products, categoryNameById }: ProductsTableProps
               </TableCell>
               <TableCell>{formatPriceRange(product)}</TableCell>
               <TableCell>
-                {stock > 0 ? stock : <Badge variant="destructive">{t("common.outOfStock")}</Badge>}
+                <div className="flex items-center gap-2">
+                  <span>{stock}</span>
+                  <StockStatusBadge status={status} />
+                  {singleVariant && (
+                    <StockQuickAdjust
+                      productId={product.id}
+                      variantId={singleVariant.id}
+                      stock={singleVariant.stock}
+                    />
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-end">
                 <Button variant="ghost" size="icon-sm" asChild aria-label={t("admin.products.edit")}>

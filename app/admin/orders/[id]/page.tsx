@@ -1,15 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OrderStatusActions } from "@/components/admin/orders/order-status-actions";
 import { OrderStatusBadge } from "@/components/admin/orders/order-status-badge";
+import { OrderStatusHistory } from "@/components/admin/orders/order-status-history";
 import { StatusTimeline } from "@/components/order/status-timeline";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import { getOrderByIdAdmin } from "@/lib/admin/orders";
+import { getOrderDetailForAdmin } from "@/lib/admin/orders";
 
 export default async function AdminOrderDetailPage({ params }: PageProps<"/admin/orders/[id]">) {
   const { id } = await params;
-  const order = await getOrderByIdAdmin(id);
+  const order = await getOrderDetailForAdmin(id);
   if (!order) notFound();
 
   return (
@@ -21,7 +23,8 @@ export default async function AdminOrderDetailPage({ params }: PageProps<"/admin
             {t("account.orderPlacedOn")} {order.placedAt} ·{" "}
             <Link href={`/admin/customers/${order.userId}`} className="hover:underline">
               {order.shippingAddress.fullName}
-            </Link>
+            </Link>{" "}
+            · {order.customerEmail} · {order.shippingAddress.phone}
           </p>
         </div>
         <OrderStatusBadge status={order.status} />
@@ -30,6 +33,8 @@ export default async function AdminOrderDetailPage({ params }: PageProps<"/admin
       <div className="rounded-lg border border-border p-4">
         <StatusTimeline order={order} />
       </div>
+
+      <OrderStatusActions order={order} />
 
       <div>
         <p className="text-sm font-semibold text-foreground">{t("checkout.itemsInOrder")}</p>
@@ -42,7 +47,8 @@ export default async function AdminOrderDetailPage({ params }: PageProps<"/admin
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">{item.productName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {t("product.sku")}: {item.sku} · {t("common.quantity")}: {item.quantity}
+                  {t("product.sku")}: {item.sku} · {t("common.quantity")}: {item.quantity} ·{" "}
+                  {t("admin.orders.unitPrice")}: {formatPrice(item.unitPrice)}
                 </p>
               </div>
               <p className="text-sm font-medium text-foreground">
@@ -52,6 +58,8 @@ export default async function AdminOrderDetailPage({ params }: PageProps<"/admin
           ))}
         </div>
       </div>
+
+      <OrderStatusHistory history={order.statusHistory} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>

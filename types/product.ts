@@ -17,6 +17,7 @@ export interface Variant {
   price: number;
   compareAtPrice?: number; // original price shown as "was X", for showing a discount
   stock: number;
+  lowStockThreshold: number;
   images?: string[];
 }
 
@@ -33,4 +34,6 @@ export interface Product {
   variantAxes: VariantAxisDefinition[];
   variants: Variant[];
   featured?: boolean;
+  averageRating: number;
+  reviewCount: number;
 }

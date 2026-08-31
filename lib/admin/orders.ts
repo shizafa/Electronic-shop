@@ -1,5 +1,7 @@
 import "server-only";
+import { requireAdmin } from "@/lib/actions/admin/guard";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ORDER_SELECT, mapOrderRow, type OrderRow } from "@/lib/orders";
 import type { Order, OrderStatus } from "@/types/order";
 
@@ -29,6 +31,27 @@ export async function getOrderByIdAdmin(orderId: string): Promise<Order | undefi
     return undefined;
   }
   return data ? mapOrderRow(data as unknown as OrderRow) : undefined;
+}
+
+export interface AdminOrderDetail extends Order {
+  customerEmail: string;
+}
+
+// Order detail page needs the customer's email, which lives on auth.users, not the orders/
+// profiles tables — only reachable via the service-role client (same reason as
+// lib/admin/customers.ts's getCustomerById). requireAdmin() guards this extra service-role
+// call; the underlying order read still goes through the RLS-scoped getOrderByIdAdmin.
+export async function getOrderDetailForAdmin(orderId: string): Promise<AdminOrderDetail | undefined> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return undefined;
+
+  const order = await getOrderByIdAdmin(orderId);
+  if (!order) return undefined;
+
+  const admin = createAdminClient();
+  const { data: authUser } = await admin.auth.admin.getUserById(order.userId);
+
+  return { ...order, customerEmail: authUser.user?.email ?? "" };
 }
 
 export async function getOrdersForCustomer(userId: string): Promise<Order[]> {
