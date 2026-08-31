@@ -29,7 +29,11 @@ export default function Home() {
       <BrandLogosLazy />
 
       <div className="container-page flex justify-center py-4">
-        <Button size="lg" className="h-auto gap-2 rounded-full px-10 py-3.5 text-lg [&_svg]:size-9" asChild>
+        <Button
+          size="lg"
+          className="h-auto gap-[clamp(5px,0.8vw,10px)] rounded-full px-[clamp(20px,3vw+8px,44px)] py-[clamp(10px,1.4vw+4px,18px)] text-[clamp(14px,0.8vw+9px,20px)] hover:text-white! [&_svg]:size-[clamp(20px,2.4vw,30px)]"
+          asChild
+        >
           <Link href="/shop">
             {t("nav.showAllProducts")}
             <ArrowRight />

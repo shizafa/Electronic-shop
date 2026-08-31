@@ -375,3 +375,23 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 .rbt-card .rbt-card-body .rbt-card-rating {
   flex-wrap: nowrap;
 }
+
+/* /shop grid only (shop-listing.tsx's .shop-product-grid wrapper — not product-card.tsx
+   itself, which is shared by every page that renders ProductCard: home, /deals, /category,
+   search, wishlist, compare). Caps /shop at 3 cards per row instead of the card's own default
+   4-per-row at >=1200px (col-xl-3/col-xxl-3, both width:25%) by matching col-lg-4's real
+   33.33% width — same value bootstrap.min.css already uses for col-lg-4, just extended up
+   through the two wider breakpoints. Each rule stays inside the same min-width its
+   bootstrap.min.css counterpart uses so it doesn't also affect col-md-6/col-sm-6/col-6 below
+   1200px, where 3-or-fewer per row already holds without any override. */
+@media (min-width: 1200px) {
+  .shop-product-grid .col-xl-3 {
+    width: 33.33333333%;
+  }
+}
+
+@media (min-width: 1400px) {
+  .shop-product-grid .col-xxl-3 {
+    width: 33.33333333%;
+  }
+}

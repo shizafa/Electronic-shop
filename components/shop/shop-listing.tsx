@@ -247,14 +247,14 @@ export function ShopListing({ products, categories }: ShopListingProps) {
           onClearAll={clearAll}
           onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
         >
-          <div className="mt-6">
+          <div className="mt-6 shop-product-grid">
             {pageItems.length === 0 ? (
               <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-16 text-center">
                 <p className="text-sm font-medium text-foreground">{t("common.noResults")}</p>
                 <p className="text-sm text-muted-foreground">{t("common.noResultsHint")}</p>
               </div>
             ) : (
-              <ProductGrid>
+              <ProductGrid priorityCount={3}>
                 {pageItems.map((product) => {
                   const category = categories.find((candidate) => candidate.id === product.categoryId);
                   return (
