@@ -31,6 +31,7 @@ export function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paginationEl, setPaginationEl] = useState<HTMLDivElement | null>(null);
@@ -92,14 +93,24 @@ export function LoginForm() {
                             *
                           </span>
                         </label>
-                        <input
-                          className="rbt-input-field"
-                          type="password"
-                          id="signin_password"
-                          value={password}
-                          onChange={(event) => setPassword(event.target.value)}
-                          required
-                        />
+                        <div className="position-relative">
+                          <input
+                            className="rbt-input-field"
+                            type={showPassword ? "text" : "password"}
+                            id="signin_password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="position-absolute top-50 end-0 translate-middle-y bg-transparent border-0 me-3"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                          >
+                            <i className={showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"} />
+                          </button>
+                        </div>
                       </div>
                       {error && (
                         <p className="rbt-text-color-danger mb--0">

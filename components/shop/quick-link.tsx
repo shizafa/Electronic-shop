@@ -33,12 +33,20 @@ export function QuickLink({ categories, products, activeCategoryIds = [] }: Quic
                 >
                   <div className="inner">
                     <div className="rbt-image-portion">
+                      {/* style.min.css's base `img{height:auto}` reset overrides next/image's
+                          height attribute for any photo whose aspect ratio isn't already
+                          square, leaving the circle only partly filled (product stuck to the
+                          top, empty gap below) instead of centered — object-fit:cover (from
+                          .rbt-image-portion img in the same stylesheet) can't crop to fill a
+                          box it's never actually given the height to fill. An inline style
+                          wins over that unlayered rule regardless of specificity. */}
                       {thumbnail && (
                         <Image
                           src={thumbnail}
                           alt={category.name}
                           width={THUMBNAIL_WIDTH}
                           height={THUMBNAIL_HEIGHT}
+                          style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
                         />
                       )}
                     </div>
