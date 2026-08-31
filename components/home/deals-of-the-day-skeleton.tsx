@@ -16,10 +16,10 @@ export function DealsOfTheDaySkeleton() {
         <div className="row">
           <div className="col-lg-12">
             <div className="rbt-component-section-title d-flex flex-row justify-content-between align-items-center p-0 mb--32 mb_sm--16 border-0">
-              <SkeletonBox className="h-6" style={{ width: "200px" }} />
+              <SkeletonBox className="h-6 w-1/2 max-w-[200px]" />
               <div className="flex gap-2">
                 {TAB_LABELS.map((label) => (
-                  <SkeletonBox key={label} className="h-8" style={{ width: "110px" }} />
+                  <SkeletonBox key={label} className="h-8 flex-1 max-w-[110px]" />
                 ))}
               </div>
             </div>

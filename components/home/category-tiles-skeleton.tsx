@@ -12,8 +12,8 @@ export function CategoryTilesSkeleton() {
         <div className="row">
           <div className="col-lg-12 pr--0">
             <div className="rbt-component-section-title d-flex justify-content-between flex-row align-items-center p-0 mb--32 mb_sm--16 border-0">
-              <SkeletonBox className="h-6" style={{ width: "220px" }} />
-              <SkeletonBox className="h-8" style={{ width: "180px" }} />
+              <SkeletonBox className="h-6 w-1/2 max-w-[220px]" />
+              <SkeletonBox className="h-8 w-1/3 max-w-[180px]" />
             </div>
           </div>
         </div>

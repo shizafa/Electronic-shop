@@ -11,7 +11,7 @@ export function BrandLogosSkeleton() {
           <div className="row">
             <div className="col-lg-12">
               <div className="rbt-component-section-title text-left">
-                <SkeletonBox className="h-6" style={{ width: "180px" }} />
+                <SkeletonBox className="h-6 w-1/2 max-w-[180px]" />
               </div>
             </div>
           </div>

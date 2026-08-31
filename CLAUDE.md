@@ -1,5 +1,16 @@
 @AGENTS.md
 
+## Responsive work
+- Storefront app/(site)/: Unimart Bootstrap 5 template, rbt- classes, 
+  stylesheets linked in app/(site)/layout.tsx, assets in public/assets/
+- Admin app/admin/: Tailwind v4 + shadcn/ui
+- Keep each area in its own system, no mixing, no new dependencies
+- Targets: 320, 375, 768, 1024, 1280, 1440
+- Mobile-first. Desktop >=1280 must not change visually.
+- Never use overflow-x:hidden on body to hide overflow — fix the real cause.
+- Presentation only: no data fetching, lib/, or prop changes.
+- Reply tersely. No summaries of what you just did unless I ask.
+
 # Storefront re-skin phase
 
 Re-skinning the STOREFRONT only with a Bootstrap 5 template (external repo,

@@ -18,7 +18,7 @@ export function WeekHighlightsSkeleton() {
               <div className="row">
                 <div className="col-lg-12">
                   <div className="rbt-component-section-title">
-                    <SkeletonBox className="h-6" style={{ width: "240px" }} />
+                    <SkeletonBox className="h-6 w-1/2 max-w-[240px]" />
                   </div>
                 </div>
               </div>

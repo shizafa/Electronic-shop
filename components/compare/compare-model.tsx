@@ -148,7 +148,7 @@ export function CompareModal() {
                       <p>{t("compare.emptyHint")}</p>
                     </div>
                   ) : (
-                    <div className="col-12 rbt-scrollable-content">
+                    <div className="col-12 rbt-scrollable-content" style={{ minWidth: 0 }}>
                       {/* Start Compare Table */}
                       <table className="rbt-compare-table">
                         <tbody>
