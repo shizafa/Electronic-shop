@@ -5,15 +5,21 @@ import { getAllProducts } from "@/lib/products";
 import { t } from "@/lib/i18n";
 
 // One category per column, always in a single row (never wrapping a category under another
-// one's column) — col-xl-1-5 etc are style.min.css's own "fifths" grid, sitting alongside
-// bootstrap's standard col-xl-2/3/4/6/12, used elsewhere for the same 5-across layout
-// (components/home/brand-logos.tsx's col-lg-1-5). 6+ falls back to six-per-row and wraps.
+// one's column) — bootstrap's standard col-xl-2/3/4/6/12 activate at min-width:1200px, the
+// same breakpoint as this row's outer col-xl-9/col-xl-3 split (nav-menu.tsx below). But
+// style.min.css's own "fifths" grid (its .col-xl-1-5 etc) is scoped to min-width:1400px, not
+// 1200 — using it here left the outer split active with the 5-category row still stacked
+// full-width from 1200-1400px (and at any zoom level that puts the viewport in that range),
+// breaking the megamenu. col-lg-1-5 is the same 20%-width rule but scoped to min-width:992px,
+// so it's already active by the time the outer col-xl-9 split kicks in at 1200 — same fifths
+// grid used elsewhere for 5-across layout (components/home/brand-logos.tsx). 6+ falls back to
+// six-per-row and wraps.
 function megaMenuColumnClass(categoryCount: number): string {
   if (categoryCount <= 1) return "col-xl-12";
   if (categoryCount === 2) return "col-xl-6";
   if (categoryCount === 3) return "col-xl-4";
   if (categoryCount === 4) return "col-xl-3";
-  if (categoryCount === 5) return "col-xl-1-5";
+  if (categoryCount === 5) return "col-lg-1-5";
   return "col-xl-2";
 }
 

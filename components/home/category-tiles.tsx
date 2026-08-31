@@ -6,6 +6,16 @@ import { getAllProducts } from "@/lib/products";
 const THUMBNAIL_WIDTH = 93;
 const THUMBNAIL_HEIGHT = 93;
 
+// Best-seller names in the tile's quick-link list truncate at a fixed character count
+// (rather than the CSS text-overflow:ellipsis used for the card grid) so the same product
+// name always cuts at the same point regardless of font size/zoom, instead of the cutoff
+// point drifting with the rendered pixel width.
+const QUICK_LINK_NAME_MAX_LENGTH = 14;
+
+function truncateQuickLinkName(name: string): string {
+  return name.length > QUICK_LINK_NAME_MAX_LENGTH ? `${name.slice(0, QUICK_LINK_NAME_MAX_LENGTH)}...` : name;
+}
+
 // PLACEHOLDER: the "Weekend Deal / DJI Ronin Action" promo card (right column) has no
 // backing campaign data model. Kept verbatim, same treatment as the nav megamenu's promo
 // card. TODO: wire to a real promotions/campaigns source once one exists.
@@ -77,7 +87,7 @@ export async function CategoryTiles() {
                         {bestSellers.map((product) => (
                           <li key={product.id}>
                             <Link href={`/product/${product.slug}`} className="quick-link">
-                              {product.name}
+                              {truncateQuickLinkName(product.name)}
                             </Link>
                           </li>
                         ))}

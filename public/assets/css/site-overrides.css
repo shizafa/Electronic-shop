@@ -18,33 +18,27 @@
   --bs-gutter-x: 1.5rem;
 }
 
+/* Previously a fixed px max-width per breakpoint band (500/660/880/1060/1220) — flat within
+   each band, then a hard jump at the next breakpoint. Two problems: (1) within a band the
+   side gap only ever grew as the viewport widened toward the next jump, never shrinking
+   back down, and (2) 1200-1399px and >=1400px both use the same 4-per-row product-card
+   column (col-xl-3), so that specific jump (1220px container down to 1060px) changed the
+   card's width and, since the container lost more width than the viewport did crossing that
+   line, made the side gap suddenly bigger — even though the viewport had just gotten
+   smaller. Zooming shrinks the effective CSS viewport the same way narrowing the window
+   does, so an ordinary browser-zoom nudge could land on either side of that jump.
+   One continuous min(94vw, 1280px) formula (no breakpoint gating) replaces the whole table:
+   the container tracks 94vw smoothly everywhere below ~1362px viewport — so the gap is
+   always a proportional ~3% of the viewport on each side, shrinking and growing continuously
+   with zoom instead of stepping — then flattens at a 1280px cap above that so it doesn't
+   keep growing unbounded on very wide monitors. Deliberately wider than the old 1220px cap
+   and every one of the old per-band values, per an explicit request to reduce the side
+   padding and give cards more of the viewport — this does change today's 1280px/1440px
+   render (narrower gap, wider container/cards than before), overriding CLAUDE.md's "Desktop
+   >=1280 must not change visually" for this specific measurement on purpose. */
 @media (min-width: 576px) {
   .container {
-    max-width: 500px;
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    max-width: 660px;
-  }
-}
-
-@media (min-width: 992px) {
-  .container {
-    max-width: 880px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container {
-    max-width: 1060px;
-  }
-}
-
-@media (min-width: 1400px) {
-  .container {
-    max-width: 1220px;
+    max-width: min(94vw, 1280px);
   }
 }
 
@@ -305,6 +299,23 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
   visibility: visible;
 }
 
+/* Product cards (product-card.tsx, product-list-card.tsx, product-alternative-item.tsx,
+   order-confirmation.tsx): style.min.css's .rbt-card-title has no line-clamp/truncation of
+   its own, so a long product name just wraps to a 2nd line, growing that card taller than
+   its siblings in the row. Scoped to the .rbt-card .rbt-card-body ancestor (matching the
+   template's own selector pattern for this class) so it only hits card-grid titles, not the
+   unrelated product-detail.tsx page heading, which also reuses .rbt-card-title but sits
+   outside .rbt-card-body and should still wrap normally. text-overflow:ellipsis needs the
+   anchor to be a block box (its default is inline), since the h2 wrapping it doesn't get
+   its own overflow/white-space rules — only the innermost element that's actually
+   width-constrained can truncate. */
+.rbt-card .rbt-card-body .rbt-card-title a {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* Account sidebar (app/(site)/account/layout.tsx): style.min.css never gives
    .rbt-sidebar-nav-list's a/button rows an explicit width, so plain-content rows (no badge)
    were sizing to their own icon+label content instead of filling the sidebar — only the
@@ -313,4 +324,54 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 .rbt-sidebar-nav-list a,
 .rbt-sidebar-nav-list button {
   width: 100%;
+}
+
+/* Category tiles (category-tiles.tsx's .rbt-cat-box-7 grid, quick-link.tsx's .rbt-cat-box-1
+   row): same problem as the product-card title above — style.min.css never gives .title or
+   .quick-link-list li any truncation, so a long category or best-seller name wraps to a 2nd
+   line and grows that one tile taller than its row siblings (which is what actually changes
+   a tile's size across zoom levels/viewport widths — not the tile itself resizing, but its
+   text reflowing). Both cat-box-7's h2.title and cat-box-1's p.title share the plain class
+   name "title", so one rule scoped to the .rbt-cat-box ancestor (real class, template's own
+   convention) covers both; unlike the card-title fix, no child `a` selector/display:block is
+   needed here since .title itself is already the block-level element carrying the text (h2
+   or p), not an inline anchor wrapping around it. */
+.rbt-cat-box .content .title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rbt-cat-box .content .quick-link-list li a {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Product card's "Free shipping" / "7 Days Return Plicy" ticker (product-card-text-swiper.tsx):
+   style.min.css fixes both the swiper slide and its .rbt-text-group at height:24px (16px
+   below 480px) with overflow:hidden, but never sets white-space — so once the card narrows
+   enough that icon+text don't fit on one line, the wrapped 2nd line just gets clipped by that
+   fixed-height overflow:hidden box instead of the box growing to fit it. Forcing nowrap here
+   keeps it on one line (matching the fixed-height box style.min.css already committed to);
+   overflow/ellipsis stay as a backstop for any width narrower than the text itself. */
+.rbt-product-card .rbt-card-rating .rbt-text-group {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The nowrap fix above only stops "Free shipping" itself from wrapping internally — it was
+   still dropping to a 2nd line below the star rating because the row it sits in
+   (.rbt-card-rating: stars, "(0)", then the ticker) is the thing actually wrapping.
+   style.min.css sets that row to flex-wrap:wrap at max-width:479px AND, seemingly
+   unintentionally, at min-width:1200px and max-width:1399px too — a viewport band zooming
+   in easily lands you in. Forcing nowrap keeps the ticker beside the stars at every width;
+   .rbt-text-group is still a shrinkable flex child with its own overflow:hidden/ellipsis
+   (rule above), so on genuinely tight widths it truncates instead of pushing the row wider
+   than the card. No media query here, so this wins by source order over both of style.min.css's
+   same-specificity flex-wrap rules (site-overrides.css loads after it). */
+.rbt-card .rbt-card-body .rbt-card-rating {
+  flex-wrap: nowrap;
 }
