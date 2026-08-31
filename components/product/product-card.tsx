@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProductCardActions } from "@/components/product/product-card-actions";
 import { ProductCardDetails } from "@/components/product/product-card-details";
 import { ProductCardHoverImage } from "@/components/product/product-card-hover-image";
+import { ProductCardQuickViewButton } from "@/components/product/product-card-quick-view-button";
 import { ProductCardTextSwiper } from "@/components/product/product-card-text-swiper";
 import { ProductCardWishlistButton } from "@/components/product/product-card-wishlist-button";
 import { formatPrice } from "@/lib/currency";
@@ -19,7 +20,6 @@ const PLACEHOLDER = {
   starCount: 5,
   emptyStarIcon: "fa-regular fa-star",
   ratingCount: 0,
-  quickView: "Quick View",
   shipsLabel: "Ships :",
   shipsText: "2–3 weeks Free Shipping",
   shipsLink: "Get delivery dates",
@@ -114,9 +114,7 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
           )}
         </div>
         <div className="rbt-quick-btn-grp has-mixup-midlayer bottom-right--position">
-          <button className="rbt-search-btn rbt-quick-btn tooltips" type="button" aria-label={PLACEHOLDER.quickView} data-tooltip="Quick View" data-tooltip-position="left">
-            <i className="fa-regular fa-magnifying-glass-plus" />
-          </button>
+          <ProductCardQuickViewButton product={product} categoryName={categoryName} categorySlug={categorySlug} />
           <ProductCardWishlistButton productId={product.id} />
         </div>
       </div>

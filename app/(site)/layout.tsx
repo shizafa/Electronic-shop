@@ -2,6 +2,7 @@ import { CartSideNav } from "@/components/cart/cart-side-nav";
 import { CompareModal } from "@/components/compare/compare-model";
 import { Footer } from "@/components/layout/footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { QuickViewModal } from "@/components/quick-view/quick-view";
 import { WishlistModal } from "@/components/wishlist/wishlist-model";
 
 // Layout for every customer-facing route: adds the storefront header/footer.
@@ -34,6 +35,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       <CartSideNav />
       <WishlistModal />
       <CompareModal />
+      <QuickViewModal />
     </>
   );
 }
