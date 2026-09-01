@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { getVisibleCategories } from "@/lib/categories";
+import { getSettings, type StoreSettings } from "@/lib/settings";
 import { t } from "@/lib/i18n";
 
-const helpLinks = [
+type FooterLink = { href: string; labelKey: string; policyField?: keyof StoreSettings };
+
+const helpLinks: FooterLink[] = [
   { href: "/account/profile", labelKey: "footer.accountInfo" },
   { href: "/account/orders", labelKey: "footer.yourOrders" },
-  { href: "/policies/returns-warranty", labelKey: "footer.returnsWarranty" },
-  { href: "/policies/shipping-installation", labelKey: "footer.shippingInstallation" },
-  { href: "/privacy", labelKey: "footer.privacyPolicy" },
-  { href: "/policies/terms", labelKey: "footer.termsOfService" },
+  { href: "/return-policy", labelKey: "footer.returnsWarranty", policyField: "returnPolicy" },
+  { href: "/shipping-policy", labelKey: "footer.shippingInstallation", policyField: "shippingPolicy" },
+  { href: "/privacy-policy", labelKey: "footer.privacyPolicy", policyField: "privacyPolicy" },
+  { href: "/terms", labelKey: "footer.termsOfService", policyField: "terms" },
   { href: "/faqs", labelKey: "footer.faqs" },
 ];
 
@@ -17,18 +20,16 @@ const aboutLinks = [
   { href: "/contact", labelKey: "footer.contactUs" },
 ];
 
-const policyLinks = [
-  { href: "/policies/returns-warranty", labelKey: "footer.returnsWarranty" },
-  { href: "/privacy", labelKey: "footer.privacyPolicy" },
-  { href: "/policies/terms", labelKey: "footer.termsOfService" },
+const policyLinks: FooterLink[] = [
+  { href: "/return-policy", labelKey: "footer.returnsWarranty", policyField: "returnPolicy" },
+  { href: "/privacy-policy", labelKey: "footer.privacyPolicy", policyField: "privacyPolicy" },
+  { href: "/terms", labelKey: "footer.termsOfService", policyField: "terms" },
 ];
 
-// Template copy and store details with no field behind them yet. Phone and email are the
-// real values already used on /contact; the rest is template demo copy kept so the layout
-// matches until there is somewhere real to read it from.
+// Template copy with no field behind it — kept as-is so the layout matches until there's
+// somewhere real to read it from. Phone/email/social links are wired to store_settings below.
 // TODO: wire to backend
 const PLACEHOLDER = {
-  storeName: "Electronics",
   phoneNote: "Free from fixed and mobile phones.",
   phone: "021-111-000-000",
   phoneHref: "tel:021111000000",
@@ -39,14 +40,6 @@ const PLACEHOLDER = {
   followUsLabel: "Follow Us :",
   downloadAppLabel: "Download App :",
   bannerHref: "/shop",
-  socialIcons: [
-    "fa-brands fa-x-twitter",
-    "fa-brands fa-youtube",
-    "fa-brands fa-facebook-f",
-    "fa-brands fa-whatsapp",
-    "fa-brands fa-instagram",
-    "fa-brands fa-telegram",
-  ],
   appStoreBadges: [
     { src: "/assets/images/footer/apple-store-logo.webp", alt: "App Store" },
     { src: "/assets/images/footer/play-store-logo.webp", alt: "App Store" },
@@ -57,11 +50,30 @@ const PLACEHOLDER = {
 // Fully static apart from the category column, so it stays a Server Component: there is no
 // state, handler or browser API anywhere in this markup.
 export async function Footer() {
-  const categories = await getVisibleCategories();
+  const [categories, settings] = await Promise.all([getVisibleCategories(), getSettings()]);
   const categoryLinks = categories.map((category) => ({
     href: `/category/${category.slug}`,
     label: category.name,
   }));
+  const visibleHelpLinks = helpLinks.filter((link) => !link.policyField || settings[link.policyField]);
+  const visiblePolicyLinks = policyLinks.filter((link) => !link.policyField || settings[link.policyField]);
+
+  const phone = settings.phone || PLACEHOLDER.phone;
+  const phoneHref = settings.phone ? `tel:${settings.phone.replace(/\s+/g, "")}` : PLACEHOLDER.phoneHref;
+  const email = settings.email || PLACEHOLDER.email;
+
+  const socialLinks: { icon: string; href: string }[] = (
+    [
+      { icon: "fa-brands fa-facebook-f", href: settings.facebookUrl },
+      { icon: "fa-brands fa-instagram", href: settings.instagramUrl },
+      { icon: "fa-brands fa-x-twitter", href: settings.twitterUrl },
+      { icon: "fa-brands fa-youtube", href: settings.youtubeUrl },
+      {
+        icon: "fa-brands fa-whatsapp",
+        href: settings.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}` : null,
+      },
+    ] satisfies { icon: string; href: string | null }[]
+  ).filter((link): link is { icon: string; href: string } => Boolean(link.href));
 
   return (
     <>
@@ -71,12 +83,9 @@ export async function Footer() {
       <div className="row justify-content-between row--12 mt_dec--24 pb--40 pb_sm--24">
         <div className="col-lg-4 col-md-6 col-sm-6 col-12 mt--24 border-end rbt-border-color-border-2">
           <div className="footer-widget">
-            {/* The template ships only Unimart-branded logo files, so the store's own
-                wordmark is rendered as text here — same source of truth as the header.
-                Swap back to an <img> once there is a real logo asset in public/. */}
             <div className="logo">
               <Link href="/" className="rbt-text-semi-bold rbt-text-color-heading has-lg-fsize">
-                {t("site.name")}
+                {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.storeName} /> : settings.storeName}
               </Link>
             </div>
             <p className="description pr--140 pr_sm--0">
@@ -86,8 +95,8 @@ export async function Footer() {
               <p className="b2 title">
                 {PLACEHOLDER.phoneNote}
               </p>
-              <a className="contact-link has-lg-fsize" href={PLACEHOLDER.phoneHref}>
-                {PLACEHOLDER.phone}
+              <a className="contact-link has-lg-fsize" href={phoneHref}>
+                {phone}
               </a>
             </div>
             <div className="rbt-quick-contact-info">
@@ -102,9 +111,9 @@ export async function Footer() {
               <p className="b2 title mb--0">
                 {PLACEHOLDER.emailLabel}
               </p>
-              <a className="contact-link" href={`mailto:${PLACEHOLDER.email}`}>
+              <a className="contact-link" href={`mailto:${email}`}>
                 <span>
-                  {PLACEHOLDER.email}
+                  {email}
                 </span>
               </a>
             </div>
@@ -116,7 +125,7 @@ export async function Footer() {
               {t("footer.letUsHelpYou")}
             </h3>
             <ul className="ft-link">
-              {helpLinks.map((link) => (
+              {visibleHelpLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
                     {t(link.labelKey)}
@@ -176,22 +185,24 @@ export async function Footer() {
   <div className="footer-bottom">
     <div className="container">
       <div className="row row--12 align-items-center mt_dec--24">
-        <div className="col-lg-6 mt--24">
-          <div className="rbt-footer-social-area justify-content-center justify-content-lg-start">
-            <p className="title">
-              {PLACEHOLDER.followUsLabel}
-            </p>
-            <ul className="social-icon social-icon-md rbt-social-default with-bg-primary justify-content-start justify-content-lg-end">
-              {PLACEHOLDER.socialIcons.map((icon) => (
-                <li key={icon}>
-                  <a href="#">
-                    <i className={icon} />
-                  </a>
-                </li>
-              ))}
-            </ul>
+        {socialLinks.length > 0 && (
+          <div className="col-lg-6 mt--24">
+            <div className="rbt-footer-social-area justify-content-center justify-content-lg-start">
+              <p className="title">
+                {PLACEHOLDER.followUsLabel}
+              </p>
+              <ul className="social-icon social-icon-md rbt-social-default with-bg-primary justify-content-start justify-content-lg-end">
+                {socialLinks.map((link) => (
+                  <li key={link.icon}>
+                    <a href={link.href} target="_blank" rel="noopener noreferrer">
+                      <i className={link.icon} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        )}
         <div className="col-lg-6 mt--20">
           <div className="rbt-app-store-area justify-content-center justify-content-lg-end">
             <p className="title">
@@ -224,7 +235,7 @@ export async function Footer() {
           </span>
           ©
           <Link href="/" className="rbt-text-semi-bold rbt-text-color-heading">
-            {t("site.name")}
+            {settings.storeName}
           </Link>
           {t("footer.copyright")}
         </p>
@@ -240,7 +251,7 @@ export async function Footer() {
       </div>
       <div className="col-xxl-4 col-xl-4 col-lg-12 col-md-12 col-12 mt--24">
         <ul className="copyright-link rbt-link-hover justify-content-center justify-content-xl-end mt_sm--12 mt_md--12 mt_lg--12">
-          {policyLinks.map((link) => (
+          {visiblePolicyLinks.map((link) => (
             <li key={link.href}>
               <Link href={link.href}>
                 {t(link.labelKey)}

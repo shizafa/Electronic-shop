@@ -3,6 +3,7 @@ import { MainBarAccountLink } from "@/components/layout/main-bar-account-link";
 import { MainBarCartLink } from "@/components/layout/main-bar-cart-link";
 import { MainBarSearch } from "@/components/layout/main-bar-search";
 import { getVisibleCategories } from "@/lib/categories";
+import { getSettings } from "@/lib/settings";
 import { t } from "@/lib/i18n";
 
 // Real store phone number, shared with /contact and the old header.tsx it replaces.
@@ -28,7 +29,7 @@ const PLACEHOLDER = {
 // that sat next to the logo) was dropped at the user's request — it was never wired to a
 // panel anyway (not in the build order), and its removal frees up room for the wordmark.
 export async function MainBar() {
-  const categories = await getVisibleCategories();
+  const [categories, settings] = await Promise.all([getVisibleCategories(), getSettings()]);
 
   return (
     <div className="rbt-wrapper-middle rbt-header-middle-one">
@@ -44,12 +45,9 @@ export async function MainBar() {
             </div>
             <div className="rbt-header-content">
               <div className="header-info">
-                {/* The template ships only Unimart-branded logo files and there's no real
-                    logo asset in public/ yet — same fix as the footer and same source of
-                    truth (t("site.name")). Swap back to an <img> once a real logo exists. */}
                 <div className="logo">
                   <Link href="/">
-                    {t("site.name")}
+                    {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.storeName} /> : settings.storeName}
                   </Link>
                 </div>
               </div>

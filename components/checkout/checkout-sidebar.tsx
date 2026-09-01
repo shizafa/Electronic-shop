@@ -11,6 +11,7 @@ interface CheckoutSidebarProps {
   lineItems: { product: Product; variant: Variant; quantity: number }[];
   subtotal: number;
   shippingFee: number;
+  taxAmount: number;
   total: number;
 }
 
@@ -22,7 +23,7 @@ interface CheckoutSidebarProps {
 // unlock points" prompt can never legitimately show here — and there's no points system regardless.
 // Share Cart is kept as an inert button, matching the same button in cart-side-nav.tsx (no Bootstrap
 // modal JS is loaded, so it does nothing on click there either).
-export function CheckoutSidebar({ lineItems, subtotal, shippingFee, total }: CheckoutSidebarProps) {
+export function CheckoutSidebar({ lineItems, subtotal, shippingFee, taxAmount, total }: CheckoutSidebarProps) {
   const { openCart } = useCart();
   const visibleItems = lineItems.slice(0, 3);
   const extraCount = lineItems.length - visibleItems.length;
@@ -83,6 +84,16 @@ export function CheckoutSidebar({ lineItems, subtotal, shippingFee, total }: Che
                 {shippingFee === 0 ? t("common.free") : formatPrice(shippingFee)}
               </p>
             </div>
+            {taxAmount > 0 && (
+              <div className="rbt-cart-subttotal">
+                <p>
+                  {t("common.tax")}
+                </p>
+                <p className="price">
+                  {formatPrice(taxAmount)}
+                </p>
+              </div>
+            )}
             <hr className="mb--8 mt--8 rbt-bg-color-gray-200" />
             <div className="rbt-cart-subttotal mb--12">
               <p className="subtotal">

@@ -181,6 +181,7 @@ async function seedOrders(idMap: Map<string, string>) {
           payment_method: order.paymentMethod,
           subtotal: order.subtotal,
           shipping_fee: order.shippingFee,
+          tax_amount: order.taxAmount,
           total: order.total,
           shipping_address: order.shippingAddress,
           billing_address: order.billingAddress,

@@ -106,6 +106,12 @@ export default async function AdminOrderDetailPage({ params }: PageProps<"/admin
           <span>{t("common.shippingFee")}</span>
           <span>{order.shippingFee === 0 ? t("common.free") : formatPrice(order.shippingFee)}</span>
         </div>
+        {order.taxAmount > 0 && (
+          <div className="flex justify-between text-muted-foreground">
+            <span>{t("common.tax")}</span>
+            <span>{formatPrice(order.taxAmount)}</span>
+          </div>
+        )}
         <div className="flex justify-between border-t border-border pt-2 text-base font-semibold text-foreground">
           <span>{t("common.total")}</span>
           <span>{formatPrice(order.total)}</span>

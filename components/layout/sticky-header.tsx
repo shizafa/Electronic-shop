@@ -5,6 +5,7 @@ import { StickyHeaderCartLink } from "@/components/layout/sticky-header-cart-lin
 import { StickyHeaderCompareLink } from "@/components/layout/sticky-header-compare-link";
 import { StickyHeaderTicker } from "@/components/layout/sticky-header-ticker";
 import { StickyHeaderWishlistLink } from "@/components/layout/sticky-header-wishlist-link";
+import { getSettings } from "@/lib/settings";
 import { t } from "@/lib/i18n";
 
 // Content of the sticky header clone. The .rbt-header-common-sticky-activation wrapper div
@@ -17,7 +18,9 @@ import { t } from "@/lib/i18n";
 // Reuses <NavMenu /> rather than re-porting the nav; the two calls to
 // getVisibleCategories/getAllProducts inside it (one from NavBar, one from here) request-
 // dedupe via React's cache() in lib/, so this isn't a second Supabase round-trip.
-export function StickyHeader() {
+export async function StickyHeader() {
+  const settings = await getSettings();
+
   return (
     <>
   <div className="rbt-header-campaign rbt-header-campaign-1 rbt-header-top-news rbt-topbar-bg-img rbt-topbar-bg-one w-100">
@@ -45,11 +48,9 @@ export function StickyHeader() {
       <div className="header-left">
         <div className="rbt-header-content d-flex">
           <div className="header-info d-xl-block d-none">
-            {/* Text wordmark, same fix as the footer/main bar: the template only ships
-                Unimart-branded logo files, no real logo exists in public/ yet. */}
             <div className="logo rbt-logo-height-sm">
               <Link href="/">
-                {t("site.name")}
+                {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.storeName} /> : settings.storeName}
               </Link>
             </div>
           </div>
@@ -65,7 +66,7 @@ export function StickyHeader() {
       <div className="header-info d-xl-none d-block">
         <div className="logo">
           <Link href="/">
-            {t("site.name")}
+            {settings.logoUrl ? <img src={settings.logoUrl} alt={settings.storeName} /> : settings.storeName}
           </Link>
         </div>
       </div>

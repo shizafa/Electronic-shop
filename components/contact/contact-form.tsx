@@ -4,10 +4,14 @@ import { useState, type SubmitEvent } from "react";
 import { toast } from "sonner";
 import { submitContactMessage } from "@/lib/actions/contact";
 import { t } from "@/lib/i18n";
+import type { StoreSettings } from "@/lib/settings";
 
 // ContactForm — submits to contact_messages via a Server Action; admins review submissions
-// in the /admin/messages inbox.
-export function ContactForm() {
+// in the /admin/messages inbox. The top quick-contact buttons and the first location card
+// (phone/email/address) are wired to store_settings; the other three location cards and the
+// Telegram/Messenger buttons stay template demo content — there's no backend for multiple
+// store locations or those two channels.
+export function ContactForm({ settings }: { settings: StoreSettings }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,6 +46,15 @@ export function ContactForm() {
       </div>
     );
   }
+
+  const phone = settings.phone || "+9584 4561 2564";
+  const phoneHref = settings.phone ? `tel:${settings.phone.replace(/\s+/g, "")}` : "tel:+958445612564";
+  const whatsappHref = settings.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}` : null;
+
+  const locationPhone = settings.phone || "(208) 555-0112";
+  const locationPhoneHref = settings.phone ? `tel:${settings.phone.replace(/\s+/g, "")}` : "tel:+2085550112";
+  const locationEmail = settings.email || "contact@example.com";
+  const locationAddress = settings.address || "1260 Broadway, San Franci, CA 94109";
 
   return (
     <>
@@ -89,7 +102,7 @@ export function ContactForm() {
         </div>
         <div className="rbt-btn-grp justify-content-between rbt-gap--16 flex-wrap">
           {/* Call via Phone */}
-          <a href="tel:+958445612564" className="rbt-trns-modern-btn tooltips" data-tooltip="Call via Phone" data-tooltip-position="top">
+          <a href={phoneHref} className="rbt-trns-modern-btn tooltips" data-tooltip="Call via Phone" data-tooltip-position="top">
             <span className="icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="33" viewBox="0 0 32 33" fill="none">
                 <g clipPath="url(#clip0_5767_2922)">
@@ -103,10 +116,11 @@ export function ContactForm() {
                 </defs>
               </svg>
             </span>
-            +9584 4561 2564
+            {phone}
           </a>
           {/* Call via WhatsApp */}
-          <a href="cdn-cgi/l/email-protection.html#b0c5ded9ddd1c2c4d1d2d3f0ddd1d9dc9ed3dfdd" className="rbt-trns-modern-btn tooltips" data-tooltip="Call via WhatsApp" data-tooltip-position="top">
+          {whatsappHref && (
+          <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="rbt-trns-modern-btn tooltips" data-tooltip="Call via WhatsApp" data-tooltip-position="top">
             <span className="icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="33" height="32" viewBox="0 0 33 32" fill="none">
                 <g clipPath="url(#clip0_5767_2927)">
@@ -121,10 +135,9 @@ export function ContactForm() {
                 </defs>
               </svg>
             </span>
-            <span className="__cf_email__" data-cfemail="91e4fff8fcf0e3e5f0f3f2d1fcf0f8fdbff2fefc">
-              [email protected]
-            </span>
+            {settings.whatsapp}
           </a>
+          )}
           {/* Call via Telegram */}
           <a href="https://t.me/+958445612564" target="_blank" className="rbt-trns-modern-btn tooltips" data-tooltip="Call via Telegram" data-tooltip-position="top">
             <span className="icon">
@@ -170,26 +183,23 @@ export function ContactForm() {
                   Broadway Store
                 </h2>
                 <p className="rbt-location-card-text">
-                  1260 Broadway, San Franci, CA 94109
+                  {locationAddress}
                 </p>
                 <ul className="rbt-contact-info-list">
                   <li>
                     <span>
                       Phone :
                     </span>
-                    <a href="tel:+2085550112" className="rbt-contact-info-single color-primary">
-                      (208)
-                                                555-0112
+                    <a href={locationPhoneHref} className="rbt-contact-info-single color-primary">
+                      {locationPhone}
                     </a>
                   </li>
                   <li>
                     <span>
                       Email :
                     </span>
-                    <a href="cdn-cgi/l/email-protection.html#94e1fafdf9f5e6e0f5f6f7d4f9f5fdf8baf7fbf9" className="rbt-contact-info-single color-primary">
-                      <span className="__cf_email__" data-cfemail="3f4a5156525e4d4b5e5d5c7f525e5653115c5052">
-                        [email protected]
-                      </span>
+                    <a href={`mailto:${locationEmail}`} className="rbt-contact-info-single color-primary">
+                      {locationEmail}
                     </a>
                   </li>
                 </ul>

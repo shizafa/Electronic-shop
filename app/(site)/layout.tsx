@@ -4,10 +4,13 @@ import { Footer } from "@/components/layout/footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { QuickViewModal } from "@/components/quick-view/quick-view";
 import { WishlistModal } from "@/components/wishlist/wishlist-model";
+import { getSettings } from "@/lib/settings";
 
 // Layout for every customer-facing route: adds the storefront header/footer.
 // Scoped to the (site) route group so app/admin/** doesn't inherit this chrome.
-export default function SiteLayout({ children }: LayoutProps<"/">) {
+export default async function SiteLayout({ children }: LayoutProps<"/">) {
+  const settings = await getSettings();
+
   return (
     <>
       {/* style.min.css sets --font-primary: "Cabin", sans-serif (and uses it on nearly every
@@ -32,7 +35,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
       <SiteHeader />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
-      <CartSideNav />
+      <CartSideNav settings={settings} />
       <WishlistModal />
       <CompareModal />
       <QuickViewModal />

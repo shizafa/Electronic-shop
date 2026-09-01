@@ -69,6 +69,7 @@ export interface Order {
   paymentMethod: PaymentMethod;
   subtotal: number;
   shippingFee: number;
+  taxAmount: number;
   total: number;
   placedAt: string;
   installation?: InstallationSchedule;

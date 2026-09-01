@@ -18,6 +18,7 @@ import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
 import { placeOrder } from "@/lib/actions/orders";
 import { t } from "@/lib/i18n";
+import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
@@ -34,7 +35,7 @@ const STEP_TITLES: Record<CheckoutStep, string> = {
 };
 
 // CheckoutFlow — multi-step checkout state machine: address -> (installation) -> payment -> review -> place order
-export function CheckoutFlow() {
+export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codEnabled: boolean } }) {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, clearCart } = useCart();
@@ -97,8 +98,7 @@ export function CheckoutFlow() {
   }
 
   const subtotal = lineItems.reduce((sum, { variant, quantity }) => sum + variant.price * quantity, 0);
-  const shippingFee = 0;
-  const total = subtotal + shippingFee;
+  const { shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings);
 
   const shippingCity = cities.find((city) => city.name === shippingAddress.city);
   // installation can only be scheduled if the chosen shipping city supports it, regardless of cart contents
@@ -358,6 +358,7 @@ export function CheckoutFlow() {
                                   value={paymentMethod}
                                   onChange={setPaymentMethod}
                                   orderTotal={total}
+                                  codEnabled={settings.codEnabled}
                                 />
                                 {/* No coupon/promo-code system exists in the app — kept as inert
                                     chrome, same treatment as Share Cart in checkout-sidebar.tsx. */}
@@ -395,6 +396,7 @@ export function CheckoutFlow() {
                                 paymentMethod={paymentMethod}
                                 subtotal={subtotal}
                                 shippingFee={shippingFee}
+                                taxAmount={taxAmount}
                                 total={total}
                               />
                             )}
@@ -457,7 +459,13 @@ export function CheckoutFlow() {
               </div>
             </div>
 
-            <CheckoutSidebar lineItems={lineItems} subtotal={subtotal} shippingFee={shippingFee} total={total} />
+            <CheckoutSidebar
+              lineItems={lineItems}
+              subtotal={subtotal}
+              shippingFee={shippingFee}
+              taxAmount={taxAmount}
+              total={total}
+            />
           </div>
         </div>
       </div>

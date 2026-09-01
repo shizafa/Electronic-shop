@@ -8,6 +8,7 @@ import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
+import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
 import { getProductById, getVariantById } from "@/lib/products";
 import type { Product, Variant } from "@/types/product";
 
@@ -27,7 +28,7 @@ import type { Product, Variant } from "@/types/product";
 // Still inert: the edit/note/shipping/coupon/share-cart modals (data-bs-toggle, no Bootstrap
 // JS loaded per project rules) and the "You May Also Like" swiper recommendations — only cart
 // contents/totals and open/close were asked for this turn.
-export function CartSideNav() {
+export function CartSideNav({ settings }: { settings: CommerceSettings }) {
   const router = useRouter();
   const { user } = useAuth();
   const { items, isCartOpen, closeCart, updateQuantity, removeFromCart } = useCart();
@@ -84,6 +85,7 @@ export function CartSideNav() {
 
   const itemCount = lineItems.reduce((sum, { item }) => sum + item.quantity, 0);
   const subtotal = lineItems.reduce((sum, { item, variant }) => sum + variant.price * item.quantity, 0);
+  const totals = computeOrderTotals(subtotal, settings);
 
   function handleCheckout() {
     closeCart();
@@ -305,9 +307,19 @@ export function CartSideNav() {
                 Shipping
               </p>
               <p className="price">
-                {t("common.free")}
+                {totals.shippingFee === 0 ? t("common.free") : formatPrice(totals.shippingFee)}
               </p>
             </div>
+            {totals.taxAmount > 0 && (
+              <div className="rbt-cart-subttotal">
+                <p>
+                  {t("common.tax")}
+                </p>
+                <p className="price">
+                  {formatPrice(totals.taxAmount)}
+                </p>
+              </div>
+            )}
             <hr className="mb--0" />
             <div className="rbt-cart-subttotal">
               <p className="subtotal">
@@ -316,7 +328,7 @@ export function CartSideNav() {
                 </strong>
               </p>
               <p className="price">
-                {formatPrice(subtotal)}
+                {formatPrice(totals.total)}
               </p>
             </div>
             <div className="rbt-minicart-bottom mt--24">

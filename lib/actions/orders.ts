@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { computeOrderTotals } from "@/lib/order-totals";
+import { getSettings } from "@/lib/settings";
 import type { InstallationSchedule, OrderAddressSnapshot, PaymentMethod } from "@/types/order";
 
 export interface PlaceOrderLineItem {
@@ -46,6 +48,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   if (!user) return { success: false, error: "Not authenticated" };
 
   if (input.lineItems.length === 0) return { success: false, error: "Cart is empty" };
+
+  const settings = await getSettings();
+  if (input.paymentMethod === "cod" && !settings.codEnabled) {
+    return { success: false, error: "Cash on Delivery is not available" };
+  }
 
   const variantIds = input.lineItems.map((item) => item.variantId);
   const { data: variantRows, error: variantError } = await supabase
@@ -111,8 +118,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   });
   if (stockError) return { success: false, error: "One or more items in your cart just sold out" };
 
-  const shippingFee = 0; // shipping is currently free in this mock shop
-  const total = subtotal + shippingFee;
+  const { shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings);
   // Cash-on-delivery orders start "pending payment"; other methods are treated as already paid
   const paymentStatus = input.paymentMethod === "cod" ? "cod_pending" : "paid";
   const orderNumber = `ORD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`; // e.g. ORD-2026-4821
@@ -127,6 +133,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       payment_method: input.paymentMethod,
       subtotal,
       shipping_fee: shippingFee,
+      tax_amount: taxAmount,
       total,
       shipping_address: input.shippingAddress,
       billing_address: input.billingAddress,

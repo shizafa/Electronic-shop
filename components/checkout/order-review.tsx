@@ -16,6 +16,7 @@ interface OrderReviewProps {
   paymentMethod: PaymentMethod;
   subtotal: number;
   shippingFee: number;
+  taxAmount: number;
   total: number;
 }
 
@@ -29,6 +30,7 @@ export function OrderReview({
   paymentMethod,
   subtotal,
   shippingFee,
+  taxAmount,
   total,
 }: OrderReviewProps) {
   return (
@@ -110,6 +112,12 @@ export function OrderReview({
           <span>{t("common.shippingFee")}</span>
           <span>{shippingFee === 0 ? t("common.free") : formatPrice(shippingFee)}</span>
         </div>
+        {taxAmount > 0 && (
+          <div className="flex justify-between text-muted-foreground">
+            <span>{t("common.tax")}</span>
+            <span>{formatPrice(taxAmount)}</span>
+          </div>
+        )}
         <div className="flex justify-between border-t border-border pt-2 text-base font-semibold text-foreground">
           <span>{t("common.total")}</span>
           <span>{formatPrice(total)}</span>

@@ -36,6 +36,7 @@ export interface OrderRow {
   payment_method: PaymentMethod;
   subtotal: string | number;
   shipping_fee: string | number;
+  tax_amount: string | number;
   total: string | number;
   shipping_address: OrderAddressSnapshot;
   billing_address: OrderAddressSnapshot;
@@ -77,6 +78,7 @@ export function mapOrderRow(row: OrderRow): Order {
     paymentMethod: row.payment_method,
     subtotal: Number(row.subtotal),
     shippingFee: Number(row.shipping_fee),
+    taxAmount: Number(row.tax_amount),
     total: Number(row.total),
     placedAt: toDateOnly(row.placed_at),
     installation: row.installation ?? undefined,

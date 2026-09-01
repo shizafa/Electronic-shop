@@ -9,6 +9,7 @@ import { useCart } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
+import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
 
 // CartView — /cart page. useProductCatalog resolves stored cart items (product/variant ids)
 // into full product + variant data; this route's own layout.tsx (app/(site)/cart/layout.tsx)
@@ -23,7 +24,7 @@ import { t } from "@/lib/i18n";
 // identical sections already left inert in cart-side-nav.tsx. The "Add $248 more for free
 // shipping" progress banner is dropped — it directly contradicted the Shipping row above it,
 // which is always Free (shippingFee is 0, same as before this port).
-export function CartView() {
+export function CartView({ settings }: { settings: CommerceSettings }) {
   const router = useRouter();
   const { user } = useAuth();
   const { items, updateQuantity, removeFromCart } = useCart();
@@ -51,6 +52,7 @@ export function CartView() {
 
   const itemCount = lineItems.reduce((sum, { item }) => sum + item.quantity, 0);
   const subtotal = lineItems.reduce((sum, { variant, item }) => sum + variant.price * item.quantity, 0);
+  const totals = computeOrderTotals(subtotal, settings);
 
   function handleCheckout() {
     // logged-out users are sent to login first, then back to checkout
@@ -488,9 +490,19 @@ export function CartView() {
                         Shipping
                       </p>
                       <p className="price">
-                        {t("common.free")}
+                        {totals.shippingFee === 0 ? t("common.free") : formatPrice(totals.shippingFee)}
                       </p>
                     </div>
+                    {totals.taxAmount > 0 && (
+                      <div className="rbt-cart-subttotal">
+                        <p>
+                          {t("common.tax")}
+                        </p>
+                        <p className="price">
+                          {formatPrice(totals.taxAmount)}
+                        </p>
+                      </div>
+                    )}
                     <hr className="mb--8 mt--8 rbt-bg-color-gray-200" />
                     <div className="rbt-cart-subttotal mb--12">
                       <p className="subtotal">
@@ -499,7 +511,7 @@ export function CartView() {
                         </strong>
                       </p>
                       <p className="price">
-                        {formatPrice(subtotal)}
+                        {formatPrice(totals.total)}
                       </p>
                     </div>
                     <div className="rbt-minicart-bottom mt--24">
