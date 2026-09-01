@@ -133,7 +133,7 @@ export function ReviewsSection({ productId, reviews }: ReviewsSectionProps) {
           variant="outline"
           size="sm"
           className="w-fit"
-          onClick={() => router.push(`/login?redirect=${pathname}`)}
+          onClick={() => router.push(`/login?next=${pathname}`)}
         >
           {t("product.signInToReview")}
         </Button>

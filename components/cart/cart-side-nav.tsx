@@ -89,7 +89,7 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
 
   function handleCheckout() {
     closeCart();
-    router.push(user ? "/checkout" : "/login?redirect=/checkout");
+    router.push(user ? "/checkout" : "/login?next=/checkout");
   }
 
   return (

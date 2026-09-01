@@ -39,7 +39,7 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
   // navigation and bounce the user to the login page instead of home.
   useEffect(() => {
     if (!isLoading && !user && !isLoggingOutRef.current) {
-      router.replace(`/login?redirect=${pathname}`);
+      router.replace(`/login?next=${pathname}`);
     }
   }, [isLoading, user, pathname, router]);
 

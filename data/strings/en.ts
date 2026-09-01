@@ -332,6 +332,7 @@ const en: TranslationDictionary = {
   "admin.nav.group.support": "Support",
   "admin.nav.group.settings": "Settings",
   "admin.nav.messages": "Messages",
+  "admin.nav.viewStore": "View Store",
 
   "admin.search.placeholder": "Search products, orders, customers...",
   "admin.search.hint": "Start typing to search.",

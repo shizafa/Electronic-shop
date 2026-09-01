@@ -6,6 +6,7 @@ import { useState, type SubmitEvent } from "react";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useAuth } from "@/context/auth-context";
+import { resolveLoginRedirect } from "@/lib/actions/auth";
 import { t } from "@/lib/i18n";
 
 import "swiper/css";
@@ -47,7 +48,9 @@ export function LoginForm() {
       return;
     }
 
-    router.push(searchParams.get("redirect") || "/");
+    // next honored first; otherwise role-based (admin -> /admin, customer -> /), decided
+    // server-side by resolveLoginRedirect rather than trusting client-held user.isAdmin
+    router.push(await resolveLoginRedirect(searchParams.get("next")));
   }
 
   return (

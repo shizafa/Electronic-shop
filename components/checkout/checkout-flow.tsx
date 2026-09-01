@@ -83,7 +83,7 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   useEffect(() => {
     if (isAuthLoading) return;
     if (!user) {
-      router.replace("/login?redirect=/checkout");
+      router.replace("/login?next=/checkout");
       return;
     }
     if (items.length === 0) {

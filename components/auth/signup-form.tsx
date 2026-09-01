@@ -53,7 +53,7 @@ export function SignupForm() {
     }
 
     // send the user to the page they were trying to reach before signing up, if any
-    router.push(searchParams.get("redirect") || "/");
+    router.push(searchParams.get("next") || "/");
   }
 
   return (

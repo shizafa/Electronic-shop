@@ -56,7 +56,7 @@ export function CartView({ settings }: { settings: CommerceSettings }) {
 
   function handleCheckout() {
     // logged-out users are sent to login first, then back to checkout
-    router.push(user ? "/checkout" : "/login?redirect=/checkout");
+    router.push(user ? "/checkout" : "/login?next=/checkout");
   }
 
   return (

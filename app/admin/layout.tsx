@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      router.replace(`/login?redirect=${pathname}`);
+      router.replace(`/login?next=${pathname}`);
       return;
     }
     if (!user.isAdmin) {
