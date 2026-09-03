@@ -38,7 +38,7 @@ export function ProductTabs({ product, category, specRows, reviews }: ProductTab
   const [activeTab, setActiveTab] = useState<TabId>("description");
 
   return (
-    <div className="col-xl-8 mt--24">
+    <div className="col-12 mt--24">
       <div className="rbt-tab rbt-product-single-details-tab rbt-fshape-tab">
         <div className="rbt-tab-nav-wrapper">
           <ul className="nav nav-tabs" role="tablist">

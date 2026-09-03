@@ -17,6 +17,7 @@ import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
+import { getDiscountPercent } from "@/lib/product-helpers";
 import { buildSpecRows } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product, Variant } from "@/types/product";
@@ -71,11 +72,7 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
   const compactSpecRows = specEntries.slice(0, 3);
   const specContinuation = specEntries[3];
 
-  const discountPercent = selectedVariant.compareAtPrice
-    ? Math.round(
-        ((selectedVariant.compareAtPrice - selectedVariant.price) / selectedVariant.compareAtPrice) * 100
-      )
-    : undefined;
+  const discountPercent = getDiscountPercent(selectedVariant);
 
   function handleSelectVariant(variant: Variant) {
     setSelectedVariant(variant);
@@ -479,9 +476,8 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
 
       <ComboProduct relatedProducts={relatedProducts} />
 
-      {/* .row/.container ancestors are a structural requirement for the Bootstrap col-xl-8
-          below, not part of the pasted markup — a sibling col-xl-4 is expected to land in
-          this same .row in a later paste. */}
+      {/* .row/.container ancestors are a structural requirement for the Bootstrap col-12
+          below, not part of the pasted markup. */}
       <div className="rbt-component-area rbt-section-gap">
         <div className="container">
           <div className="row">
@@ -490,7 +486,7 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
         </div>
       </div>
 
-      <div className="container-page py-6">
+      <div className="container py-6">
         {relatedProducts.length > 0 && (
           <div className="mt-10">
             <h2 className="text-xl font-semibold sm:text-2xl">{t("product.similarItems")}</h2>

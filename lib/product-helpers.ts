@@ -25,6 +25,15 @@ export function getVariantStockStatus(variant: Variant): StockStatus {
   return "in";
 }
 
+// Percent off, derived from compareAtPrice vs price — the single source of truth for "is this
+// variant actually on sale" (deals filtering, product card badge, PDP "Save X%" all use this
+// instead of each re-deriving it). undefined when there's no compareAtPrice or it isn't actually
+// higher than price (bad data entry shouldn't read as a discount).
+export function getDiscountPercent(variant: Variant): number | undefined {
+  if (variant.compareAtPrice === undefined || variant.compareAtPrice <= variant.price) return undefined;
+  return Math.round(((variant.compareAtPrice - variant.price) / variant.compareAtPrice) * 100);
+}
+
 // A product's status is derived from all its variants, never stored separately: out only
 // when every variant is out, low when total stock has dropped to (or below) the combined
 // threshold of its variants, in otherwise.

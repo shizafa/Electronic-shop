@@ -7,7 +7,7 @@ import { ProductCardTextSwiper } from "@/components/product/product-card-text-sw
 import { ProductCardWishlistButton } from "@/components/product/product-card-wishlist-button";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant } from "@/lib/product-helpers";
+import { getDiscountPercent, getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
 
 // Every value in the template's card markup that still has no field behind it. Kept in one
@@ -73,6 +73,10 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
   if (!displayVariant) return null; // no variants at all — nothing sellable to show
   const hasMultipleVariants = product.variants.length > 1;
   const isOutOfStock = product.variants.every((variant) => variant.stock === 0);
+  const discountPercent = getDiscountPercent(displayVariant);
+  // Priority when no explicit badge prop is passed: out of stock, then sale, then the NEW
+  // fallback below — same priority PDP already uses for its own (separate) gallery badge.
+  const resolvedBadge = badge ?? (isOutOfStock ? undefined : discountPercent !== undefined ? t("common.sale") : undefined);
 
   // Products without a second image reuse the first, so the hover swap is a no-op rather than a gap.
   const hoverImage = product.images[1] ?? product.images[0];
@@ -101,14 +105,14 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
           />
         </Link>
         <div className="rbt-badge-wrapper rbt-content-top-left">
-          {(isOutOfStock || !badge) && (
+          {(isOutOfStock || !resolvedBadge) && (
             <div className="rbt-product-badge rbt-product-badge-bg-green border-rounded">
               {isOutOfStock ? t("common.outOfStock") : PLACEHOLDER.newBadge}
             </div>
           )}
-          {badge && (
+          {resolvedBadge && (
             <div className="rbt-product-badge rbt-product-badge-bg-secondary-gradient border-rounded">
-              {badge}
+              {resolvedBadge}
             </div>
           )}
         </div>

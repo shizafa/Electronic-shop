@@ -2,8 +2,8 @@ import Link from "next/link";
 import { NavMenu } from "@/components/layout/nav-menu";
 import { StickyHeaderAccountLink } from "@/components/layout/sticky-header-account-link";
 import { StickyHeaderCartLink } from "@/components/layout/sticky-header-cart-link";
+import { StickyHeaderCampaign } from "@/components/layout/sticky-header-campaign";
 import { StickyHeaderCompareLink } from "@/components/layout/sticky-header-compare-link";
-import { StickyHeaderTicker } from "@/components/layout/sticky-header-ticker";
 import { StickyHeaderWishlistLink } from "@/components/layout/sticky-header-wishlist-link";
 import { getSettings } from "@/lib/settings";
 import { t } from "@/lib/i18n";
@@ -23,26 +23,7 @@ export async function StickyHeader() {
 
   return (
     <>
-  <div className="rbt-header-campaign rbt-header-campaign-1 rbt-header-top-news rbt-topbar-bg-img rbt-topbar-bg-one w-100">
-    <div className="rbt-corner-portion-wrapper">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-lg-6">
-            <div className="inner justify-content-center">
-              <StickyHeaderTicker />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div className="icon-close position-right">
-      {/* bgsection-activation has no rules in style.min.css — dead hook, no dismiss
-          behavior wired yet. Kept verbatim rather than invented. */}
-      <button className="rbt-round-btn btn-white-off bgsection-activation" aria-label="Close Button" type="button">
-        <i className="fa-solid fa-xmark" />
-      </button>
-    </div>
-  </div>
+  <StickyHeaderCampaign />
   <div className="container">
     <div className="mainbar-row rbt-mainbar-row-md-height  align-items-center">
       <div className="header-left">

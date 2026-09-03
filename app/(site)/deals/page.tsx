@@ -4,18 +4,20 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { getAllCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { getAllProducts } from "@/lib/products";
-import { getDisplayVariant } from "@/lib/product-helpers";
+import { getDiscountPercent, getDisplayVariant } from "@/lib/product-helpers";
 
 export const metadata: Metadata = {
   title: t("deals.title"),
 };
 
-// /deals route: featured products and anything with a live discount (variant.compareAtPrice)
+// /deals route: only products with a live discount (variant.compareAtPrice > price). Being
+// featured is not enough on its own — a featured product with no discount isn't a "deal".
 export default async function DealsPage() {
   const [allProducts, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
-  const deals = allProducts.filter(
-    (product) => product.featured || getDisplayVariant(product)?.compareAtPrice !== undefined
-  );
+  const deals = allProducts.filter((product) => {
+    const displayVariant = getDisplayVariant(product);
+    return displayVariant !== undefined && getDiscountPercent(displayVariant) !== undefined;
+  });
 
   return (
     <div className="rbt-component-area rbt-catagories-area rbt-section-gap2">

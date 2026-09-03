@@ -202,6 +202,16 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
   transition: filter 0.2s ease;
 }
 
+/* Caps the Shop megamenu at 80% of viewport height instead of growing unbounded with its
+   content. Without this, a tall menu (more categories/products than today's seed data) could
+   reach the bottom of the screen, leaving no blurred page visible beneath it (see the
+   body:has(...) blur rule above) — reading as a full takeover instead of an overlay, and
+   making it easy to feel "lost". Scrolls internally if content still exceeds 80vh. */
+.rbt-megamenu {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
 /* Shop megamenu now gives each category its own column (nav-menu.tsx's megaMenuColumnClass),
    narrower than the template's original 4-wide layout — sized down from the template's
    default b1 (16px) list items so a longer product name doesn't wrap inside the tighter
