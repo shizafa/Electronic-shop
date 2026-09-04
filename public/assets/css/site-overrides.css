@@ -447,3 +447,16 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
     padding-top: 32px !important;
   }
 }
+
+/* Product tabs (product-tabs.tsx: Description/Specifications/Reviews/Questions & Answers).
+   style.min.css's own base reset sets button,input,select,textarea{max-width:100%}. These
+   tab buttons use negative side margins (margin:0 calc(-.5 * var(--shape-width))) to create
+   the overlapping folder-tab curve effect, which shrinks the box the browser resolves that
+   100% against — so on narrow viewports the button gets clamped narrower than its own label
+   needs, and the nowrap text spills into the padding strip where the decorative curve
+   (painted after the text, so on top) gets drawn, visually chopping the label off (e.g.
+   "Description" rendered as "Descrip"). The curve's own sizing (padding, negative margin)
+   is untouched, so the folder-tab look is unaffected — only the artificial cap is lifted. */
+.rbt-fshape-tab .nav-tabs .nav-link {
+  max-width: none;
+}
