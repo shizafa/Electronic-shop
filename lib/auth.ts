@@ -122,6 +122,31 @@ export async function updateUserProfile(
   return loadUser(userId, authData.user?.email ?? updates.email);
 }
 
+// Changes the logged-in user's password. Re-verifies the current password via
+// signInWithPassword first (Supabase's updateUser doesn't itself require it), so a stolen
+// still-logged-in session can't silently take over the account.
+export async function updateUserPassword(
+  email: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<boolean> {
+  const supabase = createClient();
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+  if (reauthError) {
+    console.error("updateUserPassword: current password incorrect", reauthError);
+    return false;
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) {
+    console.error("updateUserPassword: auth.updateUser failed", error);
+    return false;
+  }
+
+  return true;
+}
+
 // Saves an updated address list for a user. Replaces all rows rather than diffing,
 // mirroring the old mock's "send the full next array" call pattern from address-book.tsx.
 export async function updateUserAddresses(userId: string, addresses: Address[]): Promise<User | null> {

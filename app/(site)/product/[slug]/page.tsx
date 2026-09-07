@@ -18,6 +18,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound(); // unknown slug -> 404
+  if (product.variants.length === 0) notFound(); // no variants -> nothing sellable to show, same guard ProductCard applies
 
   const category = await getCategoryById(product.categoryId);
   if (!category) notFound(); // data integrity guard, shouldn't normally happen

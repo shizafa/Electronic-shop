@@ -13,6 +13,7 @@ interface AuthContextValue {
   signup: (name: string, email: string, phone: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateProfile: (updates: { name: string; email: string; phone: string }) => Promise<boolean>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   updateAddresses: (addresses: Address[]) => Promise<boolean>;
 }
 
@@ -85,6 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   }
 
+  // Changes the logged-in user's password after re-verifying the current one; returns whether it succeeded
+  async function updatePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+    if (!user) return false;
+    return authLib.updateUserPassword(user.email, currentPassword, newPassword);
+  }
+
   // Saves address-book edits for the logged-in user; returns whether it succeeded
   async function updateAddresses(addresses: Address[]): Promise<boolean> {
     if (!user) return false;
@@ -96,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, login, signup, logout, updateProfile, updateAddresses }}
+      value={{ user, isLoading, login, signup, logout, updateProfile, updatePassword, updateAddresses }}
     >
       {children}
     </AuthContext.Provider>

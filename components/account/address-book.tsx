@@ -1,13 +1,8 @@
 "use client";
 
-import { useState, type SubmitEvent } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect, useState, type ReactNode } from "react";
+import { AddressForm, emptyAddressFormValues, type AddressFormValues } from "@/components/checkout/address-form";
 import { useAuth } from "@/context/auth-context";
-import { cities } from "@/data/cities";
 import { t } from "@/lib/i18n";
 import type { Address } from "@/types/user";
 
@@ -15,25 +10,42 @@ type AddressDraft = Omit<Address, "id">;
 
 const emptyDraft: AddressDraft = {
   label: "",
-  fullName: "",
-  phone: "",
-  city: "",
-  area: "",
-  addressLine: "",
+  ...emptyAddressFormValues,
   isDefault: false,
 };
 
-// AddressBook — lets a logged-in user view, add, edit, and delete saved shipping addresses
+function toDraft(address: Address): AddressDraft {
+  return { ...address };
+}
+
+// AddressBook — lets a logged-in user view, add, edit, and delete saved shipping addresses.
+// Ported from its original shadcn/Tailwind build to match the rest of /account (profile.tsx's
+// rbt-single-info list + rbt-btn icon buttons) and reuses checkout's own AddressForm for the
+// fullName/phone/city/area/addressLine fields, so the same address form looks identical whether
+// it's opened from checkout or from here. Label and "set as default" aren't part of
+// AddressFormValues (checkout addresses don't have either), so they're added around it with the
+// same form-control/form-check classes AddressForm itself uses. The add/edit modal is the same
+// Bootstrap-modal-without-Bootstrap-JS rebuild as profile.tsx's EditModal (duplicated locally,
+// same as every other modal in this codebase — quick-view.tsx, wishlist-model.tsx, compare-model.tsx).
 export function AddressBook() {
   const { user, updateAddresses } = useAuth();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState<AddressDraft>(emptyDraft);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFormOpen = isAdding || editingId !== null;
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") cancelForm();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFormOpen]);
 
   if (!user) return null;
-
-  const selectedCity = cities.find((city) => city.name === draft.city);
-  const isFormOpen = isAdding || editingId !== null;
 
   function startAdding() {
     setDraft(emptyDraft);
@@ -42,7 +54,7 @@ export function AddressBook() {
   }
 
   function startEditing(address: Address) {
-    setDraft(address);
+    setDraft(toDraft(address));
     setEditingId(address.id);
     setIsAdding(false);
   }
@@ -59,9 +71,27 @@ export function AddressBook() {
     await updateAddresses(user.addresses.filter((address) => address.id !== addressId));
   }
 
-  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!user) return;
+  function handleFormValuesChange(values: AddressFormValues) {
+    setDraft((current) => ({ ...current, ...values }));
+  }
+
+  // Nested <form> elements are invalid HTML (AddressForm already renders its own), so this
+  // isn't wrapped in a form and there's no native required-field validation on submit — check
+  // manually instead, same required fields the old plain-input version enforced via the browser.
+  function isDraftValid(): boolean {
+    return (
+      draft.label.trim() !== "" &&
+      draft.fullName.trim() !== "" &&
+      draft.phone.trim() !== "" &&
+      draft.city.trim() !== "" &&
+      draft.area.trim() !== "" &&
+      draft.addressLine.trim() !== ""
+    );
+  }
+
+  async function handleSubmit() {
+    if (!user || !isDraftValid()) return;
+    setIsSubmitting(true);
 
     // reuse the existing id when editing, otherwise generate a new one — either way this is
     // just a temporary key; updateAddresses replaces all rows and the DB assigns real ids
@@ -78,176 +108,183 @@ export function AddressBook() {
     }
 
     await updateAddresses(nextAddresses);
+    setIsSubmitting(false);
     cancelForm();
   }
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-foreground">{t("account.addresses")}</h1>
-        {!isFormOpen && (
-          <Button size="sm" onClick={startAdding}>
-            <Plus className="size-4" />
-            {t("account.addAddress")}
-          </Button>
-        )}
+    <div className="rbt-profile-content-area">
+      <div className="row row--12 mt_dec--24">
+        <div className="col-12 mt--24">
+          <div className="rbt-component-section-title rbt-gap--4 mb--0 p-0 border-0 d-flex flex-row justify-content-between align-items-center">
+            <h2 className="rbt-title mb--0">
+              <span className="rbt-text-bold">
+                {t("account.addresses")}
+              </span>
+            </h2>
+            <button type="button" className="rbt-btn rbt-btn-sm" onClick={startAdding}>
+              <i className="fa-regular fa-plus mr--4" />
+              {t("account.addAddress")}
+            </button>
+          </div>
+        </div>
       </div>
+      <hr className="mt--20 mb--16" />
 
-      {user.addresses.length === 0 && !isFormOpen && (
-        <p className="text-sm text-muted-foreground">{t("account.noAddresses")}</p>
+      {user.addresses.length === 0 && (
+        <p className="b1 mb--0">
+          {t("account.noAddresses")}
+        </p>
       )}
 
-      {!isFormOpen && (
-        <div className="flex flex-col gap-3">
-          {user.addresses.map((address) => (
-            <div key={address.id} className="rounded-lg border border-border p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">{address.label}</p>
-                    {address.isDefault && (
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                        {t("account.default")}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {address.fullName} · {address.phone}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {address.addressLine}, {address.area}, {address.city}
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 gap-1">
+      <div className="rbt-scrollable-content hide-scrollbar">
+        {user.addresses.map((address, index) => (
+          <div key={address.id}>
+            {index > 0 && <hr />}
+            <div className="rbt-single-info mb--24">
+              <div className="rbt-single-info-header d-flex justify-content-between align-items-center mb--12 pt--4">
+                <h2 className="h6 mb--0 d-flex align-items-center rbt-gap--8">
+                  {address.label}
+                  {address.isDefault && (
+                    <span className="rbt-badge rbt-badge-border rbt-badge-small rbt-badge-rounded rbt-badge-bg-green">
+                      {t("account.default")}
+                    </span>
+                  )}
+                </h2>
+                <div className="d-flex rbt-gap--8">
                   <button
                     type="button"
+                    className="rbt-btn rbt-btn-sm rbt-btn-secondary"
                     onClick={() => startEditing(address)}
                     aria-label={t("account.editAddress")}
-                    className="text-muted-foreground hover:text-foreground"
                   >
-                    <Pencil className="size-4" />
+                    <i className="fa-regular fa-pen-to-square mr--4" />
+                    {t("account.editAddress")}
                   </button>
                   <button
                     type="button"
+                    className="rbt-btn rbt-btn-sm rbt-bg-color-danger shadow-none"
                     onClick={() => handleDelete(address.id)}
                     aria-label={t("account.deleteAddress")}
-                    className="text-muted-foreground hover:text-destructive"
                   >
-                    <Trash2 className="size-4" />
+                    <i className="fa-regular fa-trash-can" />
                   </button>
                 </div>
               </div>
+              <p className="b1 mb--8">
+                {address.fullName}, {address.phone}
+              </p>
+              <p className="b1 mb--0">
+                {address.addressLine}, {address.area}, {address.city}
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
-      {isFormOpen && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-lg border border-border p-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="addr-label" className="text-sm font-medium text-foreground">
+      <EditModal
+        id="addressEditModal"
+        title={isAdding ? t("account.addAddress") : t("account.editAddress")}
+        isOpen={isFormOpen}
+        onClose={cancelForm}
+      >
+        <div>
+          <div className="mb-3">
+            <label htmlFor="addr-label" className="rbt-field-label">
               {t("account.addressLabel")}
+              <span className="rbt-text-color-danger">*</span>
             </label>
-            <Input
+            <input
+              type="text"
               id="addr-label"
+              className="form-control form-control-lg"
               required
               value={draft.label}
               onChange={(event) => setDraft({ ...draft, label: event.target.value })}
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="addr-fullName" className="text-sm font-medium text-foreground">
-                {t("checkout.fullName")}
-              </label>
-              <Input
-                id="addr-fullName"
-                required
-                value={draft.fullName}
-                onChange={(event) => setDraft({ ...draft, fullName: event.target.value })}
-              />
-            </div>
+          <AddressForm idPrefix="account-addr" values={draft} onChange={handleFormValuesChange} />
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="addr-phone" className="text-sm font-medium text-foreground">
-                {t("auth.phone")}
-              </label>
-              <Input
-                id="addr-phone"
-                type="tel"
-                required
-                value={draft.phone}
-                onChange={(event) => setDraft({ ...draft, phone: event.target.value })}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-foreground">{t("checkout.city")}</label>
-              <Select value={draft.city} onValueChange={(city) => setDraft({ ...draft, city, area: "" })}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("checkout.selectCity")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {cities.map((city) => (
-                    <SelectItem key={city.id} value={city.name}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-foreground">{t("checkout.area")}</label>
-              <Select
-                value={draft.area}
-                onValueChange={(area) => setDraft({ ...draft, area })}
-                disabled={!selectedCity}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("checkout.selectArea")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectedCity?.areas.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="addr-line" className="text-sm font-medium text-foreground">
-              {t("checkout.addressLine")}
-            </label>
-            <Input
-              id="addr-line"
-              required
-              value={draft.addressLine}
-              onChange={(event) => setDraft({ ...draft, addressLine: event.target.value })}
-            />
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-foreground">
-            <Checkbox
+          <div className="form-check mb-4">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="addr-default"
               checked={draft.isDefault}
-              onCheckedChange={(checked) => setDraft({ ...draft, isDefault: checked === true })}
+              onChange={(event) => setDraft({ ...draft, isDefault: event.target.checked })}
             />
-            {t("account.setDefault")}
-          </label>
-
-          <div className="flex gap-2">
-            <Button type="submit">{t("account.saveChanges")}</Button>
-            <Button type="button" variant="outline" onClick={cancelForm}>
-              {t("common.cancel")}
-            </Button>
+            <label className="form-check-label" htmlFor="addr-default">
+              {t("account.setDefault")}
+            </label>
           </div>
-        </form>
-      )}
+
+          <div className="d-flex rbt-gap--12">
+            <button type="button" className="rbt-btn rbt-btn-sm" onClick={handleSubmit} disabled={isSubmitting}>
+              {t("account.saveChanges")}
+            </button>
+            <button type="button" className="rbt-btn rbt-btn-sm rbt-btn-secondary" onClick={cancelForm} disabled={isSubmitting}>
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      </EditModal>
     </div>
+  );
+}
+
+// Small centered form modal, same Bootstrap-modal-without-Bootstrap-JS rebuild as
+// profile.tsx's EditModal / quick-view.tsx / wishlist-model.tsx: "show" class + inline display,
+// a manually-rendered .modal-backdrop, backdrop click and Escape (handled by the parent) both close it.
+function EditModal({
+  id,
+  title,
+  isOpen,
+  onClose,
+  children,
+}: {
+  id: string;
+  title: string;
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <>
+      {isOpen && <div className="modal-backdrop fade show" onClick={onClose} />}
+      <div
+        className={`rbt-default-modal modal fade has-rbt-top-folder-shape${isOpen ? " show" : ""}`}
+        id={id}
+        style={{ display: isOpen ? "block" : "none" }}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${id}Label`}
+        aria-hidden={!isOpen}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="rbt-folder-shape-right-portion">
+              <svg xmlns="http://www.w3.org/2000/svg" width="85" height="90" viewBox="0 0 85 90" fill="none">
+                <path d="M0 0H11.1844C14.5695 0 17.7971 1.42971 20.0716 3.93671L82.1927 72.4059C83.9992 74.397 84.9999 76.9893 84.9999 79.6778C84.9999 85.6547 85.0001 90 85.0001 90H0V0Z" fill="white" />
+              </svg>
+            </div>
+            <div className="modal-header">
+              <button type="button" className="rbt-round-btn rbt-modal-dis-btn" onClick={onClose} aria-label="Close">
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+            <div className="rbt-top-folder-shape-wrapper">
+              <div className="rbt-bg-color-white rbt-content-trs-portion">
+                <div className="rbt-title rbt-text-bold h5 mb--16" id={`${id}Label`}>
+                  {title}
+                </div>
+                {children}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
