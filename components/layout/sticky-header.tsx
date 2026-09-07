@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileMenuTriggerButton } from "@/components/layout/mobile-menu-trigger-button";
 import { NavMenu } from "@/components/layout/nav-menu";
 import { StickyHeaderAccountLink } from "@/components/layout/sticky-header-account-link";
 import { StickyHeaderCartLink } from "@/components/layout/sticky-header-cart-link";
@@ -6,7 +7,6 @@ import { StickyHeaderCampaign } from "@/components/layout/sticky-header-campaign
 import { StickyHeaderCompareLink } from "@/components/layout/sticky-header-compare-link";
 import { StickyHeaderWishlistLink } from "@/components/layout/sticky-header-wishlist-link";
 import { getSettings } from "@/lib/settings";
-import { t } from "@/lib/i18n";
 
 // Content of the sticky header clone. The .rbt-header-common-sticky-activation wrapper div
 // and its .rbt-sticky toggle live in header-sticky-controller.tsx now, alongside the same
@@ -38,9 +38,7 @@ export async function StickyHeader() {
         </div>
         <div className="mobile-menu-bar d-block d-xl-none">
           <div className="hamberger">
-            <button className="hamberger-button rbt-round-btn" type="button" aria-label={t("nav.menu")}>
-              <i className="fa-solid fa-bars" />
-            </button>
+            <MobileMenuTriggerButton />
           </div>
         </div>
       </div>

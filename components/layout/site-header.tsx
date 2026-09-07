@@ -2,7 +2,10 @@ import { HeaderStickyController } from "@/components/layout/header-sticky-contro
 import { HeaderTopbar } from "@/components/layout/header-topbar";
 import { MainBar } from "@/components/layout/main-bar";
 import { NavBar } from "@/components/layout/nav-bar";
+import { PopupMobileMenu } from "@/components/layout/popup-mobile-menu";
 import { StickyHeader } from "@/components/layout/sticky-header";
+import { getVisibleCategories } from "@/lib/categories";
+import { getSettings } from "@/lib/settings";
 
 // Assembles the full header region: <header class="rbt-header"> wrapping
 // .rbt-header-wrapper (topbar + <hr> + main bar), .rbt-header-middle (NavBar, a sibling —
@@ -14,7 +17,14 @@ import { StickyHeader } from "@/components/layout/sticky-header";
 // rule had nothing to hide, so the topbar would sit visible underneath the fixed sticky
 // clone once scrolled. HeaderStickyController toggles .rbt-sticky on both the wrapper and
 // the clone from one shared scroll listener.
-export function SiteHeader() {
+//
+// PopupMobileMenu is mounted once here rather than inside MainBar/StickyHeader (each of which
+// has its own hamberger-button trigger) since it's a single shared overlay, not per-bar.
+// getVisibleCategories/getSettings are wrapped in React's cache() in lib/, so calling them
+// again here request-dedupes with MainBar/NavBar's own calls rather than re-querying Supabase.
+export async function SiteHeader() {
+  const [categories, settings] = await Promise.all([getVisibleCategories(), getSettings()]);
+
   return (
     <header className="rbt-header">
       <HeaderStickyController
@@ -28,6 +38,7 @@ export function SiteHeader() {
         navBar={<NavBar />}
         stickyClone={<StickyHeader />}
       />
+      <PopupMobileMenu categories={categories} logoUrl={settings.logoUrl} storeName={settings.storeName} />
     </header>
   );
 }

@@ -95,7 +95,7 @@ export async function Footer() {
               <p className="b2 title">
                 {PLACEHOLDER.phoneNote}
               </p>
-              <a className="contact-link has-lg-fsize" href={phoneHref}>
+              <a className="contact-link" href={phoneHref}>
                 {phone}
               </a>
             </div>
@@ -107,8 +107,8 @@ export async function Footer() {
                 {PLACEHOLDER.callCenterHours}
               </p>
             </div>
-            <div className="rbt-quick-contact-info d-flex rbt-gap--4 align-items-center">
-              <p className="b2 title mb--0">
+            <div className="rbt-quick-contact-info">
+              <p className="b2 title">
                 {PLACEHOLDER.emailLabel}
               </p>
               <a className="contact-link" href={`mailto:${email}`}>

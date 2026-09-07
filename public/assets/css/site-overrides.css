@@ -19,7 +19,7 @@
 }
 
 /* Previously a fixed px max-width per breakpoint band (500/660/880/1060/1220) — flat within
-   each band, then a hard jump at the next breakpoint. Two problems: (1) within a band the
+   with zoom in   each band, then a hard jump at the next breakpoint. Two problems: (1) within a band the
    side gap only ever grew as the viewport widened toward the next jump, never shrinking
    back down, and (2) 1200-1399px and >=1400px both use the same 4-per-row product-card
    column (col-xl-3), so that specific jump (1220px container down to 1060px) changed the
@@ -30,7 +30,7 @@
    One continuous min(94vw, 1280px) formula (no breakpoint gating) replaces the whole table:
    the container tracks 94vw smoothly everywhere below ~1362px viewport — so the gap is
    always a proportional ~3% of the viewport on each side, shrinking and growing continuously
-   with zoom instead of stepping — then flattens at a 1280px cap above that so it doesn't
+stead of stepping — then flattens at a 1280px cap above that so it doesn't
    keep growing unbounded on very wide monitors. Deliberately wider than the old 1220px cap
    and every one of the old per-band values, per an explicit request to reduce the side
    padding and give cards more of the viewport — this does change today's 1280px/1440px
@@ -210,6 +210,49 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 .rbt-megamenu {
   max-height: 80vh;
   overflow-y: auto;
+}
+
+/* nav-menu.tsx's Shop megamenu uses style.min.css's rbt-width-fullscreen modifier
+   (left:0/right:0/width:100%/margin:0) to span the full header width edge-to-edge with no
+   side gap, and zeroes rbt-megamenu-wrapper's margin-top so it sits flush against the navbar.
+   Per an explicit request to give it breathing room instead: insets it 24px from each side
+   (width:auto + explicit left/right lets the browser compute the width, rather than fighting
+   the 100% from style.min.css) and restores a 12px gap above the wrapper — the same top-margin
+   value style.min.css already uses for its non-fullscreen megamenu variant. Selectors match
+   style.min.css's own compound selectors exactly (2 classes each, both real ancestor contexts
+   it defines this rule under — .rbt-main-navigation for the primary nav-bar.tsx bar, .mainbar-row
+   for the sticky-header.tsx clone that reuses the same <NavMenu/>, which has no
+   .rbt-main-navigation wrapper of its own) so this wins on source order (site-overrides.css
+   loads after it) without needing extra specificity, on both the primary and sticky bars.
+   Corners rounded on all four sides now that the wrapper floats below the navbar instead of
+   sitting flush under it — style.min.css's own 10px radius value, just no longer bottom-only. */
+.rbt-megamenu.rbt-width-fullscreen,
+.rbt-main-navigation .rbt-mainmenu-nav .mainmenu li.with-rbt-megamenu .rbt-megamenu.rbt-width-fullscreen,
+.mainbar-row .rbt-mainmenu-nav .mainmenu li.with-rbt-megamenu .rbt-megamenu.rbt-width-fullscreen {
+  left: 24px;
+  right: 24px;
+  width: auto;
+}
+
+.rbt-megamenu.rbt-width-fullscreen .rbt-megamenu-wrapper,
+.rbt-main-navigation .rbt-mainmenu-nav .mainmenu li.with-rbt-megamenu .rbt-megamenu.rbt-width-fullscreen .rbt-megamenu-wrapper,
+.mainbar-row .rbt-mainmenu-nav .mainmenu li.with-rbt-megamenu .rbt-megamenu.rbt-width-fullscreen .rbt-megamenu-wrapper {
+  margin-top: 12px;
+  border-radius: 10px;
+  /* style.min.css never gives this wrapper a box-shadow by default (only its unused
+     menu-skin-dark variant sets one, to none) — against the page's near-white background the
+     floating white panel had no visual edge, so the new side/top gaps didn't read as
+     intentional. --shadow-1 is style.min.css's own soft-shadow token, already used elsewhere
+     (e.g. the .submenu dropdown) for this exact "floating panel" look. */
+  box-shadow: var(--shadow-1);
+}
+
+/* footer.tsx's three "quick contact info" blocks (phone / call center hours / email) in the
+   footer's first column. style.min.css puts a flat 24px margin-top between each block
+   (.rbt-quick-contact-info + .rbt-quick-contact-info) — reads as a dead gap next to the tight
+   8px label-to-value spacing within each block. Tightened to 12px for this footer column only. */
+.rbt-footer .rbt-quick-contact-info + .rbt-quick-contact-info {
+  margin-top: 12px;
 }
 
 /* Shop megamenu now gives each category its own column (nav-menu.tsx's megaMenuColumnClass),

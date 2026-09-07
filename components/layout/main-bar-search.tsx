@@ -6,11 +6,9 @@ import type { Category } from "@/types/category";
 
 // Search-with-category form from the main bar.
 //
-// The category select is decorative for now: neither /search nor /category/[slug] accepts
-// a combined category+text query today (checked both routes — /search only reads `q`,
-// /category/[slug] takes no searchParams at all), so wiring the select to real filtering
-// would mean inventing a capability that doesn't exist yet rather than mapping to one.
-// TODO: wire to backend once combined filtering exists
+// Submitting runs the query against /search, scoped to whichever category is selected
+// (searchProducts in lib/products.ts filters by category_id when one is passed; /search's
+// page.tsx resolves the "category" slug param to an id via getCategoryBySlug).
 //
 // The input is uncontrolled (read via FormData on submit) rather than useState, since
 // nothing else in the component needs the query value as it's typed.
@@ -27,9 +25,13 @@ export function MainBarSearch({ categories }: { categories: Category[] }) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const query = String(new FormData(event.currentTarget).get("q") ?? "").trim();
+    const formData = new FormData(event.currentTarget);
+    const query = String(formData.get("q") ?? "").trim();
+    const category = String(formData.get("category") ?? "all");
     if (query) {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      const params = new URLSearchParams({ q: query });
+      if (category !== "all") params.set("category", category);
+      router.push(`/search?${params.toString()}`);
     }
   }
 
@@ -44,7 +46,7 @@ export function MainBarSearch({ categories }: { categories: Category[] }) {
                 <div className="rbt-search-input-section has-left-catagory-section rbt-inner-search-label-animate-activation">
                   <div className="filter-select rbt-modern-select search-by-category">
                     <i className="fa-regular fa-chevron-down search-by-category-caret" />
-                    <select className="rbt-select-activation" data-live-search="true" data-live-search-placeholder="Search Catagories">
+                    <select className="rbt-select-activation" name="category" data-live-search="true" data-live-search-placeholder="Search Catagories">
                       <option value="all">
                         All Categories
                       </option>

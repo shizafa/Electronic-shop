@@ -318,6 +318,8 @@ const en: TranslationDictionary = {
 
   "search.resultsFor": "Search results for",
   "search.noResultsHint": "Try a different search term.",
+  "search.productFound": "product found",
+  "search.productsFound": "products found",
 
   "admin.nav.overview": "Overview",
   "admin.nav.products": "Products",

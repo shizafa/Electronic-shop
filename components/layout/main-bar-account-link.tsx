@@ -15,7 +15,7 @@ export function MainBarAccountLink() {
   const { user } = useAuth();
 
   return (
-          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 rbt-access-box-has-bg-hover d-none d-lg-flex">
+          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 rbt-access-box-has-bg-hover">
             <Link href={user ? "/account/profile" : "/login"} className="rbt-access-box-wrapper">
               <div className="rbt-round-btn rbt-bg-static-gray">
                 <i className="fa-regular fa-user" />

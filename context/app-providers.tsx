@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { AuthProvider } from "@/context/auth-context";
 import { CartProvider } from "@/context/cart-context";
 import { CompareProvider } from "@/context/compare-context";
+import { MobileMenuProvider } from "@/context/mobile-menu-context";
 import { QuickViewProvider } from "@/context/quick-view-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 
@@ -18,7 +19,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <CartProvider>
         <WishlistProvider>
           <CompareProvider>
-            <QuickViewProvider>{children}</QuickViewProvider>
+            <QuickViewProvider>
+              <MobileMenuProvider>{children}</MobileMenuProvider>
+            </QuickViewProvider>
           </CompareProvider>
         </WishlistProvider>
       </CartProvider>

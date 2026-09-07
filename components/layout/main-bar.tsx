@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MainBarAccountLink } from "@/components/layout/main-bar-account-link";
 import { MainBarCartLink } from "@/components/layout/main-bar-cart-link";
 import { MainBarSearch } from "@/components/layout/main-bar-search";
+import { MobileMenuTriggerButton } from "@/components/layout/mobile-menu-trigger-button";
 import { getVisibleCategories } from "@/lib/categories";
 import { getSettings } from "@/lib/settings";
 import { t } from "@/lib/i18n";
@@ -14,16 +15,19 @@ const PLACEHOLDER = {
 };
 
 // Main header bar: logo, category-filtered search, and the right-hand quick-access icons
-// (hotline, account, mobile search trigger, mini-cart).
+// (hotline, account, mini-cart).
 //
 // Server component apart from three leaves (MainBarSearch, MainBarAccountLink,
 // MainBarCartLink) that need client hooks — categories are fetched here and handed down as
 // plain data rather than re-fetched client-side.
 //
-// Two triggers are left inert on purpose, matching the build order (topbar -> main bar ->
-// nav shell -> nav data -> sticky -> search dropdown -> mobile menu -> cart drawer):
-//   - .hamberger-button (mobile-menu-bar): wired in the "mobile menu" step
-//   - .search-trigger-active (mobile search icon): wired in the "search dropdown" step
+// .hamberger-button (mobile-menu-bar) opens popup-mobile-menu.tsx via MobileMenuContext (see
+// mobile-menu-trigger-button.tsx) — that popup has its own working search field, so the
+// template's separate .search-trigger-active mobile search icon (a second, not-yet-wired
+// trigger for a whole other search UI, header-search.tsx's dropdown) was dropped rather than
+// wired up as a redundant second way to search on the same screens. Account/profile now stays
+// visible at every width instead of only d-lg-flex (>=992px) so mobile's header-right shows
+// exactly two icons — account and cart — matching an explicit request.
 //
 // The desktop category off-canvas trigger (.rbt-cat-offcanvas-activation, the burger icon
 // that sat next to the logo) was dropped at the user's request — it was never wired to a
@@ -38,9 +42,7 @@ export async function MainBar() {
           <div className="header-left">
             <div className="mobile-menu-bar d-block d-xl-none">
               <div className="hamberger">
-                <button className="hamberger-button rbt-round-btn" type="button" aria-label={t("nav.menu")}>
-                  <i className="fa-solid fa-bars" />
-                </button>
+                <MobileMenuTriggerButton />
               </div>
             </div>
             <div className="rbt-header-content">
@@ -76,12 +78,6 @@ export async function MainBar() {
                 </a>
               </li>
               <MainBarAccountLink />
-              <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 rbt-access-box-has-bg-hover d-flex d-lg-none">
-                <a className="search-trigger-active rbt-round-btn rbt-bg-static-gray rbt-modern-close-btn" href="#">
-                  <i className="fa-regular fa-search search-icon" />
-                  <div className="modern-close-wrapper" />
-                </a>
-              </li>
               <MainBarCartLink />
             </ul>
           </div>

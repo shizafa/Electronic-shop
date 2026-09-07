@@ -54,17 +54,21 @@ export const getFeaturedProducts = cache(async (): Promise<Product[]> => {
   return (data ?? []).map(mapProductRow);
 });
 
-// Case-insensitive search across product name and brand
-export async function searchProducts(query: string): Promise<Product[]> {
+// Case-insensitive search across product name and brand, optionally scoped to one category
+export async function searchProducts(query: string, categoryId?: string): Promise<Product[]> {
   const normalizedQuery = query.trim();
   if (!normalizedQuery) return [];
 
   const supabase = createClient();
   const escaped = normalizedQuery.replace(/[%,]/g, ""); // strip characters that would break the PostgREST or-filter syntax
-  const { data, error } = await supabase
+  let queryBuilder = supabase
     .from("products")
     .select(PRODUCT_SELECT)
     .or(`name.ilike.%${escaped}%,brand.ilike.%${escaped}%`);
+  if (categoryId) {
+    queryBuilder = queryBuilder.eq("category_id", categoryId);
+  }
+  const { data, error } = await queryBuilder;
   if (error) throw new Error(`searchProducts: ${error.message}`);
   return (data ?? []).map(mapProductRow);
 }

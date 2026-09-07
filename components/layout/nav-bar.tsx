@@ -15,9 +15,14 @@ import { NavMenu } from "@/components/layout/nav-menu";
 // Recent Viewed" links and whatever row wrapper sits between .container and <nav> haven't
 // been pasted, so they're not built here rather than invented — this renders NavMenu alone
 // until that markup exists.
+//
+// d-none d-xl-block: below 1200px this bar's content (Shop/About/Contact Us/Present Deals)
+// moves into popup-mobile-menu.tsx's "Menu" tab instead, opened via the hamberger-button
+// (main-bar.tsx's own mobile-only trigger, d-block d-xl-none — the same breakpoint, inverted).
+// Showing both at once would duplicate the same nav twice on a phone screen.
 export async function NavBar() {
   return (
-    <div className="rbt-header-middle rbt-bg-color-primary">
+    <div className="rbt-header-middle rbt-bg-color-primary d-none d-xl-block">
       <div className="container">
         {/* rbt-main-navigation isn't decorative — style.min.css's dropdown/megamenu hide
             rules are scoped as ".rbt-main-navigation .rbt-mainmenu-nav .mainmenu li...",
