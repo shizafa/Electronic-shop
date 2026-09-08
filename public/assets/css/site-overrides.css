@@ -516,3 +516,15 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 select.form-control-lg {
   font-size: 15px;
 }
+
+/* Checkout step footer's Back/Continue buttons (checkout-flow.tsx's .rbt-btn-group): the
+   template never defines a bare .rbt-btn-group rule (its only real rule is scoped to
+   .rbt-cookies .rbt-content, unrelated here) — style.min.css's rbt-gap--N step utilities only
+   go in multiples of 4 (8, 12, ...), none landing on the requested 10px, so this is a scoped
+   rule instead of stretching an existing utility. .rbt-checkout-content-inner scopes it to
+   checkout's own button row, leaving cart-side-nav.tsx's unrelated .rbt-btn-group (stacked
+   d-block buttons) untouched. */
+.rbt-checkout-content-inner .rbt-btn-group {
+  display: flex;
+  gap: 10px;
+}
