@@ -23,6 +23,15 @@ function formatOptionLabel(value: string, type: SpecFieldType): string {
   return value;
 }
 
+// Same swatch set/matching as shop-listing.tsx's color widget.
+const KNOWN_COLOR_SWATCHES = ["black", "blue", "brown", "gray", "green", "orange", "red", "yellow"] as const;
+
+function matchColorSwatch(value: string): string | undefined {
+  const normalized = value.toLowerCase();
+  if (normalized.includes("grey")) return "gray";
+  return KNOWN_COLOR_SWATCHES.find((swatch) => normalized.includes(swatch));
+}
+
 interface CategoryListingProps {
   category: Category;
   products: Product[];
@@ -100,6 +109,26 @@ export function CategoryListing({ category, products, allCategories, allProducts
     return Array.from(counts.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
+
+  // swatch colors + counts within this category, same matching shop-listing.tsx's color widget uses
+  const colors = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const product of products) {
+      const colorAxis = product.variantAxes.find(
+        (axis) => /colou?r/i.test(axis.id) || /colou?r/i.test(axis.labelKey)
+      );
+      if (!colorAxis) continue;
+      for (const variant of product.variants) {
+        const rawValue = variant.axisValues[colorAxis.id];
+        const swatch = rawValue ? matchColorSwatch(rawValue) : undefined;
+        if (!swatch) continue;
+        counts.set(swatch, (counts.get(swatch) ?? 0) + 1);
+      }
+    }
+    return Array.from(counts.entries())
+      .map(([swatch, count]) => ({ swatch, label: swatch[0].toUpperCase() + swatch.slice(1), count }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [products]);
 
   // cheapest/priciest displayed-variant price within this category, for the price slider's range
@@ -183,6 +212,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
         <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 d-none d-lg-block">
           <SidebarFilter
             checklistWidgets={checklistWidgets}
+            colors={colors}
             brands={brands}
             activeBrand={activeBrand}
             onSelectBrand={setActiveBrand}
