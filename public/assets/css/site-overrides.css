@@ -300,9 +300,10 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
 
 /* "See All Our Products" link: style.min.css's .rbt-btn.rbt-btn-sm default is
    padding:0 32px with a fixed height/line-height:36px (built for a full-size CTA) — shrunk
-   here to hug the text with ~5px padding instead, since this is a small in-menu link. */
+   here to hug the text with ~5px padding instead, since this is a small in-menu link, with a
+   bit more left/right breathing room than top/bottom. */
 .rbt-see-all-products-btn.rbt-btn.rbt-btn-sm {
-  padding: 5px !important;
+  padding: 7px 14px !important;
   height: auto !important;
   line-height: normal !important;
 }
@@ -502,4 +503,16 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
    is untouched, so the folder-tab look is unaffected — only the artificial cap is lifted. */
 .rbt-fshape-tab .nav-tabs .nav-link {
   max-width: none;
+}
+
+/* Checkout address-form.tsx's city/area <select>s vs. its text <input>s, both
+   .form-control.form-control-lg: style.min.css gives text/tel/etc. inputs a fixed
+   font-size:15px via a per-type attribute selector (input[type="text"], ...), specificity
+   0,1,1 — high enough to beat .form-control-lg's own font-size:1.25rem (0,1,0). Plain
+   `select` has no such attribute-selector escape hatch, so .form-control-lg's rem value wins
+   there instead, rendering far smaller once combined with this site's 9.25px root font-size
+   above. select.form-control-lg matches the input rule's 0,1,1 specificity and sets the same
+   fixed 15px, so city/area render the same size as every other field in the form. */
+select.form-control-lg {
+  font-size: 15px;
 }

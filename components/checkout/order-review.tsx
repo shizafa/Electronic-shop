@@ -103,24 +103,32 @@ export function OrderReview({
         <p className="mt-1 text-sm text-muted-foreground">{t(`paymentMethod.${paymentMethod}`)}</p>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-border pt-4 text-sm">
-        <div className="flex justify-between text-muted-foreground">
-          <span>{t("common.subtotal")}</span>
-          <span>{formatPrice(subtotal)}</span>
+      {/* .rbt-cart-subttotal: same template class checkout-sidebar.tsx uses for this exact
+          Subtotal/Shipping Fee/Total block, so the final review step's totals render at the
+          same font size as everywhere else on the page instead of Tailwind's text-sm/text-base
+          (rem-based, and shrunk further by this site's small root font-size — see
+          site-overrides.css). */}
+      <div className="border-top pt--16">
+        <div className="rbt-cart-subttotal">
+          <p>{t("common.subtotal")}</p>
+          <p className="price">{formatPrice(subtotal)}</p>
         </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>{t("common.shippingFee")}</span>
-          <span>{shippingFee === 0 ? t("common.free") : formatPrice(shippingFee)}</span>
+        <div className="rbt-cart-subttotal">
+          <p>{t("common.shippingFee")}</p>
+          <p className="price">{shippingFee === 0 ? t("common.free") : formatPrice(shippingFee)}</p>
         </div>
         {taxAmount > 0 && (
-          <div className="flex justify-between text-muted-foreground">
-            <span>{t("common.tax")}</span>
-            <span>{formatPrice(taxAmount)}</span>
+          <div className="rbt-cart-subttotal">
+            <p>{t("common.tax")}</p>
+            <p className="price">{formatPrice(taxAmount)}</p>
           </div>
         )}
-        <div className="flex justify-between border-t border-border pt-2 text-base font-semibold text-foreground">
-          <span>{t("common.total")}</span>
-          <span>{formatPrice(total)}</span>
+        <hr className="mb--8 mt--8 rbt-bg-color-gray-200" />
+        <div className="rbt-cart-subttotal">
+          <p className="subtotal">
+            <strong>{t("common.total")}</strong>
+          </p>
+          <p className="price">{formatPrice(total)}</p>
         </div>
       </div>
     </div>

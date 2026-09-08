@@ -3,6 +3,7 @@ import { getVisibleCategories } from "@/lib/categories";
 import { resolveBrandLogo } from "@/lib/brand-logo";
 import { getAllProducts } from "@/lib/products";
 import { t } from "@/lib/i18n";
+import { MegaMenuItem } from "@/components/layout/mega-menu-item";
 
 // One category per column, always in a single row (never wrapping a category under another
 // one's column) — bootstrap's standard col-xl-2/3/4/6/12 activate at min-width:1200px, the
@@ -75,18 +76,22 @@ export async function NavMenu() {
           pill-behind-the-link hover/active effect, scoped to .rbt-bg-color-primary bars
           (nav-bar.tsx) — pairs with that class's white link color. */}
       <ul className="mainmenu has-nav-bg-shape-hover">
-        <li className="with-rbt-megamenu has-menu-child-item position-static">
-          <a href="#!">
-            {t("nav.shop")}
-            <i className="fa-regular fa-chevron-down" />
-          </a>
-          {/* Start Mega Menu */}
-          {/* rbt-width-fullscreen (real style.min.css class:
-              .rbt-megamenu.rbt-width-fullscreen{width:100%;margin:0;padding:0}) replaces the
-              bootstrap .container that was capping this at the page container's max-width —
-              paired with the li's existing position-static, the megamenu's position:absolute
-              left:0/right:0 then resolves against .rbt-header-middle (position:relative,
-              full-bleed) instead of the small <li>, giving true edge-to-edge width. */}
+        <MegaMenuItem
+          className="with-rbt-megamenu has-menu-child-item position-static"
+          trigger={
+            <a href="#!">
+              {t("nav.shop")}
+              <i className="fa-regular fa-chevron-down" />
+            </a>
+          }
+          menu={
+          // Start Mega Menu
+          // rbt-width-fullscreen (real style.min.css class:
+          // .rbt-megamenu.rbt-width-fullscreen{width:100%;margin:0;padding:0}) replaces the
+          // bootstrap .container that was capping this at the page container's max-width —
+          // paired with the li's existing position-static, the megamenu's position:absolute
+          // left:0/right:0 then resolves against .rbt-header-middle (position:relative,
+          // full-bleed) instead of the small <li>, giving true edge-to-edge width.
           <div className="rbt-megamenu rbt-width-fullscreen">
             <div className="rbt-megamenu-wrapper">
               <div className="row row--12 d-flex justify-content-between">
@@ -169,8 +174,9 @@ export async function NavMenu() {
               )}
             </div>
           </div>
-          {/* End Mega Menu */}
-        </li>
+          // End Mega Menu
+          }
+        />
         {/* Flat top-level links: no has-dropdown/.submenu pattern has been provided yet, so
             these are plain <li><Link> items rather than an invented dropdown. The old
             moreLinks (FAQs, shipping, returns, privacy, terms) are policy links meant for a

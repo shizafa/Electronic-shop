@@ -1,8 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/category/filter-sidebar";
@@ -15,8 +13,26 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { applyFilters, getFilterFieldsForCategory, sortProducts, type FilterField, type SortOption } from "@/lib/filters";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
-import type { Category } from "@/types/category";
+import type { Category, SpecFieldType } from "@/types/category";
 import type { Product } from "@/types/product";
+
+// Same conversion category-listing.tsx uses for its per-spec-field checklist widgets.
+function formatOptionLabel(value: string, type: SpecFieldType): string {
+  if (type === "boolean") return value === "true" ? "Yes" : "No";
+  return value;
+}
+
+// style.min.css only defines these 8 swatch backgrounds (rbt-swatch-bg-black, ...) — a real
+// axis value like "Onyx Black" or "Ice Blue" is matched against this set by substring rather
+// than rendered as its own swatch, since there's no class (or hex-color data) for anything
+// outside it.
+const KNOWN_COLOR_SWATCHES = ["black", "blue", "brown", "gray", "green", "orange", "red", "yellow"] as const;
+
+function matchColorSwatch(value: string): string | undefined {
+  const normalized = value.toLowerCase();
+  if (normalized.includes("grey")) return "gray";
+  return KNOWN_COLOR_SWATCHES.find((swatch) => normalized.includes(swatch));
+}
 
 interface ShopListingProps {
   products: Product[];
@@ -77,7 +93,41 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     return counts;
   }, [products]);
 
-  // sidebar's checklist widgets — /shop only has one: the Categories checklist
+  // spec filter fields, drawn from whichever categories are currently checked; when more than
+  // one is checked, only fields shared by every selected category survive (matched by id — e.g.
+  // "warrantyYears" on both air-conditioners and televisions), with their per-category option
+  // counts merged, rather than stacking every category's fields labeled by category
+  const filterFields: FilterField[] = useMemo(() => {
+    if (activeCategoryIds.length === 0) return [];
+
+    const selected = categories.filter((category) => activeCategoryIds.includes(category.id));
+    const perCategoryFields = selected.map((category) =>
+      getFilterFieldsForCategory(
+        category,
+        products.filter((product) => product.categoryId === category.id)
+      )
+    );
+
+    const [first, ...rest] = perCategoryFields;
+    if (rest.length === 0) return first ?? [];
+
+    return first
+      .filter((field) => rest.every((fields) => fields.some((candidate) => candidate.id === field.id)))
+      .map((field) => {
+        const optionCounts = new Map<string, number>();
+        for (const fields of perCategoryFields) {
+          const match = fields.find((candidate) => candidate.id === field.id);
+          for (const option of match?.options ?? []) {
+            optionCounts.set(option.value, (optionCounts.get(option.value) ?? 0) + option.count);
+          }
+        }
+        return { ...field, options: Array.from(optionCounts.entries()).map(([value, count]) => ({ value, count })) };
+      });
+  }, [activeCategoryIds, categories, products]);
+
+  // sidebar's checklist widgets — the Categories checklist, plus one widget per real spec field
+  // (Tonnage, Energy Rating, ...) shared by every currently-checked category, same
+  // ChecklistWidgetSection pattern /category/[slug] uses for its own per-spec-field widgets
   const checklistWidgets: ChecklistWidgetData[] = useMemo(
     () => [
       {
@@ -91,20 +141,64 @@ export function ShopListing({ products, categories }: ShopListingProps) {
         activeIds: activeCategoryIds,
         onToggle: toggleCategory,
       },
+      ...filterFields.map((field) => ({
+        id: field.id,
+        title: field.label,
+        options: field.options.map((option) => ({
+          id: option.value,
+          label: formatOptionLabel(option.value, field.type),
+          count: option.count,
+        })),
+        activeIds: activeFieldValues[field.id] ?? [],
+        onToggle: (value: string) => toggleFieldValue(field.id, value),
+      })),
     ],
-    [categories, categoryCounts, activeCategoryIds]
+    [categories, categoryCounts, activeCategoryIds, filterFields, activeFieldValues]
   );
 
-  // brand options + product counts, computed from the full catalog (not the currently filtered set)
+  // brand options + product counts, scoped to whichever categories are currently checked (the
+  // full catalog when none are) — same scoping filterFields already applies to spec widgets
+  // products within whichever categories are currently checked (the full catalog when none
+  // are) — shared scope for the brand and color widgets below
+  const categoryScopedProducts = useMemo(
+    () =>
+      activeCategoryIds.length === 0
+        ? products
+        : products.filter((product) => activeCategoryIds.includes(product.categoryId)),
+    [products, activeCategoryIds]
+  );
+
   const brands = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const product of products) {
+    for (const product of categoryScopedProducts) {
       counts.set(product.brand, (counts.get(product.brand) ?? 0) + 1);
     }
     return Array.from(counts.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
+  }, [categoryScopedProducts]);
+
+  // swatch colors + counts, scoped the same way as brands — matched against each product's own
+  // "color"/"colour" variant axis (whichever id/labelKey names it) and reduced to the fixed set
+  // of swatch classes style.min.css defines
+  const colors = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const product of categoryScopedProducts) {
+      const colorAxis = product.variantAxes.find(
+        (axis) => /colou?r/i.test(axis.id) || /colou?r/i.test(axis.labelKey)
+      );
+      if (!colorAxis) continue;
+      for (const variant of product.variants) {
+        const rawValue = variant.axisValues[colorAxis.id];
+        const swatch = rawValue ? matchColorSwatch(rawValue) : undefined;
+        if (!swatch) continue;
+        counts.set(swatch, (counts.get(swatch) ?? 0) + 1);
+      }
+    }
+    return Array.from(counts.entries())
+      .map(([swatch, count]) => ({ swatch, label: swatch[0].toUpperCase() + swatch.slice(1), count }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [categoryScopedProducts]);
 
   // cheapest/priciest displayed-variant price across the full catalog, for the price slider's range
   const priceBounds = useMemo(() => {
@@ -129,30 +223,6 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       }),
     [products]
   );
-
-  // spec filter fields, drawn from whichever categories are currently checked; when more than
-  // one is checked, each field is labeled with its category so they don't blur together
-  const filterFields: FilterField[] = useMemo(() => {
-    if (activeCategoryIds.length === 0) return [];
-
-    const selected = categories.filter((category) => activeCategoryIds.includes(category.id));
-    if (selected.length === 1) {
-      const category = selected[0];
-      return getFilterFieldsForCategory(
-        category,
-        products.filter((product) => product.categoryId === category.id)
-      );
-    }
-
-    return selected.flatMap((category) => {
-      const categoryProducts = products.filter((product) => product.categoryId === category.id);
-      return getFilterFieldsForCategory(category, categoryProducts).map((field) => ({
-        ...field,
-        id: field.id,
-        label: `${category.name}: ${field.label}`,
-      }));
-    });
-  }, [activeCategoryIds, categories, products]);
 
   const filteredProducts = useMemo(() => {
     let result =
@@ -198,6 +268,11 @@ export function ShopListing({ products, categories }: ShopListingProps) {
   const pageEnd = Math.min(currentPage * pageSize, total);
   const pageItems = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  function goToPage(pageNumber: number) {
+    setPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const sidebarProps = {
     fields: filterFields,
     activeFieldValues,
@@ -220,6 +295,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
         <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 d-none d-lg-block">
           <SidebarFilter
             checklistWidgets={checklistWidgets}
+            colors={colors}
             brands={brands}
             activeBrand={activeBrand}
             onSelectBrand={setActiveBrand}
@@ -271,35 +347,51 @@ export function ShopListing({ products, categories }: ShopListingProps) {
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={currentPage === 1}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                aria-label={t("shop.previous")}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                <Button
-                  key={pageNumber}
-                  variant={pageNumber === currentPage ? "default" : "outline"}
-                  size="icon"
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={currentPage === totalPages}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                aria-label={t("shop.next")}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
+            <div className="mt--40 d-flex justify-content-center">
+              <ul className="rbt-pagination">
+                {currentPage > 1 && (
+                  <li>
+                    <a
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        goToPage(Math.max(1, currentPage - 1));
+                      }}
+                      aria-label={t("shop.previous")}
+                    >
+                      <i className="fa-regular fa-chevron-left" />
+                    </a>
+                  </li>
+                )}
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <li key={pageNumber}>
+                    <a
+                      href="#"
+                      className={pageNumber === currentPage ? "active" : undefined}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        goToPage(pageNumber);
+                      }}
+                    >
+                      {pageNumber}
+                    </a>
+                  </li>
+                ))}
+                {currentPage < totalPages && (
+                  <li>
+                    <a
+                      href="#"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        goToPage(Math.min(totalPages, currentPage + 1));
+                      }}
+                      aria-label={t("shop.next")}
+                    >
+                      <i className="fa-regular fa-chevron-right" />
+                    </a>
+                  </li>
+                )}
+              </ul>
             </div>
           )}
         </ShopToolbar>

@@ -8,6 +8,12 @@ interface BrandOption {
   count: number;
 }
 
+interface ColorOption {
+  swatch: string;
+  label: string;
+  count: number;
+}
+
 // One collapsible checkbox-list widget (title + options), reused for /shop's Categories
 // widget and /category/[slug]'s per-spec-field widgets (Tonnage, Energy Rating, ...) —
 // same rbt-widget-categories markup either way, just different data/labels.
@@ -49,6 +55,7 @@ function bucketLabel(bucket: PriceBucket): string {
 
 interface SidebarFilterProps {
   checklistWidgets: ChecklistWidgetData[];
+  colors: ColorOption[];
   brands: BrandOption[];
   activeBrand: string | null;
   onSelectBrand: (brand: string) => void;
@@ -201,14 +208,15 @@ function ChecklistWidgetSection({ widget, collapseDomId, open, onToggleOpen }: C
 }
 
 // Desktop sidebar: the checklist widgets (Categories on /shop, per-spec-field widgets on
-// /category/[slug]) + brand + price filters (both the Min/Max inputs and the preset
-// price-tier checkboxes) are wired to real data/state from the caller. Customer Reviews and
-// Filter by color have no backing data model (no rating/color fields on Product) — same
-// UI-only treatment as shop-toolbar.tsx's fast-filter chips.
+// /category/[slug]) + color + brand + price filters (both the Min/Max inputs and the preset
+// price-tier checkboxes) are wired to real data/state from the caller. Customer Reviews has no
+// backing data model (no rating field on Product) — same UI-only treatment as
+// shop-toolbar.tsx's fast-filter chips.
 // The Bootstrap `data-bs-toggle="collapse"` accordion is rebuilt with useState per
 // CLAUDE.md (no Bootstrap JS in this project) — collapse/show now come from openSections.
 export function SidebarFilter({
   checklistWidgets,
+  colors,
   brands,
   activeBrand,
   onSelectBrand,
@@ -486,169 +494,25 @@ export function SidebarFilter({
                   </span>
                 </a>
               </h2>
-              <div className="rbt-inner-search-field border-0 pt--16 pb--16">
-                <div className="rbt-search-input-section rbt-sm-search-section">
-                  <input className="rbt-filter-search-field" type="text" placeholder="Search and Select Product" />
-                  <span className="search-btn search-btn-dark bg-transparent rbt-text-color-gray-400">
-                    <i className="fa-sharp fa-solid fa-magnifying-glass" />
-                  </span>
-                </div>
-              </div>
               <div className={`collapse ${isOpen("color") ? "show" : ""}`} id="rbt-collapse-8">
                 <div className="rbt-has-show-more">
-                  <span className="rbt-filter-item-not-found rbt-text-color-danger">
-                    Color not matched
-                  </span>
                   <ul className="rbt-sidebar-list-wrapper rbt-categories-list-color-swatch rbt-search-filter-item-list rbt-has-show-more-inner-content">
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-black" />
-                          <span className="rbt-color-swatch-text">
-                            Black
+                    {colors.map((color) => (
+                      <li className="rbt-color-swatch-group" key={color.swatch}>
+                        <a href="#" className="rbt-color-swatch-content">
+                          <span className="rbt-color-swatch">
+                            <span className={`rbt-color-swatch-bg rbt-swatch-bg-${color.swatch}`} />
+                            <span className="rbt-color-swatch-text">
+                              {color.label}
+                            </span>
                           </span>
+                        </a>
+                        <span className="rbt-color-swatch-count">
+                          ({color.count})
                         </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (33)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content active">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-blue" />
-                          <span className="rbt-color-swatch-text">
-                            Blue
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (56)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-brown" />
-                          <span className="rbt-color-swatch-text">
-                            Brown
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (90)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-gray" />
-                          <span className="rbt-color-swatch-text">
-                            Gray
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (33)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-green" />
-                          <span className="rbt-color-swatch-text">
-                            Green
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (46)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-orange" />
-                          <span className="rbt-color-swatch-text">
-                            Orange
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (94)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-red" />
-                          <span className="rbt-color-swatch-text">
-                            Red
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (85)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-yellow" />
-                          <span className="rbt-color-swatch-text">
-                            Yellow
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (55)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-orange" />
-                          <span className="rbt-color-swatch-text">
-                            Orange
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (94)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-red" />
-                          <span className="rbt-color-swatch-text">
-                            Red
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (85)
-                      </span>
-                    </li>
-                    <li className="rbt-color-swatch-group">
-                      <a href="#" className="rbt-color-swatch-content">
-                        <span className="rbt-color-swatch">
-                          <span className="rbt-color-swatch-bg rbt-swatch-bg-yellow" />
-                          <span className="rbt-color-swatch-text">
-                            Yellow
-                          </span>
-                        </span>
-                      </a>
-                      <span className="rbt-color-swatch-count">
-                        (55)
-                      </span>
-                    </li>
+                      </li>
+                    ))}
                   </ul>
-                  <div className="rbt-show-more-btn-area">
-                    <button className="rbt-show-more-btn">
-                      Show More
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
