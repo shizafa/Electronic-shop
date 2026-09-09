@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { OrderDetail } from "@/components/account/order-detail";
 import { t } from "@/lib/i18n";
 
+// See ../page.tsx (account/orders) for why account routes are forced dynamic.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: t("account.orderDetail"),
 };
