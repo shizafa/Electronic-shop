@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/auth-context";
+import { MobileAccountNav } from "@/components/account/mobile-account-nav";
 import { t } from "@/lib/i18n";
 import { getOrdersForUser } from "@/lib/orders";
 
@@ -111,7 +112,8 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
         <div className="container">
           <div className="row row--12 mt_dec--24">
             <div className="col-12 col-md-12 col-lg-4 col-xl-3 mt--24">
-              <aside className="rbt-profile-sidebar sticky-top">
+              <MobileAccountNav orderCount={orderCount} onLogout={handleLogout} />
+              <aside className="rbt-profile-sidebar sticky-top d-none d-md-block">
                 <div className="rbt-user-profile">
                   <figure className="rbt-user-profile-img rbt-bg-color-primary d-flex align-items-center justify-content-center">
                     <span className="rbt-text-white rbt-text-bold h6 mb--0">

@@ -13,7 +13,7 @@ export function StickyHeaderAccountLink() {
   const { user } = useAuth();
 
   return (
-          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 d-none d-lg-flex tooltips tooltip-distance-lg" data-tooltip="Sign In" data-tooltip-position="bottom">
+          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 d-flex tooltips tooltip-distance-lg" data-tooltip="Sign In" data-tooltip-position="bottom">
             <Link className="rbt-round-btn has-rbt-md-fsize" href={user ? "/account/profile" : "/login"}>
               <i className="fa-regular fa-user" />
             </Link>

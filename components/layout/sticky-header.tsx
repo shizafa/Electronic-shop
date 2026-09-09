@@ -56,7 +56,7 @@ export async function StickyHeader() {
       </div>
       <div className="header-right">
         <ul className="rbt-quick-access rbt-gap--12">
-          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 tooltips tooltip-distance-lg" data-tooltip="Search" data-tooltip-position="bottom">
+          <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 d-none d-lg-flex tooltips tooltip-distance-lg" data-tooltip="Search" data-tooltip-position="bottom">
             <a className="rbt-round-btn has-rbt-md-fsize rbt-common-search-trigger-active rbt-modern-close-btn" href="#">
               <i className="fa-regular fa-search search-icon" />
               <div className="modern-close-wrapper" />

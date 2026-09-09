@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent, type MouseEvent } from "react";
+import { useCompare } from "@/context/compare-context";
 import { useMobileMenu } from "@/context/mobile-menu-context";
+import { useWishlist } from "@/context/wishlist-context";
 import { t } from "@/lib/i18n";
 import type { Category } from "@/types/category";
 
@@ -45,6 +47,8 @@ interface PopupMobileMenuProps {
 // to fill that richer layout.
 export function PopupMobileMenu({ categories, logoUrl, storeName }: PopupMobileMenuProps) {
   const { isMobileMenuOpen, closeMobileMenu } = useMobileMenu();
+  const { items: wishlistItems, openWishlistModal } = useWishlist();
+  const { items: compareItems, openCompareModal } = useCompare();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<MobileMenuTab>("menu");
   const [isShopOpen, setIsShopOpen] = useState(false);
@@ -158,6 +162,36 @@ export function PopupMobileMenu({ categories, logoUrl, storeName }: PopupMobileM
                     <li>
                       <Link href="/deals" onClick={closeMobileMenu}>
                         {t("nav.deals")}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/wishlist"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          closeMobileMenu();
+                          openWishlistModal();
+                        }}
+                      >
+                        {t("account.wishlist")}
+                        {wishlistItems.length > 0 && (
+                          <span className="badge bg-primary rounded-pill ms-2">{wishlistItems.length}</span>
+                        )}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/compare"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          closeMobileMenu();
+                          openCompareModal();
+                        }}
+                      >
+                        Compare
+                        {compareItems.length > 0 && (
+                          <span className="badge bg-primary rounded-pill ms-2">{compareItems.length}</span>
+                        )}
                       </Link>
                     </li>
                   </ul>
