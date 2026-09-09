@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Swiper as SwiperClass } from "swiper";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -47,15 +47,36 @@ export function ProductGallery({ images, alt, badge }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevEl, setPrevEl] = useState<HTMLDivElement | null>(null);
   const [nextEl, setNextEl] = useState<HTMLDivElement | null>(null);
+  // col-lg-1-5/col-lg-4-5 (style.min.css) only exist inside @media(min-width:992px) — below
+  // that the thumb rail and main image are bare flex children with no width at all, so they
+  // get squeezed side by side instead of stacking. col-12 (added below) fixes the width; this
+  // flips the thumb rail from its desktop vertical column (fixed-height, scrolls vertically)
+  // to a horizontal scrolling row on mobile/tablet, since a 500px-tall vertical scroll strip
+  // only makes sense next to a same-height main image, not stacked above/below it.
+  const [isDesktopThumbs, setIsDesktopThumbs] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 992px)");
+    setIsDesktopThumbs(query.matches);
+    function handleChange(event: MediaQueryListEvent) {
+      setIsDesktopThumbs(event.matches);
+    }
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, []);
 
   const activeImage = images[activeIndex];
 
   return (
     <div className="rbt-single-product-media-area position-sticky-top rbt-single-product-media-has-folder-shape d-flex row row--12 rbt-gap--0">
-      <div className="col-lg-1-5 col-lg-2 order-2 order-lg-1">
+      <div className="col-12 col-lg-1-5 col-lg-2 order-2 order-lg-1">
         <div
-          className="product-single-slider-two-thumb-activation rbt-thumb-has-bg-shape-overlay d-flex flex-column"
-          style={{ height: `${THUMB_RAIL_HEIGHT}px`, gap: `${THUMB_GAP}px`, overflowY: "auto" }}
+          className={`product-single-slider-two-thumb-activation rbt-thumb-has-bg-shape-overlay d-flex ${isDesktopThumbs ? "flex-column" : "flex-row"}`}
+          style={
+            isDesktopThumbs
+              ? { height: `${THUMB_RAIL_HEIGHT}px`, gap: `${THUMB_GAP}px`, overflowY: "auto" }
+              : { gap: `${THUMB_GAP}px`, overflowX: "auto", overflowY: "hidden" }
+          }
         >
           {images.map((image, index) => (
             <button
@@ -86,7 +107,7 @@ export function ProductGallery({ images, alt, badge }: ProductGalleryProps) {
         </div>
       </div>
 
-      <div className="col-lg-4-5 col-lg-10 order-1 order-lg-2">
+      <div className="col-12 col-lg-4-5 col-lg-10 order-1 order-lg-2">
         <Swiper
           className="rbt-medea-lg-img-area-md-wider product-single-slider-two-activation rbt-arrow-between rbt-arrow-show-dfl"
           modules={[Navigation]}
