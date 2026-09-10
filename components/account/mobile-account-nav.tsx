@@ -81,13 +81,13 @@ export function MobileAccountNav({ orderCount, onLogout }: MobileAccountNavProps
   const items: MobileAccountNavItem[] = [
     { href: "/account/orders", icon: "fa-regular fa-cart-shopping-fast", label: t("account.orders") },
     { href: "/account/wishlist", icon: "fa-regular fa-heart", label: t("account.wishlist") },
-    { href: "my-payment-methods.html", icon: "fa-regular fa-money-bill", label: "Payment Methods" },
-    { href: "my-reviews.html", icon: "fa-regular fa-star-sharp-half-stroke", label: "My reviews" },
+    { href: "/account/payment-methods", icon: "fa-regular fa-money-bill", label: "Payment Methods" },
+    { href: "/account/reviews", icon: "fa-regular fa-star-sharp-half-stroke", label: "My reviews" },
     { href: "/account/profile", icon: "fa-regular fa-user-vneck", label: t("account.profile") },
     { href: "/account/addresses", icon: "fa-regular fa-location-dot", label: t("account.addresses") },
-    { href: "account-notifications.html", icon: "fa-regular fa-cowbell", label: "Notifications" },
+    { href: "/account/notifications", icon: "fa-regular fa-cowbell", label: "Notifications" },
     { href: "/faqs", icon: "fa-regular fa-circle-question", label: "Help" },
-    { href: "terms-policy.html", icon: "fa-regular fa-circle-info", label: "Terms and conditions" },
+    { href: "/terms", icon: "fa-regular fa-circle-info", label: "Terms and conditions" },
   ];
 
   return (

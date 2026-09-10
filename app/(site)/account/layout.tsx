@@ -9,21 +9,27 @@ import { t } from "@/lib/i18n";
 import { getOrdersForUser } from "@/lib/orders";
 
 // Nav entries backed by real routes; used for both the sidebar links and the breadcrumb's
-// trailing label. Payment Methods / My reviews / Notifications / Terms have no page behind them
-// yet (no such feature exists in this app) and stay as dead .html links, same treatment given
-// to un-mapped demo pages elsewhere (e.g. mega-menue.tsx's element-*.html links) — "Help" points
-// at /faqs since that's this app's real equivalent of a help center.
+// trailing label. "Help" points at /faqs since that's this app's real equivalent of a help
+// center. Payment Methods / My reviews / Notifications are backed by their own tables
+// (payment_methods, notification_preferences, and reviews' own-row RLS — see
+// supabase/migrations/0014-0016) — see each page's own component for its data flow.
+// New entries (payment-methods/reviews/notifications) use a plain `label` instead of t() —
+// lib/i18n.ts is off-limits to edit in this phase, and t() falls back to returning the raw key
+// string for anything not already in its dictionaries.
 const ACCOUNT_NAV_ITEMS = [
-  { href: "/account/orders", labelKey: "account.orders" },
-  { href: "/account/addresses", labelKey: "account.addresses" },
-  { href: "/account/profile", labelKey: "account.profile" },
-  { href: "/account/wishlist", labelKey: "account.wishlist" },
+  { href: "/account/orders", label: t("account.orders") },
+  { href: "/account/addresses", label: t("account.addresses") },
+  { href: "/account/profile", label: t("account.profile") },
+  { href: "/account/wishlist", label: t("account.wishlist") },
+  { href: "/account/payment-methods", label: "Payment Methods" },
+  { href: "/account/reviews", label: "My reviews" },
+  { href: "/account/notifications", label: "Notifications" },
 ];
 
 function getBreadcrumbLabel(pathname: string): string {
   if (pathname.startsWith("/account/orders/")) return t("account.orderDetail");
   const match = ACCOUNT_NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
-  return match ? t(match.labelKey) : t("account.yourAccount");
+  return match ? match.label : t("account.yourAccount");
 }
 
 // Shared shell for all /account/* routes: guards access, and renders the template's
@@ -147,18 +153,18 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
                           {t("account.wishlist")}
                         </span>
                       </Link>
-                      <a href="my-payment-methods.html">
+                      <Link href="/account/payment-methods" className={isActive("/account/payment-methods") ? "active" : undefined}>
                         <span>
                           <i className="fa-regular fa-money-bill mr--4" />
                           Payment Methods
                         </span>
-                      </a>
-                      <a href="my-reviews.html">
+                      </Link>
+                      <Link href="/account/reviews" className={isActive("/account/reviews") ? "active" : undefined}>
                         <span>
                           <i className="fa-regular fa-star-sharp-half-stroke mr--4" />
                           My reviews
                         </span>
-                      </a>
+                      </Link>
                     </nav>
                   </div>
                   <div className="rbt-sidebar-single-widget">
@@ -178,12 +184,12 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
                           {t("account.addresses")}
                         </span>
                       </Link>
-                      <a href="account-notifications.html">
+                      <Link href="/account/notifications" className={isActive("/account/notifications") ? "active" : undefined}>
                         <span>
                           <i className="fa-regular fa-cowbell mr--4" />
                           Notifications
                         </span>
-                      </a>
+                      </Link>
                     </nav>
                   </div>
                   <div className="rbt-sidebar-single-widget">
@@ -197,12 +203,12 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
                           Help
                         </span>
                       </Link>
-                      <a href="terms-policy.html">
+                      <Link href="/terms">
                         <span>
                           <i className="fa-regular fa-circle-info mr--4" />
                           Terms and conditions
                         </span>
-                      </a>
+                      </Link>
                     </nav>
                   </div>
                   <hr />

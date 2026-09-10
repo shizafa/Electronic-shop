@@ -11,6 +11,15 @@ export interface SubmitReviewInput {
 
 export type SubmitReviewResult = { success: true } | { success: false; error: string };
 
+export interface UpdateReviewInput {
+  reviewId: string;
+  rating: number;
+  title: string;
+  body: string;
+}
+
+export type ReviewMutationResult = { success: true } | { success: false; error: string };
+
 // Places a review as 'pending' (reviews.status default) — never visible publicly until an
 // admin approves it (lib/actions/admin/reviews.ts). is_verified_purchase is computed here,
 // not trusted from the client: true only if this customer has a delivered order containing
@@ -56,5 +65,67 @@ export async function submitReview(input: SubmitReviewInput): Promise<SubmitRevi
   // No revalidatePath here: a pending review changes nothing on the (public, approved-only)
   // product page yet — the rating trigger only fires for approved rows. Revalidation happens
   // in lib/actions/admin/reviews.ts when a review is actually approved.
+  return { success: true };
+}
+
+// Edits a review the caller owns (reviews_update_own RLS: auth.uid() = user_id — an .eq("user_id",
+// user.id) is added below too, so a wrong/stale id fails with "not found" instead of relying on
+// RLS alone to silently no-op the update). Resets status to 'pending' and clears reviewed_at,
+// same as a fresh submitReview: an edited review re-enters moderation rather than keeping its old
+// approved/rejected status, since the content an admin already reviewed no longer matches.
+export async function updateReview(input: UpdateReviewInput): Promise<ReviewMutationResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "You need to be signed in to edit a review" };
+
+  if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
+    return { success: false, error: "Rating must be between 1 and 5" };
+  }
+  if (!input.title.trim() || !input.body.trim()) {
+    return { success: false, error: "Please fill in a title and a review" };
+  }
+
+  const { error, count } = await supabase
+    .from("reviews")
+    .update(
+      {
+        rating: input.rating,
+        title: input.title.trim(),
+        body: input.body.trim(),
+        status: "pending",
+        reviewed_at: null,
+      },
+      { count: "exact" }
+    )
+    .eq("id", input.reviewId)
+    .eq("user_id", user.id);
+
+  if (error) return { success: false, error: "Failed to update review" };
+  if (!count) return { success: false, error: "Review not found" };
+
+  return { success: true };
+}
+
+// Deletes a review the caller owns (reviews_delete_own RLS, same defense-in-depth .eq("user_id",
+// user.id) as updateReview above). The reviews_recompute_rating trigger (0009_reviews.sql)
+// recomputes the product's average_rating/review_count on delete, so no manual sync needed here.
+export async function deleteReview(reviewId: string): Promise<ReviewMutationResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "You need to be signed in to delete a review" };
+
+  const { error, count } = await supabase
+    .from("reviews")
+    .delete({ count: "exact" })
+    .eq("id", reviewId)
+    .eq("user_id", user.id);
+
+  if (error) return { success: false, error: "Failed to delete review" };
+  if (!count) return { success: false, error: "Review not found" };
+
   return { success: true };
 }

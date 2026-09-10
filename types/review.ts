@@ -22,3 +22,10 @@ export interface Review {
 export interface AdminReview extends Review {
   productName: string;
 }
+
+// A signed-in user's own review list (/account/reviews) needs the product's name and slug to
+// link back to it — same product-context gap AdminReview fills, plus the slug for the link.
+export interface UserReview extends Review {
+  productName: string;
+  productSlug: string;
+}
