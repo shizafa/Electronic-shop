@@ -22,10 +22,11 @@ function validate(input: PaymentMethodInput): string | null {
 
 // Unsets is_default on every other of the caller's own cards — scoped by payment_methods_all_own
 // RLS (auth.uid() = user_id) plus an explicit .eq("user_id", user.id) below, same defense-in-depth
-// as lib/actions/reviews.ts. Not atomic with the insert/update that follows (a concurrent save
-// from the same user could race), but that's the same non-atomic risk address-book.tsx's
-// client-side "unset the others" already accepts for addresses.is_default — fine for this
-// low-stakes, single-user-at-a-time feature.
+// as lib/actions/reviews.ts. Runs only after the insert/update of the new default has succeeded,
+// so a failed save never leaves the user with no default card. Not atomic with that write (a
+// concurrent save from the same user could race), but that's the same non-atomic risk
+// address-book.tsx's client-side "unset the others" already accepts for addresses.is_default —
+// fine for this low-stakes, single-user-at-a-time feature.
 async function clearOtherDefaults(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, keepId?: string) {
   let query = supabase.from("payment_methods").update({ is_default: false }).eq("user_id", userId);
   if (keepId) query = query.neq("id", keepId);
@@ -42,8 +43,6 @@ export async function addPaymentMethod(input: PaymentMethodInput): Promise<Payme
   const validationError = validate(input);
   if (validationError) return { success: false, error: validationError };
 
-  if (input.isDefault) await clearOtherDefaults(supabase, user.id);
-
   const { data, error } = await supabase
     .from("payment_methods")
     .insert({
@@ -58,6 +57,7 @@ export async function addPaymentMethod(input: PaymentMethodInput): Promise<Payme
     .single();
 
   if (error || !data) return { success: false, error: "Failed to add card" };
+  if (input.isDefault) await clearOtherDefaults(supabase, user.id, data.id);
   return { success: true, id: data.id };
 }
 
@@ -73,8 +73,6 @@ export async function updatePaymentMethod(
 
   const validationError = validate(input);
   if (validationError) return { success: false, error: validationError };
-
-  if (input.isDefault) await clearOtherDefaults(supabase, user.id, id);
 
   const { error, count } = await supabase
     .from("payment_methods")
@@ -93,6 +91,7 @@ export async function updatePaymentMethod(
 
   if (error) return { success: false, error: "Failed to update card" };
   if (!count) return { success: false, error: "Card not found" };
+  if (input.isDefault) await clearOtherDefaults(supabase, user.id, id);
   return { success: true, id };
 }
 

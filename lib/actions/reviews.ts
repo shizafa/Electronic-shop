@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export interface SubmitReviewInput {
@@ -87,30 +88,33 @@ export async function updateReview(input: UpdateReviewInput): Promise<ReviewMuta
     return { success: false, error: "Please fill in a title and a review" };
   }
 
-  const { error, count } = await supabase
+  const { data, error } = await supabase
     .from("reviews")
-    .update(
-      {
-        rating: input.rating,
-        title: input.title.trim(),
-        body: input.body.trim(),
-        status: "pending",
-        reviewed_at: null,
-      },
-      { count: "exact" }
-    )
+    .update({
+      rating: input.rating,
+      title: input.title.trim(),
+      body: input.body.trim(),
+      status: "pending",
+      reviewed_at: null,
+    })
     .eq("id", input.reviewId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("product_id");
 
   if (error) return { success: false, error: "Failed to update review" };
-  if (!count) return { success: false, error: "Review not found" };
+  if (!data?.length) return { success: false, error: "Review not found" };
 
+  // An approved review drops off the public product page once it's back to 'pending', and the
+  // product's rating changes with it — products.id doubles as its slug (see
+  // lib/actions/admin/reviews.ts's revalidateReviewPaths), so this is the page's real path.
+  revalidatePath(`/product/${data[0].product_id}`);
   return { success: true };
 }
 
 // Deletes a review the caller owns (reviews_delete_own RLS, same defense-in-depth .eq("user_id",
-// user.id) as updateReview above). The reviews_recompute_rating trigger (0009_reviews.sql)
-// recomputes the product's average_rating/review_count on delete, so no manual sync needed here.
+// user.id) as updateReview above). The reviews_recompute_rating trigger (0009_reviews.sql, made
+// security definer in 0018 so it can update products under a customer's session) recomputes the
+// product's average_rating/review_count on delete, so no manual sync needed here.
 export async function deleteReview(reviewId: string): Promise<ReviewMutationResult> {
   const supabase = await createClient();
   const {
@@ -118,14 +122,16 @@ export async function deleteReview(reviewId: string): Promise<ReviewMutationResu
   } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "You need to be signed in to delete a review" };
 
-  const { error, count } = await supabase
+  const { data, error } = await supabase
     .from("reviews")
-    .delete({ count: "exact" })
+    .delete()
     .eq("id", reviewId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .select("product_id");
 
   if (error) return { success: false, error: "Failed to delete review" };
-  if (!count) return { success: false, error: "Review not found" };
+  if (!data?.length) return { success: false, error: "Review not found" };
 
+  revalidatePath(`/product/${data[0].product_id}`);
   return { success: true };
 }
