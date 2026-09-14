@@ -35,6 +35,8 @@ export interface OrderRow {
   payment_status: PaymentStatus;
   payment_method: PaymentMethod;
   subtotal: string | number;
+  coupon_code: string | null;
+  discount_amount: string | number;
   shipping_fee: string | number;
   tax_amount: string | number;
   total: string | number;
@@ -77,6 +79,8 @@ export function mapOrderRow(row: OrderRow): Order {
     paymentStatus: row.payment_status,
     paymentMethod: row.payment_method,
     subtotal: Number(row.subtotal),
+    couponCode: row.coupon_code ?? undefined,
+    discountAmount: Number(row.discount_amount ?? 0),
     shippingFee: Number(row.shipping_fee),
     taxAmount: Number(row.tax_amount),
     total: Number(row.total),

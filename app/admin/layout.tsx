@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
 
@@ -42,7 +41,6 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
         <AdminTopbar />
         <div className="container-page py-6">{children}</div>
       </SidebarInset>
-      <Toaster />
     </SidebarProvider>
   );
 }

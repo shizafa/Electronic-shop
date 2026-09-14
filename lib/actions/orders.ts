@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CARD_CURRENCY, CARD_MAX_ORDER_VALUE, toStripeAmount } from "@/lib/card-payment";
+import { findRedeemableCoupon } from "@/lib/coupons";
 import { computeOrderTotals } from "@/lib/order-totals";
 import { getSettings } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
@@ -15,6 +16,7 @@ import {
   syncOrderWithPaymentIntent,
   type CardPaymentOutcome,
 } from "@/lib/stripe-orders";
+import type { Coupon } from "@/types/coupon";
 import type { InstallationSchedule, OrderAddressSnapshot, PaymentMethod } from "@/types/order";
 
 export interface PlaceOrderLineItem {
@@ -31,6 +33,8 @@ export interface PlaceOrderInput {
   // Card only: the Stripe ConfirmationToken (ctoken_...) the Payment Element created in the
   // browser on the payment step. Carries the card details; never the amount.
   confirmationTokenId?: string;
+  // Just the code the customer applied — the discount itself is recomputed here from the coupons table.
+  couponCode?: string;
 }
 
 export type PlaceOrderResult =
@@ -152,21 +156,44 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     });
   }
 
-  const { shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings);
+  let coupon: Coupon | null = null;
+  if (input.couponCode) {
+    const found = await findRedeemableCoupon(input.couponCode);
+    if (!found.ok) return { success: false, error: found.error };
+    coupon = found.coupon;
+  }
+
+  const { discountAmount, shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings, coupon);
   if (input.paymentMethod === "card" && total > CARD_MAX_ORDER_VALUE) {
     return { success: false, error: "This order is above the card payment limit. Please choose another payment method." };
   }
+
+  const admin = createAdminClient();
+
+  // Reserve one use of the coupon. redeem_coupon (0022_coupons.sql) re-checks active/expiry/limit
+  // atomically, so if another checkout took the last use since findRedeemableCoupon, this one
+  // fails here instead of both going through. The use is given back if the order can't be created
+  // below, or later by fail_card_order if the card payment fails.
+  if (coupon) {
+    const { data: redeemed, error: redeemError } = await admin.rpc("redeem_coupon", { p_coupon_id: coupon.id });
+    if (redeemError || !redeemed) return { success: false, error: "This coupon is no longer available" };
+  }
+  const releaseCoupon = async () => {
+    if (coupon) await admin.rpc("release_coupon", { p_coupon_id: coupon.id });
+  };
 
   // Decrement stock before creating the order, so a sold-out item never leaves a half-placed
   // order behind. decrement_variant_stock (supabase/migrations/0008) does this atomically per
   // line — each line's `UPDATE ... WHERE stock >= quantity` row-locks that variant, so two
   // checkouts racing for the last unit can't both succeed. Called via the service-role client
   // because the function's execute grant is service_role-only (see the migration for why).
-  const admin = createAdminClient();
   const { error: stockError } = await admin.rpc("decrement_variant_stock", {
     items: input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity })),
   });
-  if (stockError) return { success: false, error: "One or more items in your cart just sold out" };
+  if (stockError) {
+    await releaseCoupon();
+    return { success: false, error: "One or more items in your cart just sold out" };
+  }
 
   // Cash on delivery waits for the courier ("cod_pending"). Card starts "pending" and only becomes
   // "paid" once Stripe confirms the charge below (or later, via 3-D Secure / the webhook).
@@ -186,6 +213,9 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       payment_status: paymentStatus,
       payment_method: input.paymentMethod,
       subtotal,
+      coupon_id: coupon?.id ?? null,
+      coupon_code: coupon?.code ?? null,
+      discount_amount: discountAmount,
       shipping_fee: shippingFee,
       tax_amount: taxAmount,
       total,
@@ -198,6 +228,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     .single();
 
   if (orderError || !orderRow) {
+    await releaseCoupon();
     return { success: false, error: "Failed to create order" };
   }
 

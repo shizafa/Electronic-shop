@@ -7,6 +7,7 @@ import {
   Settings,
   MessageSquare,
   Star,
+  TicketPercent,
   type LucideIcon,
 } from "lucide-react";
 
@@ -42,6 +43,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { href: "/admin/orders", labelKey: "admin.nav.orders", icon: ShoppingCart },
       { href: "/admin/customers", labelKey: "admin.nav.customers", icon: Users },
+      { href: "/admin/coupons", labelKey: "admin.nav.coupons", icon: TicketPercent },
     ],
   },
   {

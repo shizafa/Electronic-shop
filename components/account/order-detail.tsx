@@ -114,6 +114,15 @@ export function OrderDetail({ orderId }: { orderId: string }) {
           <span>{t("common.subtotal")}</span>
           <span>{formatPrice(order.subtotal)}</span>
         </div>
+        {order.discountAmount > 0 && (
+          <div className="flex justify-between text-muted-foreground">
+            <span>
+              {t("common.discount")}
+              {order.couponCode && ` (${order.couponCode})`}
+            </span>
+            <span>-{formatPrice(order.discountAmount)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-muted-foreground">
           <span>{t("common.shippingFee")}</span>
           <span>{order.shippingFee === 0 ? t("common.free") : formatPrice(order.shippingFee)}</span>

@@ -15,6 +15,8 @@ interface OrderReviewProps {
   installation?: InstallationSchedule;
   paymentMethod: PaymentMethod;
   subtotal: number;
+  discountAmount: number;
+  couponCode?: string;
   shippingFee: number;
   taxAmount: number;
   total: number;
@@ -29,6 +31,8 @@ export function OrderReview({
   installation,
   paymentMethod,
   subtotal,
+  discountAmount,
+  couponCode,
   shippingFee,
   taxAmount,
   total,
@@ -113,6 +117,14 @@ export function OrderReview({
           <p>{t("common.subtotal")}</p>
           <p className="price">{formatPrice(subtotal)}</p>
         </div>
+        {discountAmount > 0 && (
+          <div className="rbt-cart-subttotal">
+            <p>
+              {t("common.discount")} ({couponCode})
+            </p>
+            <p className="price">-{formatPrice(discountAmount)}</p>
+          </div>
+        )}
         <div className="rbt-cart-subttotal">
           <p>{t("common.shippingFee")}</p>
           <p className="price">{shippingFee === 0 ? t("common.free") : formatPrice(shippingFee)}</p>

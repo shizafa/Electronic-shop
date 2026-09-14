@@ -68,6 +68,9 @@ export interface Order {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   subtotal: number;
+  // Coupon snapshot at order time; discountAmount is 0 and couponCode undefined when none was used
+  couponCode?: string;
+  discountAmount: number;
   shippingFee: number;
   taxAmount: number;
   total: number;

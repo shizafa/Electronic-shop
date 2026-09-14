@@ -17,10 +17,12 @@ import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
+import { validateCoupon } from "@/lib/actions/coupons";
 import { cancelCardOrder, placeOrder } from "@/lib/actions/orders";
 import { CARD_MAX_ORDER_VALUE } from "@/lib/card-payment";
 import { t } from "@/lib/i18n";
 import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
+import type { AppliedCoupon } from "@/types/coupon";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
 
 type CheckoutStep = "address" | "installation" | "payment" | "review";
@@ -87,6 +89,13 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   const [confirmationTokenId, setConfirmationTokenId] = useState("");
   const [cardError, setCardError] = useState("");
   const [isPreparingPayment, setIsPreparingPayment] = useState(false);
+  // Coupon: validateCoupon only returns what's needed to show the discount here — placeOrder
+  // re-validates the code and recomputes the discount server-side.
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [isCouponOpen, setIsCouponOpen] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   // guard the checkout page: must be logged in and have items in the cart
   useEffect(() => {
@@ -107,7 +116,7 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   }
 
   const subtotal = lineItems.reduce((sum, { variant, quantity }) => sum + variant.price * quantity, 0);
-  const { shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings);
+  const { discountAmount, shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings, appliedCoupon);
 
   const shippingCity = cities.find((city) => city.name === shippingAddress.city);
   // installation can only be scheduled if the chosen shipping city supports it, regardless of cart contents
@@ -173,6 +182,21 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
     goNext();
   }
 
+  async function handleApplyCoupon() {
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    const result = await validateCoupon(couponInput);
+    setIsApplyingCoupon(false);
+
+    if (!result.success) {
+      setCouponError(result.error);
+      return;
+    }
+    setAppliedCoupon(result.coupon);
+    setCouponInput("");
+    setIsCouponOpen(false);
+  }
+
   // A card attempt that failed has used up its ConfirmationToken, so send the customer back to the
   // payment step to re-enter the card, with the reason shown there. The cart is left untouched.
   function returnToPaymentWithError(message: string) {
@@ -198,6 +222,7 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
       // only attach installation details if the city actually supports the service
       installation: isInstallationCitySupported ? installation : undefined,
       confirmationTokenId: paymentMethod === "card" ? confirmationTokenId : undefined,
+      couponCode: appliedCoupon?.code,
     });
 
     if (!result.success) {
@@ -442,16 +467,92 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
                                     {cardError}
                                   </p>
                                 )}
-                                {/* No coupon/promo-code system exists in the app — kept as inert
-                                    chrome, same treatment as Share Cart in checkout-sidebar.tsx. */}
-                                <div className="nav pb-3 mb-2 mb-sm-3 rbt-link-hover mt-2">
-                                  <a className="nav-link animate-underline rbt-text-color-gray-400 p-0 rbt-text-bold" href="#!">
-                                    <i className="fa-regular fa-circle-plus fs-xl ms-a me-2" />
-                                    <span className="animate-target">
-                                      Add a promo code or a gift card
-                                    </span>
-                                  </a>
-                                </div>
+                                {/* Promo code: the template's link now toggles a code field built from
+                                    the template's own coupon form (cart-view.tsx's
+                                    .rbt-input-field-grp / .rbt-button-group). "or a gift card" is
+                                    dropped from the link text — there are no gift cards. */}
+                                {appliedCoupon ? (
+                                  <div className="d-flex justify-content-between align-items-center pb-3 mb-2 mb-sm-3 mt-2">
+                                    <p className="mb--0 rbt-text-bold">
+                                      <i className="fa-regular fa-tag me-2" />
+                                      {appliedCoupon.code} {t("checkout.couponApplied")}
+                                    </p>
+                                    <div className="rbt-link-hover">
+                                      <a
+                                        href="#"
+                                        onClick={(event) => {
+                                          event.preventDefault();
+                                          setAppliedCoupon(null);
+                                        }}
+                                      >
+                                        {t("common.remove")}
+                                      </a>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="nav pb-3 mb-2 mb-sm-3 rbt-link-hover mt-2">
+                                      <a
+                                        className="nav-link animate-underline rbt-text-color-gray-400 p-0 rbt-text-bold"
+                                        href="#!"
+                                        aria-expanded={isCouponOpen}
+                                        onClick={(event) => {
+                                          event.preventDefault();
+                                          setIsCouponOpen((open) => !open);
+                                        }}
+                                      >
+                                        <i className="fa-regular fa-circle-plus fs-xl ms-a me-2" />
+                                        <span className="animate-target">
+                                          {t("checkout.addPromoCode")}
+                                        </span>
+                                      </a>
+                                    </div>
+                                    {isCouponOpen && (
+                                      <form
+                                        className="mb-4"
+                                        onSubmit={(event) => {
+                                          event.preventDefault();
+                                          handleApplyCoupon();
+                                        }}
+                                      >
+                                        <div className="rbt-input-field-grp">
+                                          <input
+                                            className="rbt-bg-color-white"
+                                            type="text"
+                                            placeholder={t("checkout.couponPlaceholder")}
+                                            aria-label={t("checkout.couponPlaceholder")}
+                                            value={couponInput}
+                                            onChange={(event) => setCouponInput(event.target.value)}
+                                          />
+                                          {couponError && (
+                                            <p className="b4 mb--0 rbt-text-color-danger mt--4">
+                                              {couponError}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className="rbt-button-group m--0 mt--16">
+                                          <button
+                                            type="submit"
+                                            className="rbt-btn rbt-btn-md rbt-btn-primary"
+                                            disabled={isApplyingCoupon || !couponInput.trim()}
+                                          >
+                                            {t("checkout.applyCoupon")}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="rbt-btn rbt-btn-md rbt-btn-gray-light"
+                                            onClick={() => {
+                                              setIsCouponOpen(false);
+                                              setCouponError("");
+                                            }}
+                                          >
+                                            {t("common.cancel")}
+                                          </button>
+                                        </div>
+                                      </form>
+                                    )}
+                                  </>
+                                )}
                                 {/* Orders have no notes/comments field — kept as an unwired,
                                     cosmetic textarea, same treatment as the postcode field. */}
                                 <textarea className="mb-4" rows={3} placeholder="Additional comments" />
@@ -477,6 +578,8 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
                                 installation={isInstallationCitySupported ? installation : undefined}
                                 paymentMethod={paymentMethod}
                                 subtotal={subtotal}
+                                discountAmount={discountAmount}
+                                couponCode={appliedCoupon?.code}
                                 shippingFee={shippingFee}
                                 taxAmount={taxAmount}
                                 total={total}
@@ -545,6 +648,8 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
             <CheckoutSidebar
               lineItems={lineItems}
               subtotal={subtotal}
+              discountAmount={discountAmount}
+              couponCode={appliedCoupon?.code}
               shippingFee={shippingFee}
               taxAmount={taxAmount}
               total={total}
