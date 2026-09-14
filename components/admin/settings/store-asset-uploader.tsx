@@ -16,10 +16,11 @@ interface StoreAssetUploaderProps {
 export function StoreAssetUploader({ image, onChange }: StoreAssetUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   async function handleFiles(files: FileList | null) {
     const file = files?.[0];
-    if (!file) return;
+    if (!file || !file.type.startsWith("image/")) return;
     setIsUploading(true);
 
     const previous = image;
@@ -39,7 +40,21 @@ export function StoreAssetUploader({ image, onChange }: StoreAssetUploaderProps)
   }
 
   return (
-    <div className="relative size-24 shrink-0 overflow-hidden rounded-lg border border-dashed border-border bg-muted">
+    <div
+      onDragOver={(event) => {
+        event.preventDefault();
+        if (!isUploading) setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setIsDragging(false);
+        if (!isUploading) void handleFiles(event.dataTransfer.files);
+      }}
+      className={`relative size-24 shrink-0 overflow-hidden rounded-lg border border-dashed bg-muted transition-colors ${
+        isDragging ? "border-primary bg-primary/5" : "border-border"
+      }`}
+    >
       {image ? (
         <button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading} className="group size-full">
           <Image src={image} alt="" fill sizes="96px" className="object-contain p-2" />
