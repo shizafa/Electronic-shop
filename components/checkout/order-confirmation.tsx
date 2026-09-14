@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useProductCatalog } from "@/context/product-catalog-context";
+import { syncCardPayment } from "@/lib/actions/orders";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getOrderById } from "@/lib/orders";
@@ -39,9 +40,16 @@ export function OrderConfirmation() {
     if (!orderId) return; // no id in the URL — the render logic below treats that as "not found"
 
     let active = true;
-    getOrderById(orderId).then((result) => {
+    (async () => {
+      let result = await getOrderById(orderId);
+      // A card order can land here before Stripe's webhook has settled it (e.g. right after a
+      // 3-D Secure check) — ask the server to check Stripe directly, then re-read the order.
+      if (result?.paymentMethod === "card" && result.paymentStatus === "pending") {
+        const sync = await syncCardPayment(orderId);
+        if (sync.success && sync.outcome !== "pending") result = (await getOrderById(orderId)) ?? result;
+      }
       if (active) setOrder(result ?? null);
-    });
+    })();
     return () => {
       active = false;
     };
@@ -162,6 +170,16 @@ export function OrderConfirmation() {
                     <p className="fs-sm mb-0">
                       {t(`paymentMethod.${order.paymentMethod}`)} · {formatPrice(order.total)}
                     </p>
+                    {order.paymentMethod === "card" && order.paymentStatus === "pending" && (
+                      <p className="fs-sm mb-0">
+                        Payment processing — we&apos;ll update your order as soon as your bank confirms it.
+                      </p>
+                    )}
+                    {order.paymentMethod === "card" && order.paymentStatus === "failed" && (
+                      <p className="fs-sm rbt-text-color-danger mb-0">
+                        Payment failed — this order was cancelled and you haven&apos;t been charged.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="rbt-link-hover fs-sm pt-4 pt-md-5 mt-2 mt-sm-3 mt-md-0 mb-0">

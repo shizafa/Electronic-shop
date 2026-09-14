@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,12 +11,14 @@ import {
 import { CheckoutSidebar } from "@/components/checkout/checkout-sidebar";
 import { InstallationScheduler } from "@/components/checkout/installation-scheduler";
 import { OrderReview } from "@/components/checkout/order-review";
-import { PaymentMethodSelector } from "@/components/checkout/payment-method";
+import { COD_MAX_ORDER_VALUE, PaymentMethodSelector } from "@/components/checkout/payment-method";
+import { stripePromise, type StripeCardHandle } from "@/components/checkout/stripe-card-element";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
 import { cities } from "@/data/cities";
-import { placeOrder } from "@/lib/actions/orders";
+import { cancelCardOrder, placeOrder } from "@/lib/actions/orders";
+import { CARD_MAX_ORDER_VALUE } from "@/lib/card-payment";
 import { t } from "@/lib/i18n";
 import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
 import type { InstallationSchedule, PaymentMethod } from "@/types/order";
@@ -75,9 +77,16 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [billingAddress, setBillingAddress] = useState<AddressFormValues>(emptyAddressFormValues);
   const [installation, setInstallation] = useState<InstallationSchedule | undefined>(undefined);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("jazzcash");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [placeOrderError, setPlaceOrderError] = useState("");
+  // Card: the Stripe Payment Element lives on the payment step, which unmounts on the way to
+  // review — so its fields are turned into a ConfirmationToken on that step's Continue, and the
+  // token (not the element) is what Place Order sends.
+  const cardRef = useRef<StripeCardHandle>(null);
+  const [confirmationTokenId, setConfirmationTokenId] = useState("");
+  const [cardError, setCardError] = useState("");
+  const [isPreparingPayment, setIsPreparingPayment] = useState(false);
 
   // guard the checkout page: must be logged in and have items in the cart
   useEffect(() => {
@@ -133,7 +142,48 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   const isInstallationValid =
     !isInstallationCitySupported || Boolean(installation?.date && installation?.timeSlot);
 
-  // final step: create the order record server-side, empty the cart, then navigate to confirmation
+  // the chosen method must still be allowed for this total (same limits payment-method.tsx greys out)
+  const isPaymentValid =
+    paymentMethod === "card"
+      ? total <= CARD_MAX_ORDER_VALUE
+      : paymentMethod === "cod" && settings.codEnabled && total <= COD_MAX_ORDER_VALUE;
+
+  const effectiveBillingAddress = billingSameAsShipping ? shippingAddress : billingAddress;
+
+  // Continue: on the payment step with card selected, validate the card and swap it for a
+  // ConfirmationToken first — a card error keeps the customer on this step.
+  async function handleContinue() {
+    if (currentStep === "payment" && paymentMethod === "card") {
+      setIsPreparingPayment(true);
+      setCardError("");
+      const result = cardRef.current
+        ? await cardRef.current.createConfirmationToken({
+            name: effectiveBillingAddress.fullName,
+            phone: effectiveBillingAddress.phone,
+          })
+        : { error: "The card form is still loading. Please try again." };
+      setIsPreparingPayment(false);
+
+      if ("error" in result) {
+        setCardError(result.error);
+        return;
+      }
+      setConfirmationTokenId(result.confirmationTokenId);
+    }
+    goNext();
+  }
+
+  // A card attempt that failed has used up its ConfirmationToken, so send the customer back to the
+  // payment step to re-enter the card, with the reason shown there. The cart is left untouched.
+  function returnToPaymentWithError(message: string) {
+    setConfirmationTokenId("");
+    setCardError(message);
+    setIsPlacingOrder(false);
+    setStepIndex(steps.indexOf("payment"));
+  }
+
+  // final step: create the order record server-side (charging the card for card orders), empty the
+  // cart, then navigate to confirmation
   async function handlePlaceOrder() {
     if (!user) return;
     setIsPlacingOrder(true);
@@ -143,16 +193,39 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
       lineItems: lineItems.map(({ variant, quantity }) => ({ variantId: variant.id, quantity })),
       shippingAddress,
       // reuse shipping address as billing when the "same as shipping" checkbox is checked
-      billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
+      billingAddress: effectiveBillingAddress,
       paymentMethod,
       // only attach installation details if the city actually supports the service
       installation: isInstallationCitySupported ? installation : undefined,
+      confirmationTokenId: paymentMethod === "card" ? confirmationTokenId : undefined,
     });
 
     if (!result.success) {
-      setPlaceOrderError(result.error);
-      setIsPlacingOrder(false);
+      if (paymentMethod === "card") {
+        returnToPaymentWithError(result.error);
+      } else {
+        setPlaceOrderError(result.error);
+        setIsPlacingOrder(false);
+      }
       return;
+    }
+
+    // The bank wants a 3-D Secure check: Stripe.js shows it in a popup. If it fails or is closed,
+    // cancel the payment server-side — cancelCardOrder re-reads Stripe, so a payment that did go
+    // through is still treated as paid.
+    if ("requiresAction" in result) {
+      const stripe = await stripePromise;
+      const nextAction = stripe
+        ? await stripe.handleNextAction({ clientSecret: result.clientSecret })
+        : { error: { message: "Couldn't load the card verification. Please try again." } };
+
+      if (nextAction.error) {
+        const cancelled = await cancelCardOrder(result.orderId);
+        if (!(cancelled.success && cancelled.outcome === "paid")) {
+          returnToPaymentWithError(nextAction.error.message ?? "Card verification failed. Please try again.");
+          return;
+        }
+      }
     }
 
     clearCart();
@@ -356,10 +429,19 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
                               <>
                                 <PaymentMethodSelector
                                   value={paymentMethod}
-                                  onChange={setPaymentMethod}
+                                  onChange={(method) => {
+                                    setPaymentMethod(method);
+                                    setCardError("");
+                                  }}
                                   orderTotal={total}
                                   codEnabled={settings.codEnabled}
+                                  cardRef={cardRef}
                                 />
+                                {cardError && (
+                                  <p className="rbt-text-color-danger mt--16 mb--0">
+                                    {cardError}
+                                  </p>
+                                )}
                                 {/* No coupon/promo-code system exists in the app — kept as inert
                                     chrome, same treatment as Share Cart in checkout-sidebar.tsx. */}
                                 <div className="nav pb-3 mb-2 mb-sm-3 rbt-link-hover mt-2">
@@ -435,10 +517,11 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
                                 <button
                                   type="button"
                                   className="rbt-btn splash-btn icon-reverse-left rbt-rounded--4"
-                                  onClick={goNext}
+                                  onClick={handleContinue}
                                   disabled={
                                     (currentStep === "address" && !isAddressValid) ||
-                                    (currentStep === "installation" && !isInstallationValid)
+                                    (currentStep === "installation" && !isInstallationValid) ||
+                                    (currentStep === "payment" && (!isPaymentValid || isPreparingPayment))
                                   }
                                 >
                                   <span className="icon-left">

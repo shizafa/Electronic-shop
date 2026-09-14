@@ -1,5 +1,8 @@
 "use client";
 
+import type { Ref } from "react";
+import { StripeCardElement, type StripeCardHandle } from "@/components/checkout/stripe-card-element";
+import { CARD_MAX_ORDER_VALUE } from "@/lib/card-payment";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import type { PaymentMethod } from "@/types/order";
@@ -12,22 +15,23 @@ interface PaymentMethodSelectorProps {
   onChange: (value: PaymentMethod) => void;
   orderTotal: number;
   codEnabled: boolean;
+  cardRef: Ref<StripeCardHandle>;
 }
 
 // PaymentMethodSelector — lets the user choose a payment method (checkout-payment.html's
-// #paymentMethod accordion). The template only has Cash on delivery / Credit-or-debit card /
-// PayPal / Google Pay; the real methods are cod/jazzcash/easypaisa/card/raast. PayPal and Google
-// Pay are dropped (no such methods exist here), Cash on delivery and Card are kept and reskinned
-// into the accordion, and JazzCash/Easypaisa/Raast are added as simple radio-only rows — mirroring
-// how PayPal/Google Pay were themselves just a bare radio + logo with no expanded panel — since
-// the template has no equivalent UI for them.
-// The card-number/expiry/CVC fields and the "change from $X" cash field stay cosmetic and
-// unwired: there's no payment gateway integration, and checkout.onlineMethodDescription already
-// tells the user payment happens after the order is placed, so nothing here actually charges a card.
+// #paymentMethod accordion). The template has Cash on delivery / Credit-or-debit card / PayPal /
+// Google Pay; only Cash on delivery and Card are real here, so PayPal and Google Pay are dropped.
+// JazzCash/Easypaisa/Raast are no longer offered — they never had a real payment behind them
+// (placeOrder now rejects them too).
+// Card is a real Stripe payment: the template's card-number/expiry/CVC inputs are replaced by
+// Stripe's Payment Element (StripeCardElement), which has to own those fields for the card data to
+// stay inside Stripe's iframe. The "change from $X" cash field stays cosmetic and unwired.
 // The template's data-bs-toggle="collapse" accordion is replaced with plain conditional classes
-// driven by the selected method, same as installation-scheduler.tsx's shipping-method accordion.
-export function PaymentMethodSelector({ value, onChange, orderTotal, codEnabled }: PaymentMethodSelectorProps) {
+// driven by the selected method, same as installation-scheduler.tsx's shipping-method accordion —
+// which also keeps the card element mounted while hidden, so switching methods doesn't reset it.
+export function PaymentMethodSelector({ value, onChange, orderTotal, codEnabled, cardRef }: PaymentMethodSelectorProps) {
   const isCodAllowed = codEnabled && orderTotal <= COD_MAX_ORDER_VALUE;
+  const isCardAllowed = orderTotal <= CARD_MAX_ORDER_VALUE;
 
   return (
     <div className="mb-4" id="paymentMethod" role="list">
@@ -73,6 +77,7 @@ export function PaymentMethodSelector({ value, onChange, orderTotal, codEnabled 
               className="rbt-form-check-input me-1 me-sm-2"
               name="payment-method"
               checked={value === "card"}
+              disabled={!isCardAllowed}
               onChange={() => onChange("card")}
             />
             {t("paymentMethod.card")}
@@ -80,84 +85,21 @@ export function PaymentMethodSelector({ value, onChange, orderTotal, codEnabled 
               <img src="/assets/images/payment-brand/image-01.webp" className="d-block" width="200" alt="Credit Or Debit Card" />
             </span>
           </label>
+          {!isCardAllowed && (
+            <p className="fs-sm rbt-text-color-danger mb-0 ms-4 ps-2">
+              Card payments are available for orders up to {formatPrice(CARD_MAX_ORDER_VALUE)}
+            </p>
+          )}
         </div>
-        <div className={`collapse${value === "card" ? " show" : ""}`}>
-          <form className="needs-validation pt-2 pb-2 ps-3 ms-2 ms-sm-3" onSubmit={(event) => event.preventDefault()}>
-            <div className="position-relative mb-3 mb-sm-4">
-              <input type="number" className="form-icon-end" placeholder="Card number" />
-              <span className="position-absolute d-flex top-50 end-0 translate-middle-y fs-6 text-body-tertiary me-2">
-                <i className="fa-regular fa-credit-card" />
-              </span>
+        {/* Not rendered above the limit: Stripe rejects a deferred-mode amount over its ceiling. */}
+        {isCardAllowed && (
+          <div className={`collapse${value === "card" ? " show" : ""}`}>
+            <div className="pt-2 pb-2 ps-3 ms-2 ms-sm-3">
+              <StripeCardElement amount={orderTotal} ref={cardRef} />
             </div>
-            <div className="row row-cols-1 rbt-form-area row-cols-sm-2 g-3 g-sm-4">
-              <div className="col">
-                <div className="input-group date rbt-datepicker rbt-expiry-date">
-                  <input type="text" placeholder="MM/YY" className="form-control" />
-                  <span className="input-group-append">
-                    <span className="input-group-text d-block">
-                      <i className="fa fa-calendar" />
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <div className="col">
-                <input type="number" min="0000" max="9999" placeholder="CVC" />
-              </div>
-            </div>
-          </form>
-        </div>
+          </div>
+        )}
       </div>
-      {/* JazzCash */}
-      <div className="single-payment-methode mt-2">
-        <div className="rbt-radio-accordion form-check mb-0" role="listitem">
-          <label className="form-check-label d-flex align-items-center text-dark-emphasis fw-semibold">
-            <input
-              type="radio"
-              className="rbt-form-check-input me-1 me-sm-2"
-              name="payment-method"
-              checked={value === "jazzcash"}
-              onChange={() => onChange("jazzcash")}
-            />
-            {t("paymentMethod.jazzcash")}
-          </label>
-        </div>
-      </div>
-      {/* Easypaisa */}
-      <div className="single-payment-methode mt-2">
-        <div className="rbt-radio-accordion form-check mb-0" role="listitem">
-          <label className="form-check-label d-flex align-items-center text-dark-emphasis fw-semibold">
-            <input
-              type="radio"
-              className="rbt-form-check-input me-1 me-sm-2"
-              name="payment-method"
-              checked={value === "easypaisa"}
-              onChange={() => onChange("easypaisa")}
-            />
-            {t("paymentMethod.easypaisa")}
-          </label>
-        </div>
-      </div>
-      {/* Raast */}
-      <div className="single-payment-methode mt-2">
-        <div className="rbt-radio-accordion form-check mb-0" role="listitem">
-          <label className="form-check-label d-flex align-items-center text-dark-emphasis fw-semibold">
-            <input
-              type="radio"
-              className="rbt-form-check-input me-1 me-sm-2"
-              name="payment-method"
-              checked={value === "raast"}
-              onChange={() => onChange("raast")}
-            />
-            {t("paymentMethod.raast")}
-          </label>
-        </div>
-      </div>
-
-      {(value === "jazzcash" || value === "easypaisa" || value === "raast") && (
-        <p className="fs-sm mt-2 mb-0">
-          {t("checkout.onlineMethodDescription")}
-        </p>
-      )}
     </div>
   );
 }
