@@ -31,12 +31,12 @@ export default function Home() {
       <div className="container-page flex justify-center py-4">
         <Button
           size="lg"
-          className="h-auto gap-[clamp(5px,0.8vw,10px)] rounded-full px-[clamp(20px,3vw+8px,44px)] py-[clamp(10px,1.4vw+4px,18px)] text-[clamp(14px,0.8vw+9px,20px)] hover:text-white! [&_svg]:size-[clamp(20px,2.4vw,30px)]"
+          className="h-auto gap-[clamp(5px,0.6vw,8px)] rounded-full px-[clamp(20px,2vw+8px,34px)] py-[clamp(9px,0.8vw+4px,14px)] text-[clamp(14px,0.5vw+10px,17px)] text-white! hover:-translate-y-0.5 hover:shadow-lg"
           asChild
         >
           <Link href="/shop">
             {t("nav.showAllProducts")}
-            <ArrowRight />
+            <ArrowRight className="size-[1.2em]" />
           </Link>
         </Button>
       </div>
