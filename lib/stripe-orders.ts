@@ -37,38 +37,17 @@ async function markOrderPaid(orderId: string, paymentIntentId: string) {
 }
 
 // Payment failed or was cancelled: mark the order failed + cancelled, record the cancellation in
-// its status history, and give its stock back (placeOrder decremented it before charging).
+// its status history, and give its stock back (placeOrder decremented it before charging). All
+// three happen in one transaction inside fail_card_order (0021_fail_card_order.sql), so a failure
+// partway through leaves the order pending for the next caller to retry instead of losing stock.
 async function failCardOrder(orderId: string, paymentIntentId: string | null) {
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("orders")
-    .update({
-      payment_status: "failed",
-      status: "cancelled",
-      ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
-    })
-    .eq("id", orderId)
-    .eq("payment_method", "card")
-    .eq("payment_status", "pending")
-    .select("id");
-  if (error) throw error;
-  if (!data.length) return; // already settled by an earlier caller
-
-  const { data: items, error: itemsError } = await admin
-    .from("order_items")
-    .select("variant_id, quantity")
-    .eq("order_id", orderId);
-  if (itemsError) throw itemsError;
-
-  const { error: stockError } = await admin.rpc("increment_variant_stock", {
-    items: items.map((item) => ({ variant_id: item.variant_id, quantity: item.quantity })),
+  const { data: failed, error } = await admin.rpc("fail_card_order", {
+    p_order_id: orderId,
+    p_payment_intent_id: paymentIntentId,
   });
-  if (stockError) throw stockError;
-
-  const { error: historyError } = await admin
-    .from("order_status_history")
-    .insert({ order_id: orderId, status: "cancelled" });
-  if (historyError) throw historyError;
+  if (error) throw error;
+  if (!failed) return; // already settled by an earlier caller
 
   revalidateOrderPaths(orderId);
 }
