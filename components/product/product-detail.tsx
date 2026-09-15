@@ -12,7 +12,7 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { ProductRegisterBanner } from "@/components/product/product-register-banner";
 import { ProductTabs } from "@/components/product/product-tabs";
 import { VariantSelector } from "@/components/product/variant-selector";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
@@ -53,13 +53,14 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
   );
   const [quantity, setQuantity] = useState(1);
 
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
 
   const inWishlist = isInWishlist(product.id, selectedVariant.id);
   const inCompare = isInCompare(product.id);
   const isOutOfStock = selectedVariant.stock === 0;
+  const isAddingSelected = isAdding(selectedVariant.id);
   const images = selectedVariant.images?.length ? selectedVariant.images : product.images;
   const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
 
@@ -81,9 +82,9 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
     addToCart(product.id, selectedVariant.id, quantity);
   }
 
-  function handleBuyNow() {
-    addToCart(product.id, selectedVariant.id, quantity);
-    router.push("/checkout");
+  // Waits for the save so checkout never opens before the item is in the cart
+  async function handleBuyNow() {
+    if (await addToCart(product.id, selectedVariant.id, quantity)) router.push("/checkout");
   }
 
   function handleWishlistToggle() {
@@ -306,7 +307,7 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
                   <button
                     type="button"
                     className="rbt-btn rbt-btn-border has-left-icon d-block text-center"
-                    disabled={isOutOfStock}
+                    disabled={isOutOfStock || isAddingSelected}
                     onClick={handleAddToCart}
                   >
                     <i className="fa-regular fa-cart-shopping" />
@@ -317,7 +318,7 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
                   <button
                     type="button"
                     className="rbt-btn d-block text-center"
-                    disabled={isOutOfStock}
+                    disabled={isOutOfStock || isAddingSelected}
                     onClick={handleBuyNow}
                   >
                     Buy Now

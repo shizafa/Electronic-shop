@@ -11,7 +11,8 @@ import type { CartItem } from "@/types/cart";
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
-  addToCart: (productId: string, variantId: string, quantity?: number) => void;
+  // Resolves to whether the item was actually saved
+  addToCart: (productId: string, variantId: string, quantity?: number) => Promise<boolean>;
   updateQuantity: (variantId: string, quantity: number) => void;
   removeFromCart: (variantId: string) => void;
   clearCart: () => void;
@@ -49,21 +50,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.id]);
 
-  // Applies the change to local state immediately (so buttons feel instant), then confirms
-  // against the backend and reconciles state with whatever it actually persisted.
-  function addToCart(productId: string, variantId: string, quantity = 1): void {
-    setItems((current) => {
-      const existing = current.find((item) => item.variantId === variantId);
-      return existing
-        ? current.map((item) =>
-            item.variantId === variantId ? { ...item, quantity: item.quantity + quantity } : item
-          )
-        : [...current, { productId, variantId, quantity }];
-    });
-    cartLib.addToCart(user?.id ?? null, productId, variantId, quantity).then(setItems);
+  // Not optimistic: waits for the save before touching state, so a failed save never shows as
+  // added. On failure the cart state is left as it was.
+  async function addToCart(productId: string, variantId: string, quantity = 1): Promise<boolean> {
+    const result = await cartLib.addToCart(user?.id ?? null, productId, variantId, quantity);
+    if (!result.ok) {
+      toast.error(t("toast.addToCartFailed"));
+      return false;
+    }
+    setItems(result.items);
     toast.success(t("toast.addedToCart"));
+    return true;
   }
 
+  // Applies the change to local state immediately (so buttons feel instant), then confirms
+  // against the backend and reconciles state with whatever it actually persisted.
   function updateQuantity(variantId: string, quantity: number): void {
     setItems((current) =>
       quantity <= 0
@@ -110,4 +111,27 @@ export function useCart(): CartContextValue {
   const context = useContext(CartContext);
   if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
+}
+
+// For add-to-cart buttons: tracks which variants have a save in flight, so each button can be
+// disabled until its own save finishes and a double-click can't fire a second add. The ref is
+// the real guard (it updates synchronously); the state only drives the disabled rendering.
+export function useAddToCartButton() {
+  const { addToCart: addToCartNow } = useCart();
+  const inFlight = useRef(new Set<string>());
+  const [pendingVariantIds, setPendingVariantIds] = useState<ReadonlySet<string>>(new Set());
+
+  async function addToCart(productId: string, variantId: string, quantity = 1): Promise<boolean> {
+    if (inFlight.current.has(variantId)) return false;
+    inFlight.current.add(variantId);
+    setPendingVariantIds(new Set(inFlight.current));
+    try {
+      return await addToCartNow(productId, variantId, quantity);
+    } finally {
+      inFlight.current.delete(variantId);
+      setPendingVariantIds(new Set(inFlight.current));
+    }
+  }
+
+  return { addToCart, isAdding: (variantId: string) => pendingVariantIds.has(variantId) };
 }

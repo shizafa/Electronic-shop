@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
@@ -25,7 +25,7 @@ import type { Product, Variant } from "@/types/product";
 // product-catalog-context.tsx deliberately keeps scoped to cart/wishlist/compare/checkout only.
 export function WishlistModal() {
   const { items, isWishlistModalOpen, closeWishlistModal, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
   const [variantsById, setVariantsById] = useState<Record<string, Variant | null>>({});
 
@@ -176,7 +176,7 @@ export function WishlistModal() {
                                   <button
                                     type="button"
                                     className="rbt-btn rbt-btn-sm has-left-icon"
-                                    disabled={variant.stock === 0}
+                                    disabled={variant.stock === 0 || isAdding(variant.id)}
                                     onClick={() => addToCart(product.id, variant.id, 1)}
                                   >
                                     <i className="fa-regular fa-cart-shopping" />

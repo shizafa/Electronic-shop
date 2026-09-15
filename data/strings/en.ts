@@ -178,6 +178,7 @@ const en: TranslationDictionary = {
   "compare.clearAll": "Clear All",
 
   "toast.addedToCart": "Added to cart",
+  "toast.addToCartFailed": "Couldn't add this to your cart. Please try again.",
   "toast.addedToWishlist": "Added to wishlist",
   "toast.addedToCompare": "Added to compare",
   "toast.compareLimitReached": "You can only compare up to 4 products at a time.",

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { getCategoryById } from "@/lib/categories";
 import { formatPrice } from "@/lib/currency";
@@ -34,7 +34,7 @@ const COMPARE_SLOT_COUNT = 4;
 // treatment product-card.tsx already gives this exact gap, since Product has no rating field yet.
 export function CompareModal() {
   const { items, isCompareModalOpen, closeCompareModal, removeFromCompare } = useCompare();
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
   const [category, setCategory] = useState<Category | null>(null);
 
@@ -221,7 +221,7 @@ export function CompareModal() {
                                       <button
                                         type="button"
                                         className="rbt-btn rbt-btn-sm has-left-icon"
-                                        disabled={entry.variant.stock === 0}
+                                        disabled={entry.variant.stock === 0 || isAdding(entry.variant.id)}
                                         onClick={() => addToCart(entry.product.id, entry.variant.id, 1)}
                                       >
                                         <i className="fa-regular fa-cart-shopping" />

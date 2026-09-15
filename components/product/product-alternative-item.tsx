@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { formatPrice } from "@/lib/currency";
 import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Product } from "@/types/product";
@@ -26,7 +26,7 @@ interface ProductAlternativeItemProps {
 // per-category icon next to the category name (e.g. a camera icon for "Camera") is dropped —
 // categories have no icon field to back it.
 export function ProductAlternativeItem({ product, categoryName, categorySlug }: ProductAlternativeItemProps) {
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const displayVariant = getDisplayVariant(product);
   if (!displayVariant) return null; // no variants at all — nothing sellable to show
   const { id, price, compareAtPrice } = displayVariant;
@@ -87,7 +87,7 @@ export function ProductAlternativeItem({ product, categoryName, categorySlug }: 
         </div>
       </div>
       <div className="rbt-create-new-btn">
-        <button className="rbt-btn rbt-btn-xs text-nowrap" type="button" onClick={() => addToCart(product.id, id, 1)}>
+        <button className="rbt-btn rbt-btn-xs text-nowrap" type="button" disabled={isAdding(id)} onClick={() => addToCart(product.id, id, 1)}>
           ADD
           <i className="fa-solid fa-plus ml--4" />
         </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { type MouseEvent } from "react";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { t } from "@/lib/i18n";
 
@@ -21,7 +21,8 @@ interface ProductCardActionsProps {
 // cart update re-rendered every full card (images, spec lists and all). Now it re-renders
 // just these two buttons.
 export function ProductCardActions({ productId, variantId, categoryId, isOutOfStock }: ProductCardActionsProps) {
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
+  const isAddDisabled = isOutOfStock || isAdding(variantId);
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
   const inCompare = isInCompare(productId);
 
@@ -38,13 +39,13 @@ export function ProductCardActions({ productId, variantId, categoryId, isOutOfSt
 
   function handleAddToCart(event: MouseEvent) {
     event.preventDefault();
-    if (isOutOfStock) return;
+    if (isAddDisabled) return;
     addToCart(productId, variantId);
   }
 
   return (
         <div className="prd-btn-grp">
-          <a className={`rbt-btn rbt-btn-border rbt-btn-sm rbt-square-btn d-block has-left-icon rbt-cart-sidenav-activation${isOutOfStock ? " disabled" : ""}`} href="#" onClick={handleAddToCart}>
+          <a className={`rbt-btn rbt-btn-border rbt-btn-sm rbt-square-btn d-block has-left-icon rbt-cart-sidenav-activation${isAddDisabled ? " disabled" : ""}`} href="#" onClick={handleAddToCart}>
             <i className="fa-regular fa-cart-shopping" />
             {t("common.addToCart")}
           </a>

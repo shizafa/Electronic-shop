@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
 import { getDisplayVariant } from "@/lib/product-helpers";
@@ -32,7 +32,7 @@ export function ComboProduct({ relatedProducts }: ComboProductProps) {
   // below is guaranteed to resolve — nothing sellable to bundle otherwise.
   const bundleItems = relatedProducts.filter((product) => product.variants.length > 0).slice(0, MAX_BUNDLE_ITEMS);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set(bundleItems.map((item) => item.id)));
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const { addToWishlist } = useWishlist();
 
   if (bundleItems.length < 2) return null;
@@ -49,9 +49,10 @@ export function ComboProduct({ relatedProducts }: ComboProductProps) {
   const checkedItems = bundleItems.filter((item) => checkedIds.has(item.id));
   // Non-null: every item here came from bundleItems, already filtered to products with variants.
   const total = checkedItems.reduce((sum, item) => sum + getDisplayVariant(item)!.price, 0);
+  const isAddingAll = checkedItems.some((item) => isAdding(getDisplayVariant(item)!.id));
 
-  function handleAddAllToCart() {
-    checkedItems.forEach((item) => addToCart(item.id, getDisplayVariant(item)!.id, 1));
+  async function handleAddAllToCart() {
+    await Promise.all(checkedItems.map((item) => addToCart(item.id, getDisplayVariant(item)!.id, 1)));
   }
 
   function handleAddAllToWishlist() {
@@ -106,7 +107,7 @@ export function ComboProduct({ relatedProducts }: ComboProductProps) {
                         <button
                           className="rbt-btn rbt-btn-md"
                           type="button"
-                          disabled={checkedItems.length === 0}
+                          disabled={checkedItems.length === 0 || isAddingAll}
                           onClick={handleAddAllToCart}
                         >
                           <i className="fa-regular fa-cart-shopping mr--4" />

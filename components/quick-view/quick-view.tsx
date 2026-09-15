@@ -9,7 +9,7 @@ import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { ProductCardTextSwiper } from "@/components/product/product-card-text-swiper";
 import { VariantSelector } from "@/components/product/variant-selector";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { useQuickView } from "@/context/quick-view-context";
 import { useWishlist } from "@/context/wishlist-context";
@@ -115,13 +115,14 @@ function QuickViewContent({ entry, onClose }: { entry: QuickViewEntry; onClose: 
   const [prevEl, setPrevEl] = useState<HTMLDivElement | null>(null);
   const [nextEl, setNextEl] = useState<HTMLDivElement | null>(null);
 
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isInCompare, addToCompare, removeFromCompare } = useCompare();
 
   const inWishlist = isInWishlist(product.id, selectedVariant.id);
   const inCompare = isInCompare(product.id);
   const isOutOfStock = selectedVariant.stock === 0;
+  const isAddingSelected = isAdding(selectedVariant.id);
   const images = selectedVariant.images?.length ? selectedVariant.images : product.images;
 
   const discountPercent = selectedVariant.compareAtPrice
@@ -139,8 +140,9 @@ function QuickViewContent({ entry, onClose }: { entry: QuickViewEntry; onClose: 
     addToCart(product.id, selectedVariant.id, quantity);
   }
 
-  function handleBuyNow() {
-    addToCart(product.id, selectedVariant.id, quantity);
+  // Waits for the save so checkout never opens before the item is in the cart
+  async function handleBuyNow() {
+    if (!(await addToCart(product.id, selectedVariant.id, quantity))) return;
     onClose();
     router.push("/checkout");
   }
@@ -341,7 +343,7 @@ function QuickViewContent({ entry, onClose }: { entry: QuickViewEntry; onClose: 
                 <button
                   type="button"
                   className="rbt-btn rbt-btn-border has-left-icon d-block text-center"
-                  disabled={isOutOfStock}
+                  disabled={isOutOfStock || isAddingSelected}
                   onClick={handleAddToCart}
                 >
                   <i className="fa-regular fa-cart-shopping" />
@@ -349,7 +351,7 @@ function QuickViewContent({ entry, onClose }: { entry: QuickViewEntry; onClose: 
                 </button>
               </div>
               <div className="prd-btn-grp">
-                <button type="button" className="rbt-btn d-block text-center" disabled={isOutOfStock} onClick={handleBuyNow}>
+                <button type="button" className="rbt-btn d-block text-center" disabled={isOutOfStock || isAddingSelected} onClick={handleBuyNow}>
                   Buy Now
                 </button>
               </div>

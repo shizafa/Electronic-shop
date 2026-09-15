@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/cart-context";
+import { useAddToCartButton } from "@/context/cart-context";
 import { useProductCatalog } from "@/context/product-catalog-context";
 import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
@@ -18,7 +18,7 @@ import { getDisplayVariant } from "@/lib/product-helpers";
 // copy-to-clipboard widgets in cart-view.tsx's coupon section.
 export function WishlistView() {
   const { items, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, isAdding } = useAddToCartButton();
   const { getProductById, getVariantById, isLoading: isCatalogLoading } = useProductCatalog();
 
   // resolve wishlist entries into product/variant data; fall back to the product's default
@@ -118,7 +118,7 @@ export function WishlistView() {
                               <button
                                 type="button"
                                 className="rbt-btn rbt-btn-sm has-left-icon"
-                                disabled={variant.stock === 0}
+                                disabled={variant.stock === 0 || isAdding(variant.id)}
                                 onClick={() => addToCart(product.id, variant.id, 1)}
                               >
                                 <i className="fa-regular fa-cart-shopping" />

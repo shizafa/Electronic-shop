@@ -40,13 +40,15 @@ export async function getCart(userId: string | null): Promise<CartItem[]> {
   return userId ? getUserCart(userId) : getGuestCart();
 }
 
+export type AddToCartResult = { ok: true; items: CartItem[] } | { ok: false };
+
 // Adds a variant to the cart, bumping quantity if it's already there
 export async function addToCart(
   userId: string | null,
   productId: string,
   variantId: string,
   quantity: number
-): Promise<CartItem[]> {
+): Promise<AddToCartResult> {
   if (!userId) {
     const items = getGuestCart();
     const existing = items.find((item) => item.variantId === variantId);
@@ -56,7 +58,7 @@ export async function addToCart(
         )
       : [...items, { productId, variantId, quantity }];
     writeGuestCart(updatedItems);
-    return updatedItems;
+    return { ok: true, items: updatedItems };
   }
 
   const supabase = createClient();
@@ -69,9 +71,12 @@ export async function addToCart(
       { user_id: userId, variant_id: variantId, product_id: productId, quantity: nextQuantity },
       { onConflict: "user_id,variant_id" }
     );
-  if (error) console.error("addToCart failed", error);
+  if (error) {
+    console.error("addToCart failed", error);
+    return { ok: false };
+  }
 
-  return getUserCart(userId);
+  return { ok: true, items: await getUserCart(userId) };
 }
 
 // Sets a line's quantity directly; a quantity of 0 or less removes the item
@@ -170,9 +175,14 @@ export async function mergeGuestCartIntoUser(userId: string): Promise<CartItem[]
   const { error } = await supabase
     .from("cart_items")
     .upsert(rows, { onConflict: "user_id,variant_id" });
-  if (error) console.error("mergeGuestCartIntoUser failed", error);
+  if (error) {
+    // Keep the guest cart so nothing is lost — CartProvider runs the merge again on the next page
+    // load (every fresh mount with a signed-in user counts as a login there).
+    console.error("mergeGuestCartIntoUser failed", error);
+    return getUserCart(userId);
+  }
 
-  writeGuestCart([]); // guest cart is now empty
+  writeGuestCart([]); // merged into the user's cart, so the guest copy can go
 
   return getUserCart(userId);
 }
