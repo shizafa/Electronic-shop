@@ -7,6 +7,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -53,7 +54,7 @@ export function SignupForm() {
     }
 
     // send the user to the page they were trying to reach before signing up, if any
-    router.push(searchParams.get("next") || "/");
+    router.push(safeRedirectPath(searchParams.get("next")));
   }
 
   return (
