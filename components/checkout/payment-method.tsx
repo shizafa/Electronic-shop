@@ -3,12 +3,14 @@
 import type { Ref } from "react";
 import { StripeCardElement, type StripeCardHandle } from "@/components/checkout/stripe-card-element";
 import { CARD_MAX_ORDER_VALUE } from "@/lib/card-payment";
+import { COD_MAX_ORDER_VALUE } from "@/lib/cod-payment";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import type { PaymentMethod } from "@/types/order";
 
-// maximum order total (in the store's currency units) allowed for Cash on Delivery
-export const COD_MAX_ORDER_VALUE = 300000;
+// Re-exported so checkout-flow.tsx's existing import keeps working; the value lives in
+// lib/cod-payment.ts so placeOrder can enforce the same limit server-side.
+export { COD_MAX_ORDER_VALUE };
 
 interface PaymentMethodSelectorProps {
   value: PaymentMethod;

@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CARD_CURRENCY, CARD_MAX_ORDER_VALUE, toStripeAmount } from "@/lib/card-payment";
+import { COD_MAX_ORDER_VALUE } from "@/lib/cod-payment";
 import { findRedeemableCoupon } from "@/lib/coupons";
 import { computeOrderTotals } from "@/lib/order-totals";
 import { getSettings } from "@/lib/settings";
@@ -166,6 +167,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const { discountAmount, shippingFee, taxAmount, total } = computeOrderTotals(subtotal, settings, coupon);
   if (input.paymentMethod === "card" && total > CARD_MAX_ORDER_VALUE) {
     return { success: false, error: "This order is above the card payment limit. Please choose another payment method." };
+  }
+  // Same limit payment-method.tsx greys Cash on Delivery out at — re-checked here because the
+  // browser's check can be skipped by calling this action directly.
+  if (input.paymentMethod === "cod" && total > COD_MAX_ORDER_VALUE) {
+    return { success: false, error: "This order is above the Cash on Delivery limit. Please choose another payment method." };
   }
 
   const admin = createAdminClient();
