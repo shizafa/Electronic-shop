@@ -187,9 +187,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   // line — each line's `UPDATE ... WHERE stock >= quantity` row-locks that variant, so two
   // checkouts racing for the last unit can't both succeed. Called via the service-role client
   // because the function's execute grant is service_role-only (see the migration for why).
-  const { error: stockError } = await admin.rpc("decrement_variant_stock", {
-    items: input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity })),
-  });
+  const stockItems = input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity }));
+  const { error: stockError } = await admin.rpc("decrement_variant_stock", { items: stockItems });
   if (stockError) {
     await releaseCoupon();
     return { success: false, error: "One or more items in your cart just sold out" };
@@ -198,7 +197,8 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   // Cash on delivery waits for the courier ("cod_pending"). Card starts "pending" and only becomes
   // "paid" once Stripe confirms the charge below (or later, via 3-D Secure / the webhook).
   const paymentStatus = input.paymentMethod === "cod" ? "cod_pending" : "pending";
-  const orderNumber = `ORD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`; // e.g. ORD-2026-4821
+  // order_number is filled in by the orders_set_order_number trigger (0023_order_number_sequence.sql):
+  // ORD-{year}-{per-year counter, 6 digits}, e.g. ORD-2026-000042. Read back via .select() below.
 
   // The order, its items and its first history row are written with the service-role client:
   // customers have no insert grant on these tables (0020_orders_server_only_insert.sql), so an
@@ -207,7 +207,6 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   const { data: orderRow, error: orderError } = await admin
     .from("orders")
     .insert({
-      order_number: orderNumber,
       user_id: user.id,
       status: "order_placed",
       payment_status: paymentStatus,
@@ -228,6 +227,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     .single();
 
   if (orderError || !orderRow) {
+    // The stock and coupon use reserved above now belong to no order — give both back, same as
+    // fail_card_order does for a failed card payment. increment_variant_stock
+    // (0019_orders_stripe.sql) is the inverse of decrement_variant_stock.
+    const { error: restockError } = await admin.rpc("increment_variant_stock", { items: stockItems });
+    if (restockError) console.error("placeOrder: restock after failed order insert failed", restockError);
     await releaseCoupon();
     return { success: false, error: "Failed to create order" };
   }
