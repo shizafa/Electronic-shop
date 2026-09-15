@@ -236,10 +236,23 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     return { success: false, error: "Failed to create order" };
   }
 
+  // The order row exists but its items or first history row couldn't be saved, so it can never be
+  // fulfilled (and a card order would sit 'pending' forever with no PaymentIntent). Remove it and
+  // give back what it reserved — same recovery as the failed orders insert above. Deleting the
+  // order cascades to any order_items / order_status_history rows that did get written (0001_init.sql).
+  const discardOrder = async (orderId: string) => {
+    const { error: deleteError } = await admin.from("orders").delete().eq("id", orderId);
+    if (deleteError) console.error("placeOrder: deleting half-written order failed", orderId, deleteError);
+    const { error: restockError } = await admin.rpc("increment_variant_stock", { items: stockItems });
+    if (restockError) console.error("placeOrder: restock after half-written order failed", orderId, restockError);
+    await releaseCoupon();
+  };
+
   const { error: itemsError } = await admin
     .from("order_items")
     .insert(orderItemRows.map((item) => ({ ...item, order_id: orderRow.id })));
   if (itemsError) {
+    await discardOrder(orderRow.id);
     return { success: false, error: "Failed to save order items" };
   }
 
@@ -247,6 +260,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     .from("order_status_history")
     .insert({ order_id: orderRow.id, status: "order_placed" });
   if (historyError) {
+    await discardOrder(orderRow.id);
     return { success: false, error: "Failed to record order status" };
   }
 

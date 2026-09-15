@@ -9,8 +9,8 @@
 -- A per-year counter row rather than a SEQUENCE: a sequence can't restart each year without DDL
 -- at year rollover, and creating one per year from inside a trigger isn't race-safe. The
 -- INSERT ... ON CONFLICT DO UPDATE below row-locks that year's row, so concurrent orders are
--- serialised and each gets a distinct number. It runs inside the order insert's own transaction,
--- so a failed insert rolls its number back too (no gaps).
+-- serialised and each gets a distinct number. The counter is monotonic per year; gaps can occur
+-- when an order is deleted (placeOrder removes an order whose items or history couldn't be saved).
 --
 -- The year is Pakistan time, same as coupon expiry (lib/coupon-dates.ts). The trigger only fills
 -- order_number when the insert leaves it null, so scripts/seed-supabase.ts can keep inserting its
