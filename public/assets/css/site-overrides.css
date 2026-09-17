@@ -543,3 +543,26 @@ select.form-control-lg {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+/* Megamenu promo card's "View Details" button (nav-menu.tsx): its label sat visibly left of
+   centre. Cause is a missing child combinator in the template's own nav CSS —
+
+     .rbt-header-middle.rbt-bg-color-primary .rbt-mainmenu-nav .mainmenu>li:first-child a
+       {padding-left:6px}
+
+   is a DESCENDANT selector on `a`, where the matching last-child rule beside it correctly uses
+   `>a`. The megamenu hangs off the first <li> in .mainmenu, so that rule reaches every link
+   inside the open megamenu, not just the top-level "Shop" link it was written for. At (0,5,1)
+   it outranks .rbt-btn.rbt-btn-sm's own padding:0 32px on the left side only, leaving the
+   button padded 6px left / 32px right — hence the off-centre text.
+   Restoring both sides to the template's own 32px re-centres it. !important rather than an
+   even longer selector because the same nav is rendered again by the sticky header clone,
+   which sits outside .rbt-header-middle, and one rule should cover both. Only the button is
+   corrected: the 6px also lands on the category headings and product links, but it's
+   invisible there and unpicking it would shift the whole menu's text 6px. The <768px/<479px
+   .rbt-btn-sm padding steps are irrelevant here — nav-bar.tsx is d-none d-xl-block, so the
+   megamenu only ever renders at >=1200px. */
+.rbt-megamenu a.rbt-btn {
+  padding-left: 32px !important;
+  padding-right: 32px !important;
+}

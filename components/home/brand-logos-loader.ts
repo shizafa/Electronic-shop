@@ -29,12 +29,24 @@ export async function loadBrandLogos(): Promise<BrandTile[]> {
   }
 
   // Template ships exactly 10 brand tiles; show the 10 brands with the most products.
+  //
+  // Brands with no logo file are dropped rather than shown, because this tile is nothing but
+  // a logo — BrandLogos renders {logoSrc && <Image/>}, so a brand without one used to render
+  // an empty white card. Same call nav-menu.tsx already makes for the megamenu brand strip.
+  // The filter runs BEFORE the slice so the section still fills all 10 tiles by reaching
+  // further down the list, instead of showing 10 minus however many were dropped.
+  //
+  // This matters more than the brand count suggests: only Samsung and Haier have more than
+  // one product, so the rest tie at 1 and the cut is decided by Array.prototype.sort's
+  // stability (i.e. insertion order). Which logo-less brand surfaced in the visible 10 was
+  // therefore arbitrary and moved whenever the catalogue changed.
   return Array.from(brands.entries())
     .sort(([, a], [, b]) => b.count - a.count)
-    .slice(0, 10)
     .map(([brandName, { maxDiscount }]) => ({
       brandName,
       logoSrc: resolveBrandLogo(brandName),
       maxDiscount,
-    }));
+    }))
+    .filter((tile) => Boolean(tile.logoSrc))
+    .slice(0, 10);
 }
