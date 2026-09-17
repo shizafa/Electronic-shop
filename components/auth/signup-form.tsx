@@ -299,10 +299,14 @@ export function SignupForm() {
                     </form>
                   </div>
                   <div className="rbt-login-system-switch rbt-link-hover">
-                    Already a customer?
+                    {/* {" "}: JSX strips the whitespace either side of a newline, so the space
+                        the template's own markup had between the question and the link was
+                        being dropped ("Already a customer?Sign In"). .rbt-switch-btn is
+                        padding:0 with no margin, so nothing in the CSS puts it back. */}
+                    Already a customer?{" "}
                     <Link className="rbt-switch-btn" href="/login">
                       <span>
-                        Sing In
+                        Sign In
                       </span>
                     </Link>
                   </div>

@@ -132,7 +132,8 @@ export function LoginForm() {
                     </form>
                   </div>
                   <div className="rbt-login-system-switch rbt-link-hover">
-                    Don&apos;t have an account?
+                    {/* {" "}: same dropped-space fix as signup-form.tsx's "Already a customer?" */}
+                    Don&apos;t have an account?{" "}
                     <Link className="rbt-switch-btn" href="/signup">
                       <span>
                         Create an account
