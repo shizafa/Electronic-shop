@@ -19,6 +19,42 @@ const REVIEWS = [
   { name: "Szilagyi Erik", text: "\"The shirt fits great, very good quality of the material. Training in it is pure pleasure.\"" },
 ];
 
+// Pakistan is the only market this store serves (PKR-only pricing in data/currencies.ts, the
+// footer's "delivered across Pakistan"), so there's no country selector to branch on — every
+// signup number is validated as a local one: exactly 11 digits starting with 0. That covers
+// both mobiles (03XXXXXXXXX) and landlines with an area code (021XXXXXXXX), so it doesn't
+// wrongly reject a valid non-mobile number the way an 03-only rule would.
+const PK_PHONE_PATTERN = /^0\d{10}$/;
+
+// Keeps the field to digits only and caps it at the 11 a local number has. The +92 / 0092
+// forms are rewritten to the leading-0 form instead of being rejected, since that's how the
+// number is printed on most sites — but only once the value is already LONGER than 11 digits,
+// which a hand-typed local number never is. Doing it at any length would eat the input of
+// someone typing "+92..." one key at a time (at "+92" the digits are just "92", and stripping
+// that prefix would blank the field mid-keystroke).
+function toLocalPhoneDigits(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.length > 11) {
+    if (digits.startsWith("0092")) digits = `0${digits.slice(4)}`;
+    else if (digits.startsWith("92")) digits = `0${digits.slice(2)}`;
+  }
+  return digits.slice(0, 11);
+}
+
+// The live checklist under the password field. Order is the order they're shown in; each
+// entry renders green with a tick once its test passes and red with a cross until then, so
+// what's still missing is always visible rather than surfacing one error at a time on submit.
+// The length rule is here alongside the four character-class rules the customer asked for
+// because Supabase enforces a minimum server-side anyway — without it a too-short password
+// fails as the generic "email taken / rejected" message below, which says nothing useful.
+const PASSWORD_RULES: { key: string; label: string; test: (value: string) => boolean }[] = [
+  { key: "length", label: t("auth.passwordRuleLength"), test: (value) => value.length >= 8 },
+  { key: "uppercase", label: t("auth.passwordRuleUppercase"), test: (value) => /[A-Z]/.test(value) },
+  { key: "lowercase", label: t("auth.passwordRuleLowercase"), test: (value) => /[a-z]/.test(value) },
+  { key: "number", label: t("auth.passwordRuleNumber"), test: (value) => /\d/.test(value) },
+  { key: "special", label: t("auth.passwordRuleSpecial"), test: (value) => /[^A-Za-z0-9]/.test(value) },
+];
+
 // SignupForm — creates a new user account and redirects back to where they came from.
 // The template's demo tabs (Phone Number / Email, no name or password field, Facebook/Google
 // buttons) don't match real signup, which needs name+email+phone+password — so the phone tab
@@ -39,9 +75,30 @@ export function SignupForm() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paginationEl, setPaginationEl] = useState<HTMLDivElement | null>(null);
+  // The checklist stays hidden until the field is first focused, so a pristine form doesn't
+  // open as a block of red text. A failed submit also reveals it (see handleSubmit).
+  const [passwordTouched, setPasswordTouched] = useState(false);
+
+  const ruleResults = PASSWORD_RULES.map((rule) => ({ ...rule, passed: rule.test(password) }));
+  const isPasswordValid = ruleResults.every((rule) => rule.passed);
+  const isPhoneValid = PK_PHONE_PATTERN.test(phone);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
+
+    // Checked before signup() is called so an invalid phone/password never costs a round trip,
+    // and so the reason is specific instead of arriving as Supabase's generic rejection.
+    if (!isPhoneValid) {
+      setError(t("auth.phoneInvalid"));
+      return;
+    }
+    if (!isPasswordValid) {
+      setPasswordTouched(true);
+      setError(t("auth.passwordInvalid"));
+      return;
+    }
+
     setIsSubmitting(true);
 
     // signup() returns false when the email is already registered, or Supabase rejects
@@ -157,10 +214,22 @@ export function SignupForm() {
                           className="rbt-input-field"
                           type="tel"
                           id="register_number"
+                          inputMode="numeric"
+                          autoComplete="tel"
+                          maxLength={11}
+                          aria-describedby="register_number_hint"
                           value={phone}
-                          onChange={(event) => setPhone(event.target.value)}
+                          onChange={(event) => setPhone(toLocalPhoneDigits(event.target.value))}
                           required
                         />
+                        {/* Red only once what's typed can no longer become a valid number —
+                            while it's still short it's incomplete, not wrong. */}
+                        <p
+                          id="register_number_hint"
+                          className={`b4 mt--8 mb--0 ${phone.length === 11 && !isPhoneValid ? "rbt-text-color-danger" : ""}`}
+                        >
+                          {t("auth.phoneHint")}
+                        </p>
                       </div>
                       <div className="rbt-input-field-grp">
                         <label className="rbt-field-label" htmlFor="register_password">
@@ -176,6 +245,8 @@ export function SignupForm() {
                             id="register_password"
                             value={password}
                             onChange={(event) => setPassword(event.target.value)}
+                            onFocus={() => setPasswordTouched(true)}
+                            aria-describedby="register_password_rules"
                             required
                           />
                           <button
@@ -187,6 +258,29 @@ export function SignupForm() {
                             <i className={showPassword ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"} />
                           </button>
                         </div>
+                        {/* Live requirement checklist: every rule is listed the whole time, red
+                            with a cross while it's still missing and green with a tick once it's
+                            met, so the customer can see exactly what's left instead of guessing
+                            from a single "invalid password" message. aria-live="polite" so a
+                            screen reader announces a rule flipping to met as they type. */}
+                        {passwordTouched && (
+                          <div id="register_password_rules" className="mt--8" aria-live="polite">
+                            <p className="b4 mb--8">
+                              {t("auth.passwordRequirements")}
+                            </p>
+                            <ul className="list-unstyled mb--0">
+                              {ruleResults.map((rule) => (
+                                <li
+                                  key={rule.key}
+                                  className={`b4 d-flex align-items-center ${rule.passed ? "rbt-text-color-success" : "rbt-text-color-danger"}`}
+                                >
+                                  <i className={`me-2 fa-solid ${rule.passed ? "fa-circle-check" : "fa-circle-xmark"}`} />
+                                  {rule.label}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                       {error && (
                         <p className="rbt-text-color-danger mb--0">

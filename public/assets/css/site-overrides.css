@@ -528,3 +528,18 @@ select.form-control-lg {
   display: flex;
   gap: 10px;
 }
+
+/* Megamenu category column headings (nav-menu.tsx: <p class="rbt-short-title h5"> wrapping the
+   category Link). Category names come from the DB, so their length is unbounded — a long one
+   wrapped onto a second line, which pushed that column's product list down and knocked the
+   whole row of columns out of alignment with each other. The template's own .rbt-short-title
+   rules set only spacing/border/colour, never a wrap or overflow behaviour, so nothing in
+   style.min.css is being overridden here. Scoped to .rbt-megamenu because .rbt-short-title is
+   reused outside the menu, where wrapping is correct. The heading is a block <p> and its <a>
+   stays inline (no template rule makes megamenu title links display:block), so clamping and
+   ellipsizing on the <p> truncates the link text itself. */
+.rbt-megamenu .rbt-short-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

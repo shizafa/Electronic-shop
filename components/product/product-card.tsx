@@ -81,11 +81,12 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
   // Products without a second image reuse the first, so the hover swap is a no-op rather than a gap.
   const hoverImage = product.images[1] ?? product.images[0];
 
-  // The template's spec list is 4 rows: brand, then three specs. A 4th spec, when the product
-  // has one, fills the continuation line the template's last row carries.
-  const specEntries = Object.entries(product.specs);
-  const specRows = specEntries.slice(0, 3);
-  const specContinuation = specEntries[3];
+  // The template's spec list is 4 rows: brand, then three specs. The template's last row also
+  // carries a continuation line, which used to hold a 4th spec — but only its value, with no
+  // key in front of it, so it rendered as an orphan ("60" under "panelType : LED"). Dropped:
+  // specs live in a jsonb column, whose key order is by key length rather than insertion, so
+  // which spec landed there was arbitrary anyway.
+  const specRows = Object.entries(product.specs).slice(0, 3);
 
   return (
       <div className="col-xxl-3 col-xl-3 col-lg-4 col-md-6 col-sm-6 col-6 mt--24">
@@ -181,7 +182,7 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
               {product.brand}
             </span>
           </li>
-          {specRows.map(([specKey, specValue], index) => (
+          {specRows.map(([specKey, specValue]) => (
             <li key={specKey}>
               <span className="rbt-bold--text">
                 {specKey} :
@@ -189,11 +190,6 @@ export function ProductCard({ product, badge, categoryName, categorySlug, priori
               <span className="text">
                 {String(specValue)}
               </span>
-              {index === specRows.length - 1 && specContinuation && (
-                <span className="text d-block">
-                  {String(specContinuation[1])}
-                </span>
-              )}
             </li>
           ))}
         </ul>

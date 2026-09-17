@@ -64,12 +64,11 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
   const images = selectedVariant.images?.length ? selectedVariant.images : product.images;
   const specRows = buildSpecRows([{ product, variant: selectedVariant }], category);
 
-  // The template's spec list is 4 rows: brand, then three specs. A 4th spec, when the product
-  // has one, fills the continuation line the template's last row carries. Same shape as
-  // ProductCard's spec block.
-  const specEntries = Object.entries(product.specs);
-  const compactSpecRows = specEntries.slice(0, 3);
-  const specContinuation = specEntries[3];
+  // The template's spec list is 4 rows: brand, then three specs. Same shape as ProductCard's
+  // spec block, including the dropped continuation line: it rendered a 4th spec's value with
+  // no key in front of it, so it read as an orphan number under the last row. The full spec
+  // list with proper labels is right below in the Specifications tab either way.
+  const compactSpecRows = Object.entries(product.specs).slice(0, 3);
 
   const discountPercent = getDiscountPercent(selectedVariant);
 
@@ -374,7 +373,7 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
                         {product.brand}
                       </span>
                     </li>
-                    {compactSpecRows.map(([specKey, specValue], index) => (
+                    {compactSpecRows.map(([specKey, specValue]) => (
                       <li key={specKey}>
                         <span className="rbt-bold--text mr--4">
                           {specKey} :
@@ -382,11 +381,6 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
                         <span className="text">
                           {String(specValue)}
                         </span>
-                        {index === compactSpecRows.length - 1 && specContinuation && (
-                          <span className="text d-block">
-                            {String(specContinuation[1])}
-                          </span>
-                        )}
                       </li>
                     ))}
                     <li>
