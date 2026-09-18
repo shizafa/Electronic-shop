@@ -662,6 +662,10 @@ const en: TranslationDictionary = {
   "admin.settings.saveTargets": "Save Targets",
   "admin.settings.saved": "Sales targets updated.",
   "admin.settings.saveFailed": "Couldn't save targets. Please try again.",
+  "admin.settings.achieved": "Achieved",
+  "admin.settings.targetMet": "Target met",
+  "admin.settings.remaining": "to go",
+  "admin.settings.noTargetSet": "Set a target above to track progress.",
 
   "admin.overview.totalRevenue": "Total Revenue",
   "admin.overview.totalOrders": "Total Orders",
