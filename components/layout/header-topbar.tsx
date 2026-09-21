@@ -28,7 +28,12 @@ export function HeaderTopbar() {
         <div className="row align-items-center d-none d-md-flex mlr--0 row--0">
           <div className="col-lg-6 col-md-6 col-12">
             <div className="rbt-fancy-item fancy-menu-text fancy-menu-start">
-              <div className="rbt-fancy-text">
+              {/* .rbt-fancy-text is styled at 12px by the vendor stylesheet, a size down from
+                  the 14px .header-info text on the right (both start from the same
+                  --font-size-b3 variable, but .rbt-fancy-text gets overridden). Matched here
+                  with an inline override since the vendor CSS file can't be edited — same
+                  "set it inline" approach as the tab nav's flex-shrink in product-tabs.tsx. */}
+              <div className="rbt-fancy-text" style={{ fontSize: "var(--font-size-b3)" }}>
                 <strong>
                   Trending Now :
                 </strong>
