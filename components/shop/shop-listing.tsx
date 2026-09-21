@@ -10,7 +10,14 @@ import { PRICE_BUCKETS, SidebarFilter, type ChecklistWidgetData } from "@/compon
 import { ShopToolbar } from "@/components/shop/shop-toolbar";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
-import { applyFilters, getFilterFieldsForCategory, sortProducts, type FilterField, type SortOption } from "@/lib/filters";
+import {
+  applyFastFilters,
+  applyFilters,
+  getFilterFieldsForCategory,
+  sortProducts,
+  type FilterField,
+  type SortOption,
+} from "@/lib/filters";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
 import type { Category, SpecFieldType } from "@/types/category";
@@ -242,8 +249,20 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       brand: activeBrand ?? undefined,
     });
 
+    result = applyFastFilters(result, activeFastFilterIds);
+
     return sortProducts(result, sort);
-  }, [products, activeCategoryIds, searchQuery, activeFieldValues, activeBrand, minPrice, maxPrice, sort]);
+  }, [
+    products,
+    activeCategoryIds,
+    searchQuery,
+    activeFieldValues,
+    activeBrand,
+    minPrice,
+    maxPrice,
+    activeFastFilterIds,
+    sort,
+  ]);
 
   // reset to page 1 whenever the result set changes shape, so we don't strand the user on an empty page
   const filterKey = JSON.stringify([
@@ -253,6 +272,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     minPrice,
     maxPrice,
     searchQuery,
+    activeFastFilterIds,
     pageSize,
   ]);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);

@@ -37,4 +37,5 @@ export interface Product {
   featured?: boolean;
   averageRating: number;
   reviewCount: number;
+  createdAt: string;
 }

@@ -31,6 +31,7 @@ interface ProductRow {
   featured: boolean;
   average_rating: string | number;
   review_count: number;
+  created_at: string;
   variants?: VariantRow[] | null;
 }
 
@@ -89,6 +90,7 @@ export function mapProductRow(row: ProductRow): Product {
     featured: row.featured,
     averageRating: Number(row.average_rating),
     reviewCount: row.review_count,
+    createdAt: row.created_at,
     variants: (row.variants ?? []).map(mapVariantRow),
   };
 }

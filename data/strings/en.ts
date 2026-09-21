@@ -40,7 +40,6 @@ const en: TranslationDictionary = {
   "shop.fastFilter.new": "New",
   "shop.fastFilter.topItems": "Top Items",
   "shop.fastFilter.popularItem": "Popular Item",
-  "shop.fastFilter.bestColors": "Best Colors",
   "shop.searchPlaceholder": "Search for products...",
   "shop.showingResults": "Showing {from}–{to} of {total} results",
   "shop.show": "Show:",

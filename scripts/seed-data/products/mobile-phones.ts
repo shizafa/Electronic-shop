@@ -30,6 +30,7 @@ export const mobilePhoneProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-samsung-s24-128-black",
@@ -94,6 +95,7 @@ export const mobilePhoneProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-iphone-15-128-black",
@@ -157,6 +159,7 @@ export const mobilePhoneProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-redmi-note-13-128-black",
@@ -220,6 +223,7 @@ export const mobilePhoneProducts: Product[] = [
     variantAxes: [storageAxis, colourAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-infinix-note-40-128-black",
@@ -282,6 +286,7 @@ export const mobilePhoneProducts: Product[] = [
     variantAxes: [storageAxis, colourAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-realme-12-128-blue",
@@ -344,6 +349,7 @@ export const mobilePhoneProducts: Product[] = [
     variantAxes: [storageAxis, colourAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "phone-oppo-reno-11-256-black",

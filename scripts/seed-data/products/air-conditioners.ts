@@ -30,6 +30,7 @@ export const airConditionerProducts: Product[] = [
     featured: true, // shown in "featured"/home page sections
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-haier-hsu18-1.0",
@@ -77,6 +78,7 @@ export const airConditionerProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-gree-pular-1.5",
@@ -121,6 +123,7 @@ export const airConditionerProducts: Product[] = [
     variantAxes: [tonnageAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-dawlance-powercon-1.0",
@@ -166,6 +169,7 @@ export const airConditionerProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-orient-ultron-x-1.5",
@@ -212,6 +216,7 @@ export const airConditionerProducts: Product[] = [
     variantAxes: [tonnageAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-pel-inverteron-1.0",
@@ -265,6 +270,7 @@ export const airConditionerProducts: Product[] = [
     variantAxes: [tonnageAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "ac-kenwood-eicon-1.5",

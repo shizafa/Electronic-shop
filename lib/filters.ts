@@ -100,6 +100,53 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
   });
 }
 
+// Approximate definitions for /shop's "Fast Filter" chips (components/shop/shop-toolbar.tsx's
+// FAST_FILTERS ids). Only "featured" has a real product field behind it — the schema has no
+// sales-count, and no distinct "top items" concept — so the rest use the closest available
+// proxy from real data (rating, review count, creation date), which means some of these
+// overlap by design:
+//   - bestSellers: same set as featured — no separate sales-count field to rank by
+//   - topRated: average rating at or above TOP_RATED_THRESHOLD
+//   - new: the newest NEW_FRACTION slice of the catalog by creation date
+//   - topItems: topRated ∩ popularItem — highly rated AND actually reviewed
+//   - popularItem: has at least one review
+const TOP_RATED_THRESHOLD = 4;
+const NEW_FRACTION = 0.25;
+
+function computeNewProductIds(products: Product[]): Set<string> {
+  const sorted = [...products].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const cutoff = Math.max(1, Math.ceil(sorted.length * NEW_FRACTION));
+  return new Set(sorted.slice(0, cutoff).map((product) => product.id));
+}
+
+// Narrows to products matching at least one of the active fast-filter chips (OR across chips,
+// same as the sidebar's checklist widgets treat multiple checked options within one field).
+export function applyFastFilters(products: Product[], activeIds: string[]): Product[] {
+  if (activeIds.length === 0) return products;
+
+  const newProductIds = activeIds.includes("new") ? computeNewProductIds(products) : undefined;
+
+  return products.filter((product) =>
+    activeIds.some((id) => {
+      switch (id) {
+        case "featured":
+        case "bestSellers":
+          return Boolean(product.featured);
+        case "topRated":
+          return product.averageRating >= TOP_RATED_THRESHOLD;
+        case "popularItem":
+          return product.reviewCount >= 1;
+        case "topItems":
+          return product.averageRating >= TOP_RATED_THRESHOLD && product.reviewCount >= 1;
+        case "new":
+          return newProductIds?.has(product.id) ?? false;
+        default:
+          return false;
+      }
+    })
+  );
+}
+
 export type SortOption = "featured" | "price_asc" | "price_desc" | "name_asc";
 
 // Returns a new sorted array of products according to the chosen sort option
