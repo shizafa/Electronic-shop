@@ -20,6 +20,7 @@ export interface ProductFormInput {
   brand: string;
   categoryId: string;
   description: string;
+  longDescription?: string;
   images: string[];
   specs: Record<string, string | number | boolean>;
   variantAxes: VariantAxisDefinition[];
@@ -43,6 +44,7 @@ export async function createProduct(input: ProductFormInput): Promise<ProductAct
     name: input.name,
     brand: input.brand,
     description: input.description,
+    long_description: input.longDescription || null,
     images: input.images,
     specs: input.specs,
     variant_axes: input.variantAxes,
@@ -68,6 +70,7 @@ export async function updateProduct(id: string, input: ProductFormInput): Promis
       name: input.name,
       brand: input.brand,
       description: input.description,
+      long_description: input.longDescription || null,
       images: input.images,
       specs: input.specs,
       variant_axes: input.variantAxes,

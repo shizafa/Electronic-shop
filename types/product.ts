@@ -29,6 +29,7 @@ export interface Product {
   name: string;
   brand: string;
   description: string;
+  longDescription?: string;
   images: string[];
   specs: Record<string, string | number | boolean>;
   variantAxes: VariantAxisDefinition[];

@@ -24,6 +24,7 @@ interface ProductRow {
   name: string;
   brand: string;
   description: string;
+  long_description: string | null;
   images: string[];
   specs: Record<string, string | number | boolean>;
   variant_axes: Product["variantAxes"];
@@ -81,6 +82,7 @@ export function mapProductRow(row: ProductRow): Product {
     name: row.name,
     brand: row.brand,
     description: row.description,
+    longDescription: row.long_description ?? undefined,
     images: row.images,
     specs: row.specs,
     variantAxes: row.variant_axes,

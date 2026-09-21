@@ -37,6 +37,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
   const [brand, setBrand] = useState(product?.brand ?? "");
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? categories[0]?.id ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
+  const [longDescription, setLongDescription] = useState(product?.longDescription ?? "");
   const [featured, setFeatured] = useState(product?.featured ?? false);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [specs, setSpecs] = useState<Record<string, string | number | boolean>>(product?.specs ?? {});
@@ -51,7 +52,17 @@ export function ProductForm({ categories, product }: ProductFormProps) {
     event.preventDefault();
     setIsSubmitting(true);
 
-    const input = { name, brand, categoryId, description, images, specs, variantAxes, featured };
+    const input = {
+      name,
+      brand,
+      categoryId,
+      description,
+      longDescription: longDescription || undefined,
+      images,
+      specs,
+      variantAxes,
+      featured,
+    };
     const result = isEditing ? await updateProduct(product!.id, input) : await createProduct(input);
 
     setIsSubmitting(false);
@@ -138,6 +149,18 @@ export function ProductForm({ categories, product }: ProductFormProps) {
                   rows={4}
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="product-long-description">{t("admin.products.longDescription")}</Label>
+                <p className="text-xs text-muted-foreground">{t("admin.products.longDescriptionHint")}</p>
+                <Textarea
+                  id="product-long-description"
+                  rows={8}
+                  className="min-h-40"
+                  value={longDescription}
+                  onChange={(event) => setLongDescription(event.target.value)}
                 />
               </div>
 

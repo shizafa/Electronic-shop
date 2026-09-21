@@ -5,6 +5,7 @@ import { ProductDetail } from "@/components/product/product-detail";
 import { getCategoryById } from "@/lib/categories";
 import { getProductBySlug, getProductsByCategory } from "@/lib/products";
 import { getApprovedReviewsForProduct } from "@/lib/reviews";
+import { getSettings } from "@/lib/settings";
 
 // Sets the tab title to the matched product's name
 export async function generateMetadata({ params }: PageProps<"/product/[slug]">): Promise<Metadata> {
@@ -40,6 +41,7 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   // Up to 4 other products from the same category, excluding this one
   const relatedProducts = categoryProducts.filter((candidate) => candidate.id !== product.id).slice(0, 4);
   const reviews = await getApprovedReviewsForProduct(product.id);
+  const settings = await getSettings();
 
   return (
     <div>
@@ -50,7 +52,14 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
         nextProduct={nextProduct}
       />
 
-      <ProductDetail product={product} category={category} relatedProducts={relatedProducts} reviews={reviews} />
+      <ProductDetail
+        product={product}
+        category={category}
+        relatedProducts={relatedProducts}
+        reviews={reviews}
+        whyShopIntro={settings.whyShopIntro}
+        whyShopFeatures={settings.whyShopFeatures}
+      />
     </div>
   );
 }

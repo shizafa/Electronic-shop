@@ -18,6 +18,7 @@ import { useWishlist } from "@/context/wishlist-context";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getDiscountPercent } from "@/lib/product-helpers";
+import type { WhyShopFeature } from "@/lib/settings";
 import { buildSpecRows } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product, Variant } from "@/types/product";
@@ -28,6 +29,8 @@ interface ProductDetailProps {
   category: Category;
   relatedProducts: Product[];
   reviews: Review[];
+  whyShopIntro: string | null;
+  whyShopFeatures: WhyShopFeature[];
 }
 
 // Every value in the template's buybox markup that has no field behind it yet. Kept in one
@@ -45,7 +48,14 @@ const PLACEHOLDER = {
 };
 
 // Full product detail page: gallery, price, variant picker, add-to-cart, specs, related items.
-export function ProductDetail({ product, category, relatedProducts, reviews }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  category,
+  relatedProducts,
+  reviews,
+  whyShopIntro,
+  whyShopFeatures,
+}: ProductDetailProps) {
   const router = useRouter();
   const [selectedVariant, setSelectedVariant] = useState<Variant>(
     // default to the first in-stock variant, falling back to the first variant if all are sold out
@@ -439,7 +449,14 @@ export function ProductDetail({ product, category, relatedProducts, reviews }: P
       <div className="rbt-component-area rbt-section-gap">
         <div className="container">
           <div className="row">
-            <ProductTabs product={product} category={category} specRows={specRows} reviews={reviews} />
+            <ProductTabs
+              product={product}
+              category={category}
+              specRows={specRows}
+              reviews={reviews}
+              whyShopIntro={whyShopIntro}
+              whyShopFeatures={whyShopFeatures}
+            />
           </div>
         </div>
       </div>

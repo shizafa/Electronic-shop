@@ -6,6 +6,7 @@ import { ProductSpecificationPanel } from "@/components/product/product-specific
 import { QASection } from "@/components/product/qa-section";
 import { ReviewsSection } from "@/components/product/reviews-section";
 import { t } from "@/lib/i18n";
+import type { WhyShopFeature } from "@/lib/settings";
 import type { SpecRow } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
@@ -25,6 +26,8 @@ interface ProductTabsProps {
   category: Category;
   specRows: SpecRow[];
   reviews: Review[];
+  whyShopIntro: string | null;
+  whyShopFeatures: WhyShopFeature[];
 }
 
 // Rebuilds the template's Bootstrap tab widget (data-bs-toggle="tab") with React state, since
@@ -34,7 +37,14 @@ interface ProductTabsProps {
 // (.rbt-fshape-portion, confirmed in style.min.css) are gated on a literal .active class —
 // two different mechanisms that don't compose, so plain state is simpler here. Matches
 // CLAUDE.md's rule to drop components/ui/* imports as each section gets ported to the template.
-export function ProductTabs({ product, category, specRows, reviews }: ProductTabsProps) {
+export function ProductTabs({
+  product,
+  category,
+  specRows,
+  reviews,
+  whyShopIntro,
+  whyShopFeatures,
+}: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("description");
 
   return (
@@ -91,7 +101,12 @@ export function ProductTabs({ product, category, specRows, reviews }: ProductTab
         <div className="tab-content">
           {activeTab === "description" && (
             <div className="tab-pane fade show active" id="rbt-description" role="tabpanel" aria-labelledby="rbt-description-tab">
-              <ProductDescriptionPanel product={product} category={category} />
+              <ProductDescriptionPanel
+                product={product}
+                category={category}
+                whyShopIntro={whyShopIntro}
+                whyShopFeatures={whyShopFeatures}
+              />
             </div>
           )}
           {activeTab === "specification" && (

@@ -171,3 +171,39 @@ export async function updatePolicies(input: UpdatePoliciesInput): Promise<Settin
   revalidatePath("/", "layout");
   return { success: true };
 }
+
+const whyShopFeatureSchema = z.object({
+  icon: z.string().trim().min(1, "Icon is required").max(100),
+  title: z.string().trim().min(1, "Title is required").max(100),
+  desc: z.string().trim().min(1, "Description is required").max(80),
+});
+
+const updateWhyShopFeaturesSchema = z.object({
+  intro: z.string().trim().max(500).optional(),
+  features: z.array(whyShopFeatureSchema).max(4),
+});
+
+export type UpdateWhyShopFeaturesInput = z.infer<typeof updateWhyShopFeaturesSchema>;
+
+// Same "why shop with us" 3-card row (plus its intro paragraph) shown under every product's
+// description (product-description-panel.tsx) — one shared setting, not per-product.
+export async function updateWhyShopFeatures(input: UpdateWhyShopFeaturesInput): Promise<SettingsActionResult> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return { success: false, error: guard.error };
+
+  const parsed = updateWhyShopFeaturesSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  const { error } = await guard.supabase
+    .from("store_settings")
+    .update({
+      why_shop_intro: parsed.data.intro || null,
+      why_shop_features: parsed.data.features,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", 1);
+
+  if (error) return { success: false, error: "Failed to save features" };
+  revalidatePath("/", "layout");
+  return { success: true };
+}
