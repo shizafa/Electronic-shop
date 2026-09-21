@@ -5,15 +5,29 @@ import { getAllProducts } from "@/lib/products";
 
 const THUMBNAIL_WIDTH = 93;
 const THUMBNAIL_HEIGHT = 93;
+// The template's `.rbt-cat-box-7 .rbt-image-portion a img` rule is `max-width:93px;height:auto`
+// — no object-fit, so a real uploaded thumbnail whose aspect ratio isn't square renders at a
+// different height per category, breaking the card grid's alignment. Forced to a fixed
+// THUMBNAIL_WIDTH x THUMBNAIL_HEIGHT box with object-fit:cover via inline style instead, same
+// "can't edit the vendor CSS file, so it's set inline" approach used for the tab nav's
+// flex-shrink in product-tabs.tsx.
+const THUMBNAIL_STYLE = { width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT, objectFit: "cover" as const };
 
 // Best-seller names in the tile's quick-link list truncate at a fixed character count
 // (rather than the CSS text-overflow:ellipsis used for the card grid) so the same product
 // name always cuts at the same point regardless of font size/zoom, instead of the cutoff
 // point drifting with the rendered pixel width.
 const QUICK_LINK_NAME_MAX_LENGTH = 14;
+const CATEGORY_NAME_MAX_LENGTH = 18;
 
 function truncateQuickLinkName(name: string): string {
   return name.length > QUICK_LINK_NAME_MAX_LENGTH ? `${name.slice(0, QUICK_LINK_NAME_MAX_LENGTH)}...` : name;
+}
+
+// Same fixed-character-count truncation as the quick-link names above, applied to the category
+// title itself so a long category name doesn't blow out the card's fixed-height header.
+function truncateCategoryName(name: string): string {
+  return name.length > CATEGORY_NAME_MAX_LENGTH ? `${name.slice(0, CATEGORY_NAME_MAX_LENGTH)}...` : name;
 }
 
 // PLACEHOLDER: the "Weekend Deal / DJI Ronin Action" promo card (right column) has no
@@ -80,7 +94,7 @@ export async function CategoryTiles() {
                     <div className="content">
                       <h2 className="title h5">
                         <Link href={`/category/${category.slug}`}>
-                          {category.name}
+                          {truncateCategoryName(category.name)}
                         </Link>
                       </h2>
                       <ul className="quick-link-list rbt-link-hover">
@@ -102,6 +116,7 @@ export async function CategoryTiles() {
                             alt={category.name}
                             width={THUMBNAIL_WIDTH}
                             height={THUMBNAIL_HEIGHT}
+                            style={THUMBNAIL_STYLE}
                           />
                         )}
                       </Link>
@@ -139,7 +154,19 @@ export async function CategoryTiles() {
               </div>
               <div className="rbt-image-portion">
                 <a href="#">
-                  <img className="rbt-scroll-trigger zoom_in animation-order-4" src="/assets/images/catagory-img/banner-cat-01.webp" alt="Catagory Image" />
+                  {/* .rbt-image-portion's text-align:center (inherited from this card's
+                      text-center class) only centers inline content, but the template's global
+                      img reset makes this img display:block — so it was left-aligned instead of
+                      centered whenever the image is narrower than its box, as this demo asset
+                      is. margin:auto centers a block-level element instead; can't fix this in
+                      the vendor stylesheet, same "set it inline" approach as the tab nav's
+                      flex-shrink in product-tabs.tsx. */}
+                  <img
+                    className="rbt-scroll-trigger zoom_in animation-order-4"
+                    src="/assets/images/catagory-img/banner-cat-01.webp"
+                    alt="Catagory Image"
+                    style={{ margin: "0 auto" }}
+                  />
                 </a>
               </div>
             </div>
