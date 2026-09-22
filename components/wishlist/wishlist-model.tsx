@@ -5,11 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAddToCartButton } from "@/context/cart-context";
 import { useWishlist } from "@/context/wishlist-context";
+import { useVariantsByIds } from "@/hooks/use-variants-by-ids";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
-import { getProductById, getVariantById } from "@/lib/products";
-import type { Product, Variant } from "@/types/product";
+import { getProductById } from "@/lib/products";
+import type { Product } from "@/types/product";
 
 // Wishlist quick-view modal, opened by the header's heart icon (sticky-header-wishlist-link.tsx)
 // via WishlistContext's isWishlistModalOpen. The pasted markup is a Bootstrap modal
@@ -27,23 +28,21 @@ export function WishlistModal() {
   const { items, isWishlistModalOpen, closeWishlistModal, removeFromWishlist } = useWishlist();
   const { addToCart, isAdding } = useAddToCartButton();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
-  const [variantsById, setVariantsById] = useState<Record<string, Variant | null>>({});
-  const [loadError, setLoadError] = useState(false);
+  const [productsError, setProductsError] = useState(false);
+  // entries without a saved variant fall back to the product's display variant below
+  const { variantsById, hasError: variantsError } = useVariantsByIds(
+    items.map((item) => item.variantId).filter((id): id is string => !!id)
+  );
+  const loadError = productsError || variantsError;
 
   useEffect(() => {
     const missingProductIds = items.map((item) => item.productId).filter((id) => !(id in productsById));
-    const missingVariantIds = items
-      .map((item) => item.variantId)
-      .filter((id): id is string => !!id && !(id in variantsById));
-    if (missingProductIds.length === 0 && missingVariantIds.length === 0) return;
+    if (missingProductIds.length === 0) return;
 
     let active = true;
-    Promise.all([
-      Promise.all(missingProductIds.map((id) => getProductById(id))),
-      Promise.all(missingVariantIds.map((id) => getVariantById(id))),
-    ]).then(([products, variants]) => {
+    Promise.all(missingProductIds.map((id) => getProductById(id))).then((products) => {
       if (!active) return;
-      setLoadError(false);
+      setProductsError(false);
       setProductsById((current) => {
         const next = { ...current };
         products.forEach((product, index) => {
@@ -51,22 +50,15 @@ export function WishlistModal() {
         });
         return next;
       });
-      setVariantsById((current) => {
-        const next = { ...current };
-        variants.forEach((variant, index) => {
-          next[missingVariantIds[index]] = variant ?? null;
-        });
-        return next;
-      });
     }).catch((error) => {
       console.error(error);
-      if (active) setLoadError(true);
+      if (active) setProductsError(true);
     });
 
     return () => {
       active = false;
     };
-  }, [items, productsById, variantsById]);
+  }, [items, productsById]);
 
   useEffect(() => {
     if (!isWishlistModalOpen) return;

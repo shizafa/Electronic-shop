@@ -49,6 +49,17 @@ export const getVariantById = cache(async (variantId: string): Promise<Variant |
   return data ? mapVariantRow(data) : undefined;
 });
 
+// Looks up several variants at once (cart/wishlist lines) in a single query, so a basket of N
+// items costs one request instead of N. Ids with no matching row are simply absent from the
+// result — callers decide what a missing variant means.
+export async function getVariantsByIds(variantIds: string[]): Promise<Variant[]> {
+  if (variantIds.length === 0) return [];
+  const supabase = createClient();
+  const { data, error } = await supabase.from("variants").select("*").in("id", variantIds);
+  if (error) throw new Error(`getVariantsByIds: ${error.message}`);
+  return (data ?? []).map(mapVariantRow);
+}
+
 // Returns products flagged as featured, for homepage highlights
 export const getFeaturedProducts = cache(async (): Promise<Product[]> => {
   const supabase = createClient();

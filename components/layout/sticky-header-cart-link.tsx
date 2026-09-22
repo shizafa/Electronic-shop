@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { useVariantsByIds } from "@/hooks/use-variants-by-ids";
 import { formatPrice } from "@/lib/currency";
-import { getVariantById } from "@/lib/products";
 
 // Same subtotal approach as main-bar-cart-link.tsx (fetch prices only for variants actually
 // in the cart) — duplicated rather than shared, since the two markups differ enough
@@ -14,33 +13,13 @@ import { getVariantById } from "@/lib/products";
 // href="/cart" stays as a no-JS fallback.
 export function StickyHeaderCartLink() {
   const { items, itemCount, openCart } = useCart();
-  const [variantPrices, setVariantPrices] = useState<Record<string, number>>({});
+  // subtotal badge only — a failed lookup leaves those prices out; the cart drawer shows the error
+  const { variantsById } = useVariantsByIds(items.map((item) => item.variantId));
 
-  useEffect(() => {
-    const missingIds = items.map((item) => item.variantId).filter((id) => !(id in variantPrices));
-    if (missingIds.length === 0) return;
-
-    let active = true;
-    Promise.all(missingIds.map((id) => getVariantById(id))).then((variants) => {
-      if (!active) return;
-      setVariantPrices((current) => {
-        const next = { ...current };
-        variants.forEach((variant, index) => {
-          if (variant) next[missingIds[index]] = variant.price;
-        });
-        return next;
-      });
-    }).catch((error) => {
-      // subtotal badge only — leave the unresolved prices out; the cart drawer shows the error
-      console.error(error);
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [items, variantPrices]);
-
-  const subtotal = items.reduce((sum, item) => sum + (variantPrices[item.variantId] ?? 0) * item.quantity, 0);
+  const subtotal = items.reduce(
+    (sum, item) => sum + (variantsById[item.variantId]?.price ?? 0) * item.quantity,
+    0
+  );
 
   return (
           <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-5 rbt-access-box-has-bg-hover rbt-mini-cart tooltips tooltip-distance-lg" data-tooltip="Cart" data-tooltip-position="bottom">
