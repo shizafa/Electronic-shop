@@ -28,6 +28,7 @@ export function WishlistModal() {
   const { addToCart, isAdding } = useAddToCartButton();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
   const [variantsById, setVariantsById] = useState<Record<string, Variant | null>>({});
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const missingProductIds = items.map((item) => item.productId).filter((id) => !(id in productsById));
@@ -42,6 +43,7 @@ export function WishlistModal() {
       Promise.all(missingVariantIds.map((id) => getVariantById(id))),
     ]).then(([products, variants]) => {
       if (!active) return;
+      setLoadError(false);
       setProductsById((current) => {
         const next = { ...current };
         products.forEach((product, index) => {
@@ -56,6 +58,9 @@ export function WishlistModal() {
         });
         return next;
       });
+    }).catch((error) => {
+      console.error(error);
+      if (active) setLoadError(true);
     });
 
     return () => {
@@ -122,7 +127,9 @@ export function WishlistModal() {
                   <div className="rbt-title rbt-text-bold h5" id="wishlistModalLabel">
                     Product Wishlist
                   </div>
-                  {isResolving ? (
+                  {loadError ? (
+                    <p className="mb--16">{t("common.loadFailed")}</p>
+                  ) : isResolving ? (
                     <p className="mb--16">{t("common.loading")}</p>
                   ) : entries.length === 0 ? (
                     <p className="mb--16">{t("wishlist.empty")}</p>

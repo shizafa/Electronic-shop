@@ -106,10 +106,7 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
     .select(ORDER_SELECT)
     .eq("user_id", userId)
     .order("placed_at", { ascending: false });
-  if (error) {
-    console.error("getOrdersForUser failed", error);
-    return [];
-  }
+  if (error) throw new Error(`getOrdersForUser: ${error.message}`);
   return (data ?? []).map((row) => mapOrderRow(row as unknown as OrderRow));
 }
 

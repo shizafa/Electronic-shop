@@ -41,9 +41,6 @@ export async function getPaymentMethodsForUser(userId: string): Promise<PaymentM
     .eq("user_id", userId)
     .order("is_default", { ascending: false })
     .order("created_at", { ascending: false });
-  if (error) {
-    console.error("getPaymentMethodsForUser failed", error);
-    return [];
-  }
+  if (error) throw new Error(`getPaymentMethodsForUser: ${error.message}`);
   return (data ?? []).map((row) => mapRow(row as unknown as PaymentMethodRow));
 }

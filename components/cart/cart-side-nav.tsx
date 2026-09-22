@@ -35,6 +35,7 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
   const { items, isCartOpen, closeCart, updateQuantity, removeFromCart } = useCart();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
   const [variantsById, setVariantsById] = useState<Record<string, Variant | null>>({});
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const missingProductIds = items.map((item) => item.productId).filter((id) => !(id in productsById));
@@ -47,6 +48,7 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
       Promise.all(missingVariantIds.map((id) => getVariantById(id))),
     ]).then(([products, variants]) => {
       if (!active) return;
+      setLoadError(false);
       setProductsById((current) => {
         const next = { ...current };
         products.forEach((product, index) => {
@@ -61,6 +63,9 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
         });
         return next;
       });
+    }).catch((error) => {
+      console.error(error);
+      if (active) setLoadError(true);
     });
 
     return () => {
@@ -111,7 +116,9 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
             </div>
           </div>
           <nav className="side-nav w-100">
-            {isResolving ? (
+            {loadError ? (
+              <p className="mt--16">{t("common.loadFailed")}</p>
+            ) : isResolving ? (
               <p className="mt--16">{t("common.loading")}</p>
             ) : lineItems.length === 0 ? (
               <p className="mt--16">{t("cart.empty")}</p>

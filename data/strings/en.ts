@@ -76,6 +76,8 @@ const en: TranslationDictionary = {
   "common.cancel": "Cancel",
   "common.free": "Free",
   "common.loading": "Loading...",
+  "common.loadFailed": "Couldn't load this right now. Please refresh and try again.",
+  "common.tryAgain": "Try again",
   "common.viewAll": "View All",
   "common.sortBy": "Sort By",
   "common.filters": "Filters",

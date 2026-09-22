@@ -37,6 +37,7 @@ export function CompareModal() {
   const { addToCart, isAdding } = useAddToCartButton();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
   const [category, setCategory] = useState<Category | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const missingIds = items.map((item) => item.productId).filter((id) => !(id in productsById));
@@ -45,6 +46,7 @@ export function CompareModal() {
     let active = true;
     Promise.all(missingIds.map((id) => getProductById(id))).then((products) => {
       if (!active) return;
+      setLoadError(false);
       setProductsById((current) => {
         const next = { ...current };
         products.forEach((product, index) => {
@@ -52,6 +54,9 @@ export function CompareModal() {
         });
         return next;
       });
+    }).catch((error) => {
+      console.error(error);
+      if (active) setLoadError(true);
     });
 
     return () => {
@@ -63,9 +68,14 @@ export function CompareModal() {
   useEffect(() => {
     if (!categoryId) return;
     let active = true;
-    getCategoryById(categoryId).then((result) => {
-      if (active) setCategory(result ?? null);
-    });
+    getCategoryById(categoryId)
+      .then((result) => {
+        if (active) setCategory(result ?? null);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) setLoadError(true);
+      });
     return () => {
       active = false;
     };
@@ -138,7 +148,11 @@ export function CompareModal() {
                       </div>
                     </div>
                   </div>
-                  {isResolving ? (
+                  {loadError ? (
+                    <div className="col-12">
+                      <p>{t("common.loadFailed")}</p>
+                    </div>
+                  ) : isResolving ? (
                     <div className="col-12">
                       <p>{t("common.loading")}</p>
                     </div>

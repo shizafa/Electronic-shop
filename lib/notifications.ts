@@ -43,9 +43,8 @@ export async function getNotificationPreferences(userId: string): Promise<Notifi
     .select("order_updates, promotions, newsletter, sms_alerts")
     .eq("user_id", userId)
     .maybeSingle();
-  if (error) {
-    console.error("getNotificationPreferences failed", error);
-    return DEFAULT_NOTIFICATION_PREFERENCES;
-  }
+  // Throw rather than fall back to the defaults: showing defaults on a failed read would let the
+  // user save them over their real preferences.
+  if (error) throw new Error(`getNotificationPreferences: ${error.message}`);
   return data ? mapRow(data as unknown as NotificationPreferencesRow) : DEFAULT_NOTIFICATION_PREFERENCES;
 }

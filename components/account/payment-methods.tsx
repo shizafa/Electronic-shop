@@ -44,6 +44,7 @@ export function PaymentMethods() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [cards, setCards] = useState<PaymentMethodRecord[]>([]);
   const [isCardsLoading, setIsCardsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState<CardDraft>(emptyDraft);
@@ -55,12 +56,20 @@ export function PaymentMethods() {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    getPaymentMethodsForUser(user.id).then((result) => {
-      if (active) {
-        setCards(result);
-        setIsCardsLoading(false);
-      }
-    });
+    getPaymentMethodsForUser(user.id)
+      .then((result) => {
+        if (active) {
+          setCards(result);
+          setIsCardsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) {
+          setLoadError(true);
+          setIsCardsLoading(false);
+        }
+      });
     return () => {
       active = false;
     };
@@ -179,7 +188,11 @@ export function PaymentMethods() {
         <p className="b1 mb--0">{t("common.loading")}</p>
       )}
 
-      {!isCardsLoading && cards.length === 0 && (
+      {!isCardsLoading && loadError && (
+        <p className="b1 mb--0">{t("common.loadFailed")}</p>
+      )}
+
+      {!isCardsLoading && !loadError && cards.length === 0 && (
         <p className="b1 mb--0">
           No saved cards yet.
         </p>

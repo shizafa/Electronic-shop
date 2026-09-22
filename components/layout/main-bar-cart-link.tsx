@@ -34,6 +34,9 @@ export function MainBarCartLink() {
         });
         return next;
       });
+    }).catch((error) => {
+      // subtotal badge only — leave the unresolved prices out; the cart drawer shows the error
+      console.error(error);
     });
 
     return () => {

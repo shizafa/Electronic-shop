@@ -76,9 +76,6 @@ export async function getReviewsForUser(userId: string): Promise<UserReview[]> {
     .select("*, profiles(name), products(name, slug)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
-  if (error) {
-    console.error("getReviewsForUser failed", error);
-    return [];
-  }
+  if (error) throw new Error(`getReviewsForUser: ${error.message}`);
   return (data ?? []).map((row) => mapUserReviewRow(row as unknown as UserReviewRow));
 }

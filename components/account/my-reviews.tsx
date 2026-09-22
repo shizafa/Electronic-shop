@@ -32,6 +32,7 @@ export function MyReviews() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [isReviewsLoading, setIsReviewsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ rating: number; title: string; body: string }>({
     rating: 5,
@@ -46,12 +47,20 @@ export function MyReviews() {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    getReviewsForUser(user.id).then((result) => {
-      if (active) {
-        setReviews(result);
-        setIsReviewsLoading(false);
-      }
-    });
+    getReviewsForUser(user.id)
+      .then((result) => {
+        if (active) {
+          setReviews(result);
+          setIsReviewsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) {
+          setLoadError(true);
+          setIsReviewsLoading(false);
+        }
+      });
     return () => {
       active = false;
     };
@@ -147,7 +156,11 @@ export function MyReviews() {
         <p className="b1 mb--0">{t("common.loading")}</p>
       )}
 
-      {!isReviewsLoading && reviews.length === 0 && (
+      {!isReviewsLoading && loadError && (
+        <p className="b1 mb--0">{t("common.loadFailed")}</p>
+      )}
+
+      {!isReviewsLoading && !loadError && reviews.length === 0 && (
         <p className="b1 mb--0">
           You haven&apos;t written any reviews yet.
         </p>
