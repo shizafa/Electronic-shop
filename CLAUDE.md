@@ -1,113 +1,69 @@
 @AGENTS.md
 
-## Responsive work
-- Storefront app/(site)/: Unimart Bootstrap 5 template, rbt- classes, 
-  stylesheets linked in app/(site)/layout.tsx, assets in public/assets/
-- Admin app/admin/: Tailwind v4 + shadcn/ui
-- Keep each area in its own system, no mixing, no new dependencies
-- Targets: 320, 375, 768, 1024, 1280, 1440
-- Mobile-first. Desktop >=1280 must not change visually.
-- Never use overflow-x:hidden on body to hide overflow — fix the real cause.
-- Presentation only: no data fetching, lib/, or prop changes.
-- Reply tersely. No summaries of what you just did unless I ask.
+# Electronic Shop
 
-# Storefront re-skin phase
+Next.js 16 (App Router) + Supabase e-commerce store. Feature-complete.
+Current phase: code quality cleanup and database hardening before a supervisor review.
 
-Re-skinning the STOREFRONT only with a Bootstrap 5 template (external repo,
-pasted in piece by piece). The Supabase layer does not change.
+## Stack
 
-## Scope — hard boundary
+- Storefront `app/(site)/`: Unimart Bootstrap 5 template (`rbt-` classes), CSS linked in
+  `app/(site)/layout.tsx`, assets in `public/assets/`, Font Awesome icons.
+- Admin `app/admin/`: Tailwind v4 + shadcn/ui.
+- `components/ui/` is shared shadcn used by admin. Don't restyle or edit.
+- Swiper is the only carousel library. No Bootstrap JS or jQuery.
+- Supabase clients in `lib/supabase/`. `admin.ts` is the service-role client.
+- Migrations in `supabase/migrations/`, numbered `0001_...sql` onward.
 
-- In scope: app/(site)/** and the storefront feature folders under
-  components/ (account, auth, cart, category, checkout, compare, contact,
-  home, layout, order, product, search, shop, wishlist).
-- Never touch: app/admin/**, components/admin/**, lib/**, lib/supabase/**.
-  If a task seems to require changing one of these, stop and ask first.
+## Architecture
 
-## Stack facts (verified 2026-08-25)
+- Four Supabase clients, each for a specific context: `lib/supabase/server.ts`
+  (cookie-bound, per-request — opts the route into dynamic rendering),
+  `lib/supabase/public.ts` (anon key, module-memoized, no cookies — public catalog
+  reads from both Server and Client Components), `lib/supabase/client.ts` (browser
+  client for `'use client'` code), `lib/supabase/admin.ts` (service-role, bypasses
+  RLS — seed script and privileged admin ops only, never client-reachable).
+- `lib/*.ts` are server-side data-access/query modules. A subset — `auth.ts`,
+  `cart.ts`, `wishlist.ts`, `orders.ts`, `compare.ts` — are `'use client'` instead,
+  called directly from the matching Context provider in `context/`.
+  `lib/actions/` and `lib/actions/admin/` hold Server Actions (mutations).
+- `context/product-catalog-context.tsx` caches the full catalog client-side for
+  routes needing synchronous product lookups with no server-rendered parent (cart,
+  wishlist, compare, checkout) — mounted per-route via their `layout.tsx`, not
+  globally.
+- `lib/actions/orders.ts`'s `placeOrder` is a Server Action: prices/totals are
+  always recomputed server-side from the DB, never trusted from the client. It
+  branches on payment method — Stripe card payments (`lib/stripe.ts`,
+  `lib/card-payment.ts`, webhook at `app/api/stripe/webhook`) or cash on delivery
+  (`lib/cod-payment.ts`), each with its own max order value.
 
-- Next.js 16.3.0, App Router.
-- Tailwind v4 (`tailwindcss: ^4`), preflight enabled via
-  `@import "tailwindcss";` in app/globals.css. Leave globals.css as-is —
-  do not disable preflight, do not add Bootstrap resets there.
-- Bootstrap: not installed yet. Swiper: already installed
-  (`swiper: ^14.1.0`) — this is the only carousel library. Do not add
-  Bootstrap JS, jQuery, or any jQuery plugin (dropdowns, modals, carousel,
-  etc.) — rebuild any Bootstrap-JS-driven interaction with React state
-  (useState) instead.
+## Working rules
 
-## components/ui/ is shared with admin
+- Report first, edit only after I approve. Group findings by severity, with file paths.
+- Small changes, one commit per fix. Run `npm run lint` and `npm run build` after each batch.
+- No redesigns, no new dependencies, no big renames. Visuals and behavior stay the same
+  unless the change fixes a bug.
+- Template classes come from the Bootstrap template's CSS. Don't treat them as unused,
+  don't replace them with Tailwind, don't restructure template markup.
+- Template assets stay plain `<img>` (ignore the no-img-element lint rule for them).
+  `next/image` is only for product images, with explicit width/height, never `fill`.
+- Storefront pages stay Server Components. `'use client'` only on interactive leaf
+  components, never on `page.tsx` or `layout.tsx`.
+- Filtering goes through searchParams + `lib/products` / `lib/filters`, not client-side.
 
-- components/ui/ (shadcn primitives: button, dialog, table, sidebar, ...)
-  is used by both the storefront and app/admin/**. Never restyle or edit
-  files in components/ui/.
-- Build template-derived components inside the storefront feature folders
-  instead (e.g. components/product/, components/layout/), not in
-  components/ui/.
-- As each storefront page/component is ported to the template, drop its
-  shadcn imports (components/ui/*) — the template markup replaces them,
-  it doesn't wrap them.
+## Database rules
 
-## Where template CSS goes
+- Migrations are append-only. Never edit an existing migration; add the next numbered file.
+- Never run SQL against the live database. Write the migration; I apply it in the
+  Supabase SQL editor.
+- Every table has RLS. New tables get RLS and policies in the same migration.
+  Admin checks use `is_admin(auth.uid())`.
+- The service-role client is server-only. Never import it in `'use client'` files,
+  never expose keys through `NEXT_PUBLIC_` vars.
+- `order_items` stores snapshots with no FKs to products/variants on purpose. Don't add FKs.
+- Product stock status is derived from variants. Don't add a stored stock column.
+- Keep `types/` in sync with any schema change.
 
-- bootstrap.min.css, then the template's own stylesheet, get imported in
-  app/(site)/layout.tsx — never in app/layout.tsx (the root layout, which
-  app/admin/** also renders under).
-- Font Awesome 7 Pro CSS is imported in app/(site)/layout.tsx alongside
-  the template stylesheet. Do not swap fa-* icons for lucide-react or any
-  other icon set.
-- app/globals.css is unchanged by this phase.
+## Replies
 
-## Server/client boundary
-
-- Storefront pages stay Server Components. Data fetching stays in the
-  page.
-- Only interactive leaf components get 'use client' (carousels,
-  dropdowns, quantity steppers, modals, minicart).
-- Never add 'use client' to a page.tsx or layout.tsx.
-
-## Assets
-
-- Decorative template assets (banners, background shapes, icons, category
-  thumbnails) live in public/assets/. Rewrite pasted src paths from
-  ../images/x.webp (or assets/images/x.webp) to /assets/images/x.webp, and
-  keep them as plain <img> — next/image changes the DOM and breaks the
-  template's positioning and object-fit rules.
-- Demo PRODUCT images in pasted markup are placeholders. Replace them
-  with next/image pointing at the Supabase storage URL from the product
-  data.
-- Use explicit width and height props on next/image, matching the demo
-  image's dimensions. Do not use fill — the template's image containers
-  get their height from the image itself, and fill collapses them.
-- Keep the template's className on the image element. Its rules
-  (width:100%, object-fit, the hover transform) still apply.
-
-## Pasted markup is verbatim
-
-- Markup pasted in from the template is copied AS-IS: never redesign,
-  restructure, reorder, or "clean up" it.
-- Never invent new class names, and never replace template classes with
-  Tailwind classes.
-- The only allowed changes are ones React requires (className instead of
-  class, self-closing tags, key props on lists, etc.) plus TypeScript
-  prop types.
-
-## Data
-
-- Product filtering goes through searchParams + the existing lib/products
-  / lib/filters query functions — never client-side array filtering of an
-  already-fetched list.
-
-## Build order
-
-1. ProductCard
-2. Header/Footer in app/(site)/layout.tsx
-3. /shop
-4. /product/[slug]
-5. /cart
-
-## Process
-
-- One component per turn.
-- After each component, list any className used in the new file that did
-  not appear in the markup that was pasted in.
+- Terse. No summaries of what you did unless I ask.

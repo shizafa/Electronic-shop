@@ -39,14 +39,16 @@ export function QuickLink({ categories, products, activeCategoryIds = [] }: Quic
                           top, empty gap below) instead of centered — object-fit:cover (from
                           .rbt-image-portion img in the same stylesheet) can't crop to fill a
                           box it's never actually given the height to fill. An inline style
-                          wins over that unlayered rule regardless of specificity. */}
+                          wins over that unlayered rule regardless of specificity. 100% rather
+                          than a fixed 110px so the image shrinks with the circle (sized in
+                          site-overrides.css) on narrow screens. */}
                       {thumbnail && (
                         <Image
                           src={thumbnail}
                           alt={category.name}
                           width={THUMBNAIL_WIDTH}
                           height={THUMBNAIL_HEIGHT}
-                          style={{ width: THUMBNAIL_WIDTH, height: THUMBNAIL_HEIGHT }}
+                          style={{ width: "100%", height: "100%" }}
                         />
                       )}
                     </div>

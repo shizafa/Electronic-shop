@@ -461,10 +461,18 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
    regardless of sibling text width. Selector matches style.min.css's own
    .rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion specificity exactly
    (4 classes) — a shorter selector here loses to that rule's higher specificity even though
-   this file loads after it. */
+   this file loads after it.
+   The grid column is capped at 110px but may shrink with its Bootstrap column (col-3 is ~85px
+   on phones), and the circle fills that column with aspect-ratio keeping it round — a fixed
+   110x110 overflowed the column and overlapped its neighbours on narrow screens. */
+.rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .inner {
+  grid-template-columns: minmax(0, 110px);
+}
+
 .rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion {
-  width: 110px;
-  height: 110px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   margin-left: auto;
   margin-right: auto;
 }
@@ -565,4 +573,12 @@ select.form-control-lg {
 .rbt-megamenu a.rbt-btn {
   padding-left: 32px !important;
   padding-right: 32px !important;
+}
+
+/* shadcn Sheet drawers (filter drawer, mobile nav) render at z-index 50, below the template's
+   .rbt-header (z-index 99), so the header painted over the drawer's top. Lift both the overlay
+   and the panel above it on storefront pages only. */
+[data-slot="sheet-overlay"],
+[data-slot="sheet-content"] {
+  z-index: 100;
 }

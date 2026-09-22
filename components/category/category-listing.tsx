@@ -4,10 +4,9 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useListingFilters } from "@/hooks/use-listing-filters";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CategoryBanner } from "@/components/category/category-banner";
 import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
-import { FilterSidebar } from "@/components/category/filter-sidebar";
 import { QuickLink } from "@/components/shop/quick-link";
 import { SidebarFilter, type ChecklistWidgetData } from "@/components/shop/sidebar-filter";
 import { ShopToolbar } from "@/components/shop/shop-toolbar";
@@ -111,15 +110,19 @@ export function CategoryListing({ category, products, allCategories, allProducts
 
   const { total, totalPages, currentPage, pageStart, pageEnd, pageItems } = paginate(filteredProducts);
 
-  const mobileSidebarProps = {
-    fields: filterFields,
-    activeFieldValues,
-    onToggleFieldValue: toggleFieldValue,
+  // shared by the desktop sidebar column and the mobile filter drawer
+  const sidebarProps = {
+    checklistWidgets,
+    colors,
+    brands,
+    activeBrand,
+    onSelectBrand: selectBrand,
+    priceBounds,
+    priceBucketCounts,
     minPrice: minPriceDraft,
     maxPrice: maxPriceDraft,
     onMinPriceChange: setMinPriceDraft,
     onMaxPriceChange: setMaxPriceDraft,
-    onClearAll: clearAll,
   };
 
   return (
@@ -133,19 +136,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
       <div className="container">
       <div className="row mt-2 border-t border-border pt-6">
         <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 d-none d-lg-block">
-          <SidebarFilter
-            checklistWidgets={checklistWidgets}
-            colors={colors}
-            brands={brands}
-            activeBrand={activeBrand}
-            onSelectBrand={selectBrand}
-            priceBounds={priceBounds}
-            priceBucketCounts={priceBucketCounts}
-            minPrice={minPriceDraft}
-            maxPrice={maxPriceDraft}
-            onMinPriceChange={setMinPriceDraft}
-            onMaxPriceChange={setMaxPriceDraft}
-          />
+          <SidebarFilter {...sidebarProps} />
         </div>
 
         <ShopToolbar
@@ -219,15 +210,24 @@ export function CategoryListing({ category, products, allCategories, allProducts
       </div>
       </div>
 
-      {/* Mobile filter drawer — bridge until a template off-canvas filter piece is pasted;
+      {/* Mobile filter drawer — same template SidebarFilter as the desktop column;
           ShopToolbar's "Show Filter" button (mobile only) opens this. */}
       <Sheet open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
-        <SheetContent side="left" className="w-3/4 overflow-y-auto sm:max-w-xs">
-          <SheetHeader>
+        <SheetContent side="left" showCloseButton={false} className="gap-0 overflow-y-auto text-[16px] data-[side=left]:w-[85vw] data-[side=left]:max-w-[360px] data-[side=left]:sm:max-w-[360px]">
+          <SheetHeader className="sr-only">
             <SheetTitle>{t("common.filters")}</SheetTitle>
           </SheetHeader>
-          <div className="px-4 pb-4">
-            <FilterSidebar {...mobileSidebarProps} />
+          <div className="position-relative px-[12px] pt-[12px] pb-[16px]">
+            {/* template-style close, vertically centered on the sidebar's "Filter & Refine" row */}
+            <SheetClose asChild>
+              <button type="button" className="rbt-round-btn position-absolute top-[15px] right-[20px]" aria-label="Close">
+                <i className="fa-regular fa-xmark" />
+              </button>
+            </SheetClose>
+            <SidebarFilter {...sidebarProps} inDrawer />
+            <button type="button" className="rbt-btn w-100 mt--20" onClick={clearAll}>
+              {t("common.clearFilters")}
+            </button>
           </div>
         </SheetContent>
       </Sheet>

@@ -2,9 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useListingFilters } from "@/hooks/use-listing-filters";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { FilterSidebar } from "@/components/category/filter-sidebar";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PromoBanner } from "@/components/shop/promo-banner";
 import { QuickLink } from "@/components/shop/quick-link";
 import { SidebarFilter, type ChecklistWidgetData } from "@/components/shop/sidebar-filter";
@@ -175,15 +173,19 @@ export function ShopListing({ products, categories }: ShopListingProps) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // shared by the desktop sidebar column and the mobile filter drawer
   const sidebarProps = {
-    fields: filterFields,
-    activeFieldValues,
-    onToggleFieldValue: toggleFieldValue,
+    checklistWidgets,
+    colors,
+    brands,
+    activeBrand,
+    onSelectBrand: selectBrand,
+    priceBounds,
+    priceBucketCounts,
     minPrice: minPriceDraft,
     maxPrice: maxPriceDraft,
     onMinPriceChange: setMinPriceDraft,
     onMaxPriceChange: setMaxPriceDraft,
-    onClearAll: clearAll,
   };
 
   return (
@@ -195,19 +197,7 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       <div className="container">
       <div className="row mt-2 border-t border-border pt-6">
         <div className="col-xl-3 col-lg-4 col-md-12 col-sm-12 col-12 d-none d-lg-block">
-          <SidebarFilter
-            checklistWidgets={checklistWidgets}
-            colors={colors}
-            brands={brands}
-            activeBrand={activeBrand}
-            onSelectBrand={selectBrand}
-            priceBounds={priceBounds}
-            priceBucketCounts={priceBucketCounts}
-            minPrice={minPriceDraft}
-            maxPrice={maxPriceDraft}
-            onMinPriceChange={setMinPriceDraft}
-            onMaxPriceChange={setMaxPriceDraft}
-          />
+          <SidebarFilter {...sidebarProps} />
         </div>
 
         <ShopToolbar
@@ -300,30 +290,24 @@ export function ShopListing({ products, categories }: ShopListingProps) {
       </div>
       </div>
 
-      {/* Mobile filter drawer — bridge until a template off-canvas filter piece is pasted;
+      {/* Mobile filter drawer — same template SidebarFilter as the desktop column;
           ShopToolbar's "Show Filter" button (mobile only) opens this. */}
       <Sheet open={isFilterDrawerOpen} onOpenChange={setIsFilterDrawerOpen}>
-        <SheetContent side="left" className="w-3/4 overflow-y-auto sm:max-w-xs">
-          <SheetHeader>
+        <SheetContent side="left" showCloseButton={false} className="gap-0 overflow-y-auto text-[16px] data-[side=left]:w-[85vw] data-[side=left]:max-w-[360px] data-[side=left]:sm:max-w-[360px]">
+          <SheetHeader className="sr-only">
             <SheetTitle>{t("common.filters")}</SheetTitle>
           </SheetHeader>
-          <div className="px-4 pb-4">
-            <p className="mb-2 text-sm font-medium text-foreground">{t("shop.categories")}</p>
-            <div className="mb-6 flex flex-col gap-2">
-              {categories.map((category) => (
-                <label key={category.id} className="flex items-center gap-2 text-sm text-foreground">
-                  <Checkbox
-                    checked={activeCategoryIds.includes(category.id)}
-                    onCheckedChange={() => toggleCategory(category.id)}
-                  />
-                  <span>{category.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({categoryCounts[category.id] ?? 0})
-                  </span>
-                </label>
-              ))}
-            </div>
-            <FilterSidebar {...sidebarProps} />
+          <div className="position-relative px-[12px] pt-[12px] pb-[16px]">
+            {/* template-style close, vertically centered on the sidebar's "Filter & Refine" row */}
+            <SheetClose asChild>
+              <button type="button" className="rbt-round-btn position-absolute top-[15px] right-[20px]" aria-label="Close">
+                <i className="fa-regular fa-xmark" />
+              </button>
+            </SheetClose>
+            <SidebarFilter {...sidebarProps} inDrawer />
+            <button type="button" className="rbt-btn w-100 mt--20" onClick={clearAll}>
+              {t("common.clearFilters")}
+            </button>
           </div>
         </SheetContent>
       </Sheet>
