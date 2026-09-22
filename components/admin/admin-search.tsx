@@ -31,6 +31,7 @@ export function AdminSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AdminSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Resets the query/results whenever the palette opens, whether triggered by the button's
@@ -63,10 +64,18 @@ export function AdminSearch() {
 
     const timeout = setTimeout(() => {
       setIsSearching(true);
-      searchAdmin(trimmed).then((found) => {
-        setResults(found);
-        setIsSearching(false);
-      });
+      setSearchError(false);
+      searchAdmin(trimmed)
+        .then((found) => {
+          setResults(found);
+          setIsSearching(false);
+        })
+        .catch((error) => {
+          console.error(error);
+          setResults([]);
+          setSearchError(true);
+          setIsSearching(false);
+        });
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeout);
@@ -122,6 +131,8 @@ export function AdminSearch() {
           <div className="max-h-80 overflow-y-auto p-2">
             {!query.trim() ? (
               <p className="px-2 py-6 text-center text-sm text-muted-foreground">{t("admin.search.hint")}</p>
+            ) : searchError && !isSearching ? (
+              <p className="px-2 py-6 text-center text-sm text-muted-foreground">{t("common.loadFailed")}</p>
             ) : groups.length === 0 && !isSearching ? (
               <p className="px-2 py-6 text-center text-sm text-muted-foreground">{t("admin.search.noResults")}</p>
             ) : (
