@@ -293,7 +293,7 @@ export default function PrivacyPage() {
             <p>
               We may update this Privacy Policy from time to time. When
                                 we make changes, we will update the
-                                "Last Updated" date at the top of this page. We
+                                &ldquo;Last Updated&rdquo; date at the top of this page. We
                                 encourage you to review this Privacy Policy
                                 periodically to stay informed about how we are
                                 protecting your personal information. Your
