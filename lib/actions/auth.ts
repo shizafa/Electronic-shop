@@ -1,5 +1,6 @@
 "use server";
 
+import { isProfileAdmin } from "@/lib/actions/admin/guard";
 import { createClient } from "@/lib/supabase/server";
 import { safeRedirectPath } from "@/lib/safe-redirect";
 
@@ -16,6 +17,5 @@ export async function resolveLoginRedirect(next: string | null): Promise<string>
   } = await supabase.auth.getUser();
   if (!user) return "/";
 
-  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-  return profile?.is_admin ? "/admin" : "/";
+  return (await isProfileAdmin(supabase, user.id)) ? "/admin" : "/";
 }
