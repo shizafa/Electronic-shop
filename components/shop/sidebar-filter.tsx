@@ -88,20 +88,19 @@ function PriceRangeSlider({ bounds, minPrice, maxPrice, onMinPriceChange, onMaxP
   const minPercent = ((currentMin - bounds.min) / span) * 100;
   const maxPercent = ((currentMax - bounds.min) / span) * 100;
 
-  function priceFromClientX(clientX: number): number {
-    const track = trackRef.current;
-    if (!track) return bounds.min;
-    const rect = track.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    return Math.round(bounds.min + ratio * span);
-  }
-
   function startDrag(handle: "min" | "max") {
     return (event: React.PointerEvent<HTMLSpanElement>) => {
       event.currentTarget.setPointerCapture(event.pointerId);
 
       function onMove(moveEvent: PointerEvent) {
-        const price = priceFromClientX(moveEvent.clientX);
+        // ref read inside the event handler itself, never during render
+        const track = trackRef.current;
+        let price = bounds.min;
+        if (track) {
+          const rect = track.getBoundingClientRect();
+          const ratio = Math.min(1, Math.max(0, (moveEvent.clientX - rect.left) / rect.width));
+          price = Math.round(bounds.min + ratio * span);
+        }
         if (handle === "min") {
           onMinPriceChange(String(Math.min(price, currentMax)));
         } else {
