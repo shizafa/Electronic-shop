@@ -114,10 +114,7 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
 export async function getOrderById(orderId: string): Promise<Order | undefined> {
   const supabase = createClient();
   const { data, error } = await supabase.from("orders").select(ORDER_SELECT).eq("id", orderId).maybeSingle();
-  if (error) {
-    console.error("getOrderById failed", error);
-    return undefined;
-  }
+  if (error) throw new Error(`getOrderById: ${error.message}`);
   return data ? mapOrderRow(data as unknown as OrderRow) : undefined;
 }
 
