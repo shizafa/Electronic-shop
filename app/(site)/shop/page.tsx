@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { BreadCrumb } from "@/components/shop/bread-crumb";
 import { ShopListing } from "@/components/shop/shop-listing";
 import { getVisibleCategories } from "@/lib/categories";
@@ -18,7 +19,11 @@ export default async function ShopPage() {
   return (
     <>
       <BreadCrumb />
-      <ShopListing products={products} categories={categories} />
+      {/* ShopListing reads its filters from the query string (useSearchParams), which this page
+          otherwise renders statically — the boundary lets the shell prerender either way. */}
+      <Suspense>
+        <ShopListing products={products} categories={categories} />
+      </Suspense>
     </>
   );
 }
