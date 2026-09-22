@@ -33,6 +33,8 @@ export function AddressBook() {
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState<AddressDraft>(emptyDraft);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   const isFormOpen = isAdding || editingId !== null;
 
@@ -63,12 +65,15 @@ export function AddressBook() {
     setIsAdding(false);
     setEditingId(null);
     setDraft(emptyDraft);
+    setSaveError("");
   }
 
   async function handleDelete(addressId: string) {
     if (!user) return;
     if (!window.confirm(`${t("account.deleteAddress")}?`)) return;
-    await updateAddresses(user.addresses.filter((address) => address.id !== addressId));
+    setDeleteError("");
+    const ok = await updateAddresses(user.addresses.filter((address) => address.id !== addressId));
+    if (!ok) setDeleteError(t("account.profileSaveFailed"));
   }
 
   function handleFormValuesChange(values: AddressFormValues) {
@@ -93,8 +98,9 @@ export function AddressBook() {
     if (!user || !isDraftValid()) return;
     setIsSubmitting(true);
 
-    // reuse the existing id when editing, otherwise generate a new one — either way this is
-    // just a temporary key; updateAddresses replaces all rows and the DB assigns real ids
+    // reuse the existing id when editing, so the save_user_addresses RPC updates that row in
+    // place; a new address gets a temporary `addr-` key, which the RPC inserts as a new row
+    // with a real DB-assigned id
     const id = isAdding ? `addr-${Date.now()}` : (editingId ?? `addr-${Date.now()}`);
     const newAddress: Address = { ...draft, id };
 
@@ -107,8 +113,14 @@ export function AddressBook() {
       nextAddresses = nextAddresses.map((address) => ({ ...address, isDefault: address.id === id }));
     }
 
-    await updateAddresses(nextAddresses);
+    setSaveError("");
+    const ok = await updateAddresses(nextAddresses);
     setIsSubmitting(false);
+    if (!ok) {
+      // keep the modal open with the draft intact so the user can retry
+      setSaveError(t("account.profileSaveFailed"));
+      return;
+    }
     cancelForm();
   }
 
@@ -130,6 +142,12 @@ export function AddressBook() {
         </div>
       </div>
       <hr className="mt--20 mb--16" />
+
+      {deleteError && (
+        <p className="rbt-text-color-danger mb--16">
+          {deleteError}
+        </p>
+      )}
 
       {user.addresses.length === 0 && (
         <p className="b1 mb--0">
@@ -218,6 +236,12 @@ export function AddressBook() {
               {t("account.setDefault")}
             </label>
           </div>
+
+          {saveError && (
+            <p className="rbt-text-color-danger mb--16">
+              {saveError}
+            </p>
+          )}
 
           <div className="d-flex rbt-gap--12">
             <button type="button" className="rbt-btn rbt-btn-sm" onClick={handleSubmit} disabled={isSubmitting}>
