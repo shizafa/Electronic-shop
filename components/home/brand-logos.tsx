@@ -57,6 +57,7 @@ export function BrandLogos({ brands }: BrandLogosProps) {
                               src={logoSrc}
                               alt={brandName}
                               fill
+                              sizes="(max-width: 576px) 50vw, (max-width: 768px) 33vw, (max-width: 992px) 25vw, 20vw"
                               style={{ objectFit: "contain" }}
                             />
                           )}

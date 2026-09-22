@@ -27,7 +27,7 @@ export function StickyHeaderTicker() {
                 modules={[Navigation]}
                 direction="vertical"
                 slidesPerView={1}
-                loop
+                loop={PLACEHOLDER.slides.length > 2}
                 navigation={{ prevEl, nextEl }}
               >
                 {PLACEHOLDER.slides.map((slide) => (
