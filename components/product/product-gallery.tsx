@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { Swiper as SwiperClass } from "swiper";
 import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -20,6 +20,14 @@ const THUMB_GAP = 10;
 const THUMB_RAIL_VISIBLE_COUNT = 5;
 const THUMB_RAIL_HEIGHT =
   THUMB_RAIL_VISIBLE_COUNT * THUMB_IMAGE_HEIGHT + (THUMB_RAIL_VISIBLE_COUNT - 1) * THUMB_GAP;
+
+const DESKTOP_QUERY = "(min-width: 992px)";
+
+function subscribeToDesktopQuery(onChange: () => void) {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
 
 interface ProductGalleryProps {
   images: string[];
@@ -53,17 +61,11 @@ export function ProductGallery({ images, alt, badge }: ProductGalleryProps) {
   // flips the thumb rail from its desktop vertical column (fixed-height, scrolls vertically)
   // to a horizontal scrolling row on mobile/tablet, since a 500px-tall vertical scroll strip
   // only makes sense next to a same-height main image, not stacked above/below it.
-  const [isDesktopThumbs, setIsDesktopThumbs] = useState(false);
-
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 992px)");
-    setIsDesktopThumbs(query.matches);
-    function handleChange(event: MediaQueryListEvent) {
-      setIsDesktopThumbs(event.matches);
-    }
-    query.addEventListener("change", handleChange);
-    return () => query.removeEventListener("change", handleChange);
-  }, []);
+  const isDesktopThumbs = useSyncExternalStore(
+    subscribeToDesktopQuery,
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+    () => false // server render: same mobile-first default as before hydration
+  );
 
   const activeImage = images[activeIndex];
 
