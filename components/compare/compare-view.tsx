@@ -15,7 +15,7 @@ import { buildSpecRows, type SpecRow } from "@/lib/specs";
 // CompareView — shows selected products side by side with a shared spec comparison table
 export function CompareView() {
   const { items, clearCompare } = useCompare();
-  const { getProductById, getCategoryById, isLoading: isCatalogLoading } = useProductCatalog();
+  const { getProductById, getCategoryById, isLoading: isCatalogLoading, hasError: catalogError } = useProductCatalog();
   const [onlyDifferences, setOnlyDifferences] = useState(false);
 
   // drop any compared items whose product no longer exists in the catalog
@@ -42,6 +42,12 @@ export function CompareView() {
   if (isCatalogLoading) {
     return (
       <div className="py-16 text-center text-base text-muted-foreground">{t("common.loading")}</div>
+    );
+  }
+
+  if (catalogError) {
+    return (
+      <div className="py-16 text-center text-base text-muted-foreground">{t("common.loadFailed")}</div>
     );
   }
 
