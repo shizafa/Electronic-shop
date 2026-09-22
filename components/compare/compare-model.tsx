@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAddToCartButton } from "@/context/cart-context";
 import { useCompare } from "@/context/compare-context";
 import { getCategoryById } from "@/lib/categories";
+import { MAX_COMPARE_ITEMS } from "@/lib/compare";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { getDisplayVariant } from "@/lib/product-helpers";
@@ -13,10 +14,6 @@ import { getProductById } from "@/lib/products";
 import { buildSpecRows, formatSpecValue, type SpecRow } from "@/lib/specs";
 import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
-
-// Matches lib/compare.ts's own MAX_COMPARE_ITEMS (not exported — lib/** is off-limits to edit
-// per project rules) and the template's fixed 4-column table.
-const COMPARE_SLOT_COUNT = 4;
 
 // Compare quick-view modal, opened by the header's compare icon (sticky-header-compare-link.tsx)
 // via CompareContext's isCompareModalOpen. Same Bootstrap-modal-without-Bootstrap-JS rebuild as
@@ -108,7 +105,7 @@ export function CompareModal() {
   const specRows = buildSpecRows(entries, category ?? undefined);
   const featureRows = [...introRows, ...specRows];
 
-  const slots = Array.from({ length: COMPARE_SLOT_COUNT }, (_, index) => entries[index] ?? null);
+  const slots = Array.from({ length: MAX_COMPARE_ITEMS }, (_, index) => entries[index] ?? null);
 
   return (
     <>
