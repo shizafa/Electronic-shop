@@ -24,6 +24,7 @@ import { ADMIN_NAV_GROUPS, isAdminNavItemActive } from "@/components/admin/nav-i
 export function AdminSidebar() {
   const pathname = usePathname();
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
+  const [pendingReviewsError, setPendingReviewsError] = useState(false);
 
   // Fetched once on mount (this component only ever mounts once a session is confirmed
   // admin — AdminLayout gates rendering on that), under reviews_select_admin RLS. Doesn't
@@ -35,7 +36,14 @@ export function AdminSidebar() {
       .from("reviews")
       .select("id", { count: "exact", head: true })
       .eq("status", "pending")
-      .then(({ count }) => setPendingReviewsCount(count ?? 0));
+      .then(({ count, error }) => {
+        if (error) {
+          console.error("AdminSidebar: failed to load pending reviews count", error);
+          setPendingReviewsError(true);
+          return;
+        }
+        setPendingReviewsCount(count ?? 0);
+      });
   }, []);
 
   return (
@@ -63,7 +71,12 @@ export function AdminSidebar() {
                         <Link href={item.href}>
                           <item.icon />
                           <span>{t(item.labelKey)}</span>
-                          {item.href === "/admin/reviews" && pendingReviewsCount > 0 && (
+                          {item.href === "/admin/reviews" && pendingReviewsError && (
+                            <Badge variant="outline" className="ml-auto" title={t("common.loadFailed")}>
+                              ?
+                            </Badge>
+                          )}
+                          {item.href === "/admin/reviews" && !pendingReviewsError && pendingReviewsCount > 0 && (
                             <Badge variant="default" className="ml-auto">
                               {pendingReviewsCount}
                             </Badge>
