@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CategoryListing } from "@/components/category/category-listing";
-import { getAllCategories, getCategoryBySlug } from "@/lib/categories";
+import { getVisibleCategories, getCategoryBySlug } from "@/lib/categories";
 import { getAllProducts, getProductsByCategory } from "@/lib/products";
 
 // Sets the tab title to the matched category's name
@@ -21,7 +21,7 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
 
   const [products, allCategories, allProducts] = await Promise.all([
     getProductsByCategory(category.id),
-    getAllCategories(),
+    getVisibleCategories(),
     getAllProducts(),
   ]);
 
