@@ -26,10 +26,12 @@ function mapAddressRow(row: AddressRow): Address {
 }
 
 // Loads the profiles + addresses rows for an already-authenticated Supabase user and
-// assembles them into the app's User shape.
-async function loadUser(userId: string, email: string): Promise<User> {
+// assembles them into the app's User shape. Returns null if either read fails, rather than
+// defaulting to no addresses / non-admin — a failed read must never look like an empty address
+// book, since saving from that state would drop the user's real addresses.
+async function loadUser(userId: string, email: string): Promise<User | null> {
   const supabase = createClient();
-  const [{ data: profile }, { data: addressRows }] = await Promise.all([
+  const [{ data: profile, error: profileError }, { data: addressRows, error: addressesError }] = await Promise.all([
     supabase.from("profiles").select("name, phone, is_admin").eq("id", userId).single(),
     supabase
       .from("addresses")
@@ -37,6 +39,14 @@ async function loadUser(userId: string, email: string): Promise<User> {
       .eq("user_id", userId)
       .order("created_at"),
   ]);
+  if (profileError) {
+    console.error("loadUser: profiles read failed", profileError);
+    return null;
+  }
+  if (addressesError) {
+    console.error("loadUser: addresses read failed", addressesError);
+    return null;
+  }
 
   return {
     id: userId,
@@ -147,8 +157,10 @@ export async function updateUserPassword(
   return true;
 }
 
-// Saves an updated address list for a user. Replaces all rows rather than diffing,
-// mirroring the old mock's "send the full next array" call pattern from address-book.tsx.
+// Saves an updated address list for a user, taking the full next array (address-book.tsx's call
+// pattern). The save_user_addresses RPC (0031) diffs it against the stored rows in one
+// transaction — updates changed rows, inserts new ones, deletes only removed ones — so a failed
+// save leaves the existing addresses untouched.
 export async function updateUserAddresses(userId: string, addresses: Address[]): Promise<User | null> {
   const supabase = createClient();
 
@@ -158,29 +170,21 @@ export async function updateUserAddresses(userId: string, addresses: Address[]):
     return null;
   }
 
-  const { error: deleteError } = await supabase.from("addresses").delete().eq("user_id", userId);
-  if (deleteError) {
-    console.error("updateUserAddresses: delete failed", deleteError);
+  const { error } = await supabase.rpc("save_user_addresses", {
+    p_addresses: addresses.map((address) => ({
+      id: address.id,
+      label: address.label,
+      full_name: address.fullName,
+      phone: address.phone,
+      city: address.city,
+      area: address.area,
+      address_line: address.addressLine,
+      is_default: address.isDefault,
+    })),
+  });
+  if (error) {
+    console.error("updateUserAddresses: save_user_addresses failed", error);
     return null;
-  }
-
-  if (addresses.length > 0) {
-    const { error: insertError } = await supabase.from("addresses").insert(
-      addresses.map((address) => ({
-        user_id: userId,
-        label: address.label,
-        full_name: address.fullName,
-        phone: address.phone,
-        city: address.city,
-        area: address.area,
-        address_line: address.addressLine,
-        is_default: address.isDefault,
-      }))
-    );
-    if (insertError) {
-      console.error("updateUserAddresses: insert failed", insertError);
-      return null;
-    }
   }
 
   return loadUser(userId, userData.user.email);
