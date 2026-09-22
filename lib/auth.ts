@@ -1,29 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
+import { mapAddressRow } from "@/lib/supabase/mappers";
 import type { Address, User } from "@/types/user";
-
-interface AddressRow {
-  id: string;
-  label: string;
-  full_name: string;
-  phone: string;
-  city: string;
-  area: string;
-  address_line: string;
-  is_default: boolean;
-}
-
-function mapAddressRow(row: AddressRow): Address {
-  return {
-    id: row.id,
-    label: row.label,
-    fullName: row.full_name,
-    phone: row.phone,
-    city: row.city,
-    area: row.area,
-    addressLine: row.address_line,
-    isDefault: row.is_default,
-  };
-}
 
 // Loads the profiles + addresses rows for an already-authenticated Supabase user and
 // assembles them into the app's User shape. Returns null if either read fails, rather than
