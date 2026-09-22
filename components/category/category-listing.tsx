@@ -2,35 +2,27 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useListingFilters } from "@/hooks/use-listing-filters";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CategoryBanner } from "@/components/category/category-banner";
 import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
 import { FilterSidebar } from "@/components/category/filter-sidebar";
 import { QuickLink } from "@/components/shop/quick-link";
-import { PRICE_BUCKETS, SidebarFilter, type ChecklistWidgetData } from "@/components/shop/sidebar-filter";
+import { SidebarFilter, type ChecklistWidgetData } from "@/components/shop/sidebar-filter";
 import { ShopToolbar } from "@/components/shop/shop-toolbar";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
-import { applyFastFilters, applyFilters, getFilterFieldsForCategory, sortProducts, type SortOption } from "@/lib/filters";
+import {
+  applyFastFilters,
+  applyFilters,
+  formatOptionLabel,
+  getFilterFieldsForCategory,
+  sortProducts,
+} from "@/lib/filters";
 import { t } from "@/lib/i18n";
-import { getDisplayVariant } from "@/lib/product-helpers";
-import type { Category, SpecFieldType } from "@/types/category";
+import type { Category } from "@/types/category";
 import type { Product } from "@/types/product";
-
-function formatOptionLabel(value: string, type: SpecFieldType): string {
-  if (type === "boolean") return value === "true" ? "Yes" : "No";
-  return value;
-}
-
-// Same swatch set/matching as shop-listing.tsx's color widget.
-const KNOWN_COLOR_SWATCHES = ["black", "blue", "brown", "gray", "green", "orange", "red", "yellow"] as const;
-
-function matchColorSwatch(value: string): string | undefined {
-  const normalized = value.toLowerCase();
-  if (normalized.includes("grey")) return "gray";
-  return KNOWN_COLOR_SWATCHES.find((swatch) => normalized.includes(swatch));
-}
 
 interface CategoryListingProps {
   category: Category;
@@ -44,41 +36,38 @@ interface CategoryListingProps {
 // (Tonnage, Energy Rating, ...) instead of a Categories list, and the banner is the category's
 // own real bannerUrl instead of the generic shop promo banner.
 export function CategoryListing({ category, products, allCategories, allProducts }: CategoryListingProps) {
-  const [activeFieldValues, setActiveFieldValues] = useState<Record<string, string[]>>({});
-  const [activeBrand, setActiveBrand] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [sort, setSort] = useState<SortOption>("featured");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFastFilterIds, setActiveFastFilterIds] = useState<string[]>([]);
-  const [pageSize, setPageSize] = useState(16);
-  const [page, setPage] = useState(1);
+  // Filter state (and the widget data derived from it) is shared with /shop — see
+  // hooks/use-listing-filters.ts. Everything lives in the query string. scopeByCategory is off:
+  // this page is already one category, so the brand/color widgets count across all of it.
+  const {
+    activeFieldValues,
+    activeFastFilterIds,
+    activeBrand,
+    minPrice,
+    maxPrice,
+    searchQuery,
+    sort,
+    pageSize,
+    searchDraft,
+    setSearchDraft,
+    minPriceDraft,
+    setMinPriceDraft,
+    maxPriceDraft,
+    setMaxPriceDraft,
+    toggleFieldValue,
+    toggleFastFilter,
+    selectBrand,
+    selectSort,
+    selectPageSize,
+    goToPage,
+    clearAll,
+    brands,
+    colors,
+    priceBounds,
+    priceBucketCounts,
+    paginate,
+  } = useListingFilters({ products, scopeByCategory: false });
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-
-  function toggleFieldValue(fieldId: string, value: string) {
-    setActiveFieldValues((current) => {
-      const currentValues = current[fieldId] ?? [];
-      const nextValues = currentValues.includes(value)
-        ? currentValues.filter((existing) => existing !== value)
-        : [...currentValues, value];
-      return { ...current, [fieldId]: nextValues };
-    });
-  }
-
-  function toggleFastFilter(id: string) {
-    setActiveFastFilterIds((current) =>
-      current.includes(id) ? current.filter((existing) => existing !== id) : [...current, id]
-    );
-  }
-
-  function clearAll() {
-    setActiveFieldValues({});
-    setActiveBrand(null);
-    setMinPrice("");
-    setMaxPrice("");
-    setActiveFastFilterIds([]);
-    setSearchQuery("");
-  }
 
   // this category's real spec/variant fields (e.g. Tonnage, Energy Rating for Air Conditioners)
   const filterFields = useMemo(() => getFilterFieldsForCategory(category, products), [category, products]);
@@ -97,62 +86,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
         activeIds: activeFieldValues[field.id] ?? [],
         onToggle: (value: string) => toggleFieldValue(field.id, value),
       })),
-    [filterFields, activeFieldValues]
-  );
-
-  // brand options + product counts, computed from this category's full product list
-  const brands = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const product of products) {
-      counts.set(product.brand, (counts.get(product.brand) ?? 0) + 1);
-    }
-    return Array.from(counts.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [products]);
-
-  // swatch colors + counts within this category, same matching shop-listing.tsx's color widget uses
-  const colors = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const product of products) {
-      const colorAxis = product.variantAxes.find(
-        (axis) => /colou?r/i.test(axis.id) || /colou?r/i.test(axis.labelKey)
-      );
-      if (!colorAxis) continue;
-      for (const variant of product.variants) {
-        const rawValue = variant.axisValues[colorAxis.id];
-        const swatch = rawValue ? matchColorSwatch(rawValue) : undefined;
-        if (!swatch) continue;
-        counts.set(swatch, (counts.get(swatch) ?? 0) + 1);
-      }
-    }
-    return Array.from(counts.entries())
-      .map(([swatch, count]) => ({ swatch, label: swatch[0].toUpperCase() + swatch.slice(1), count }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [products]);
-
-  // cheapest/priciest displayed-variant price within this category, for the price slider's range
-  const priceBounds = useMemo(() => {
-    const prices = products
-      .map((product) => getDisplayVariant(product)?.price)
-      .filter((price): price is number => price !== undefined);
-    if (prices.length === 0) return { min: 0, max: 0 };
-    return { min: Math.min(...prices), max: Math.max(...prices) };
-  }, [products]);
-
-  // product count per PRICE_BUCKETS tier, computed from this category's full product list
-  const priceBucketCounts = useMemo(
-    () =>
-      PRICE_BUCKETS.map((bucket) => {
-        return products.filter((product) => {
-          const price = getDisplayVariant(product)?.price;
-          if (price === undefined) return false;
-          if (bucket.min !== undefined && price < bucket.min) return false;
-          if (bucket.max !== undefined && price >= bucket.max) return false;
-          return true;
-        }).length;
-      }),
-    [products]
+    [filterFields, activeFieldValues, toggleFieldValue]
   );
 
   const filteredProducts = useMemo(() => {
@@ -175,29 +109,16 @@ export function CategoryListing({ category, products, allCategories, allProducts
     return sortProducts(result, sort);
   }, [products, searchQuery, activeFieldValues, activeBrand, minPrice, maxPrice, activeFastFilterIds, sort]);
 
-  // reset to page 1 whenever the result set changes shape, so we don't strand the user on an empty page
-  const filterKey = JSON.stringify([activeFieldValues, activeBrand, minPrice, maxPrice, searchQuery, activeFastFilterIds, pageSize]);
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  if (filterKey !== prevFilterKey) {
-    setPrevFilterKey(filterKey);
-    setPage(1);
-  }
-
-  const total = filteredProducts.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pageStart = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const pageEnd = Math.min(currentPage * pageSize, total);
-  const pageItems = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const { total, totalPages, currentPage, pageStart, pageEnd, pageItems } = paginate(filteredProducts);
 
   const mobileSidebarProps = {
     fields: filterFields,
     activeFieldValues,
     onToggleFieldValue: toggleFieldValue,
-    minPrice,
-    maxPrice,
-    onMinPriceChange: setMinPrice,
-    onMaxPriceChange: setMaxPrice,
+    minPrice: minPriceDraft,
+    maxPrice: maxPriceDraft,
+    onMinPriceChange: setMinPriceDraft,
+    onMaxPriceChange: setMaxPriceDraft,
     onClearAll: clearAll,
   };
 
@@ -217,13 +138,13 @@ export function CategoryListing({ category, products, allCategories, allProducts
             colors={colors}
             brands={brands}
             activeBrand={activeBrand}
-            onSelectBrand={setActiveBrand}
+            onSelectBrand={selectBrand}
             priceBounds={priceBounds}
             priceBucketCounts={priceBucketCounts}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            onMinPriceChange={setMinPrice}
-            onMaxPriceChange={setMaxPrice}
+            minPrice={minPriceDraft}
+            maxPrice={maxPriceDraft}
+            onMinPriceChange={setMinPriceDraft}
+            onMaxPriceChange={setMaxPriceDraft}
           />
         </div>
 
@@ -232,11 +153,11 @@ export function CategoryListing({ category, products, allCategories, allProducts
           pageStart={pageStart}
           pageEnd={pageEnd}
           sort={sort}
-          onSortChange={setSort}
+          onSortChange={selectSort}
           pageSize={pageSize}
-          onPageSizeChange={setPageSize}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
+          onPageSizeChange={selectPageSize}
+          searchQuery={searchDraft}
+          onSearchQueryChange={setSearchDraft}
           activeFastFilterIds={activeFastFilterIds}
           onToggleFastFilter={toggleFastFilter}
           onClearAll={clearAll}
@@ -268,7 +189,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
                 variant="outline"
                 size="icon"
                 disabled={currentPage === 1}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                onClick={() => goToPage(Math.max(1, currentPage - 1))}
                 aria-label={t("shop.previous")}
               >
                 <ChevronLeft className="size-4" />
@@ -278,7 +199,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
                   key={pageNumber}
                   variant={pageNumber === currentPage ? "default" : "outline"}
                   size="icon"
-                  onClick={() => setPage(pageNumber)}
+                  onClick={() => goToPage(pageNumber)}
                 >
                   {pageNumber}
                 </Button>
@@ -287,7 +208,7 @@ export function CategoryListing({ category, products, allCategories, allProducts
                 variant="outline"
                 size="icon"
                 disabled={currentPage === totalPages}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
                 aria-label={t("shop.next")}
               >
                 <ChevronRight className="size-4" />

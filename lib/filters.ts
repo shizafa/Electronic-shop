@@ -18,6 +18,31 @@ export interface FilterField {
   options: FilterFieldOption[];
 }
 
+// Renders a filter option's value for display: boolean spec fields store "true"/"false" but
+// read as Yes/No in the UI. `translate` routes those through t() — the sidebar's checklist
+// labels do, the listing pages' own widgets keep the plain English wording they shipped with.
+export function formatOptionLabel(
+  value: string,
+  type: SpecFieldType,
+  { translate = false }: { translate?: boolean } = {}
+): string {
+  if (type !== "boolean") return value;
+  if (translate) return value === "true" ? t("common.yes") : t("common.no");
+  return value === "true" ? "Yes" : "No";
+}
+
+// style.min.css only defines these 8 swatch backgrounds (rbt-swatch-bg-black, ...) — a real
+// axis value like "Onyx Black" or "Ice Blue" is matched against this set by substring rather
+// than rendered as its own swatch, since there's no class (or hex-color data) for anything
+// outside it.
+export const KNOWN_COLOR_SWATCHES = ["black", "blue", "brown", "gray", "green", "orange", "red", "yellow"] as const;
+
+export function matchColorSwatch(value: string): string | undefined {
+  const normalized = value.toLowerCase();
+  if (normalized.includes("grey")) return "gray";
+  return KNOWN_COLOR_SWATCHES.find((swatch) => normalized.includes(swatch));
+}
+
 // Normalizes a spec value to a string so it can be compared/counted as a filter option
 function toFilterValue(value: string | number | boolean | undefined): string | undefined {
   if (value === undefined) return undefined;

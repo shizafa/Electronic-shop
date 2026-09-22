@@ -3,13 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { t } from "@/lib/i18n";
-import type { FilterField } from "@/lib/filters";
-import type { SpecFieldType } from "@/types/category";
-
-function formatOptionLabel(value: string, type: SpecFieldType): string {
-  if (type === "boolean") return value === "true" ? t("common.yes") : t("common.no");
-  return value;
-}
+import { formatOptionLabel, type FilterField } from "@/lib/filters";
 
 interface FilterSidebarProps {
   fields: FilterField[];
@@ -84,7 +78,7 @@ export function FilterSidebar({
                     checked={isChecked}
                     onCheckedChange={() => onToggleFieldValue(field.id, option.value)}
                   />
-                  <span>{formatOptionLabel(option.value, field.type)}</span>
+                  <span>{formatOptionLabel(option.value, field.type, { translate: true })}</span>
                   <span className="text-xs text-muted-foreground">({option.count})</span>
                 </label>
               );
