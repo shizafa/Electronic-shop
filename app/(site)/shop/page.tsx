@@ -11,7 +11,9 @@ export const metadata: Metadata = {
 
 // /shop route: every product across every category, with category + spec + price filters
 export default async function ShopPage() {
-  const [products, categories] = await Promise.all([getAllProducts(), getVisibleCategories()]);
+  const [allProducts, categories] = await Promise.all([getAllProducts(), getVisibleCategories()]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
+  const products = allProducts.filter((product) => visibleCategoryIds.has(product.categoryId));
 
   return (
     <>

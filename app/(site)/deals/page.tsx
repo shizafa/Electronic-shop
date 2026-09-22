@@ -14,7 +14,9 @@ export const metadata: Metadata = {
 // featured is not enough on its own — a featured product with no discount isn't a "deal".
 export default async function DealsPage() {
   const [allProducts, categories] = await Promise.all([getAllProducts(), getVisibleCategories()]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
   const deals = allProducts.filter((product) => {
+    if (!visibleCategoryIds.has(product.categoryId)) return false;
     const displayVariant = getDisplayVariant(product);
     return displayVariant !== undefined && getDiscountPercent(displayVariant) !== undefined;
   });

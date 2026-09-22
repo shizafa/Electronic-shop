@@ -29,6 +29,8 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
     searchProducts(query, selectedCategory?.id),
     getVisibleCategories(),
   ]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
+  const visibleResults = results.filter((product) => visibleCategoryIds.has(product.categoryId));
 
-  return <SearchResults query={query} products={results} categories={categories} />;
+  return <SearchResults query={query} products={visibleResults} categories={categories} />;
 }
