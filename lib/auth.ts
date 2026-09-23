@@ -3,10 +3,11 @@ import { mapAddressRow } from "@/lib/supabase/mappers";
 import type { Address, User } from "@/types/user";
 
 // Loads the profiles + addresses rows for an already-authenticated Supabase user and
-// assembles them into the app's User shape. Returns null if either read fails, rather than
+// assembles them into the app's User shape. Throws if either read fails, rather than
 // defaulting to no addresses / non-admin — a failed read must never look like an empty address
-// book, since saving from that state would drop the user's real addresses.
-async function loadUser(userId: string, email: string): Promise<User | null> {
+// book, since saving from that state would drop the user's real addresses. Throwing (not null)
+// also keeps a failed read distinct from "not signed in", so callers don't log the user out.
+async function loadUser(userId: string, email: string): Promise<User> {
   const supabase = createClient();
   const [{ data: profile, error: profileError }, { data: addressRows, error: addressesError }] = await Promise.all([
     supabase.from("profiles").select("name, phone, is_admin").eq("id", userId).single(),
@@ -17,12 +18,10 @@ async function loadUser(userId: string, email: string): Promise<User | null> {
       .order("created_at"),
   ]);
   if (profileError) {
-    console.error("loadUser: profiles read failed", profileError);
-    return null;
+    throw new Error(`loadUser: profiles read failed: ${profileError.message}`);
   }
   if (addressesError) {
-    console.error("loadUser: addresses read failed", addressesError);
-    return null;
+    throw new Error(`loadUser: addresses read failed: ${addressesError.message}`);
   }
 
   return {
@@ -35,7 +34,8 @@ async function loadUser(userId: string, email: string): Promise<User | null> {
   };
 }
 
-// Returns the currently logged-in user, or null if no one is logged in
+// Returns the currently logged-in user, or null if no one is logged in. Throws if someone is
+// logged in but their profile/addresses couldn't be read.
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = createClient();
   const {
@@ -45,7 +45,8 @@ export async function getCurrentUser(): Promise<User | null> {
   return loadUser(user.id, user.email);
 }
 
-// Checks email/password against Supabase Auth and starts a session if they match
+// Checks email/password against Supabase Auth and starts a session if they match. Returns null
+// for bad credentials; throws if sign-in succeeded but the profile/addresses read failed.
 export async function login(email: string, password: string): Promise<User | null> {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -106,7 +107,12 @@ export async function updateUserProfile(
     return null;
   }
 
-  return loadUser(userId, authData.user?.email ?? updates.email);
+  try {
+    return await loadUser(userId, authData.user?.email ?? updates.email);
+  } catch (error) {
+    console.error("updateUserProfile: reload failed", error);
+    return null;
+  }
 }
 
 // Changes the logged-in user's password. Re-verifies the current password via
@@ -164,5 +170,10 @@ export async function updateUserAddresses(userId: string, addresses: Address[]):
     return null;
   }
 
-  return loadUser(userId, userData.user.email);
+  try {
+    return await loadUser(userId, userData.user.email);
+  } catch (error) {
+    console.error("updateUserAddresses: reload failed", error);
+    return null;
+  }
 }
