@@ -5,9 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { ShieldCheck, Star } from "lucide-react";
 import { toast } from "sonner";
 import { submitReview } from "@/lib/actions/reviews";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/auth-context";
 import { t } from "@/lib/i18n";
 import type { Review } from "@/types/review";
@@ -128,69 +125,87 @@ export function ReviewsSection({ productId, reviews }: ReviewsSectionProps) {
 
       {justSubmitted && <p className="text-sm text-muted-foreground">{t("product.reviewAwaitingApproval")}</p>}
 
+      {/* Write-review controls use the same template markup as account/my-reviews.tsx's edit form. */}
       {!user ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-fit"
+        <button
+          type="button"
+          className="rbt-btn rbt-btn-sm w-fit"
           onClick={() => router.push(`/login?next=${pathname}`)}
         >
           {t("product.signInToReview")}
-        </Button>
+        </button>
       ) : alreadyReviewed ? (
-        <p className="text-sm text-muted-foreground">{t("product.alreadyReviewed")}</p>
+        <p className="b1 mb--0">{t("product.alreadyReviewed")}</p>
       ) : isFormOpen ? (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-border p-4">
-          <div>
-            <p className="mb-1.5 text-sm font-medium text-foreground">{t("product.yourRating")}</p>
-            <div className="flex gap-1">
-              {Array.from({ length: 5 }).map((_, index) => {
-                const value = index + 1;
-                return (
-                  <button key={value} type="button" onClick={() => setDraftRating(value)} aria-label={String(value)}>
-                    <Star
-                      className={`size-5 ${value <= draftRating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
-                    />
-                  </button>
-                );
-              })}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="rbt-field-label">
+              {t("product.yourRating")}
+            </label>
+            <div className="rbt-card-rating">
+              <ul className="rbt-rating-icon-list rbt-rating-icon-lg">
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const value = index + 1;
+                  return (
+                    <li key={value}>
+                      <button
+                        type="button"
+                        style={{ background: "none", border: "none", padding: 0 }}
+                        onClick={() => setDraftRating(value)}
+                        aria-label={String(value)}
+                      >
+                        <i className={value <= draftRating ? "fa-solid fa-star rbt-rated-icon" : "fa-regular fa-star"} />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
-
-          <div>
-            <p className="mb-1.5 text-sm font-medium text-foreground">{t("product.reviewTitle")}</p>
-            <Input
+          <div className="mb-3">
+            <label htmlFor="new-review-title" className="rbt-field-label">
+              {t("product.reviewTitle")}
+              <span className="rbt-text-color-danger">*</span>
+            </label>
+            <input
+              type="text"
+              id="new-review-title"
+              className="form-control form-control-lg"
               value={draftTitle}
               onChange={(event) => setDraftTitle(event.target.value)}
               placeholder={t("product.reviewTitlePlaceholder")}
               required
             />
           </div>
-
-          <div>
-            <p className="mb-1.5 text-sm font-medium text-foreground">{t("product.yourReview")}</p>
-            <Textarea
+          {/* .form-group picks up the template's textarea sizing (16px text, taller box). */}
+          <div className="form-group mb-3">
+            <label htmlFor="new-review-body" className="rbt-field-label">
+              {t("product.yourReview")}
+              <span className="rbt-text-color-danger">*</span>
+            </label>
+            <textarea
+              id="new-review-body"
+              className="form-control form-control-lg"
               value={draftBody}
               onChange={(event) => setDraftBody(event.target.value)}
               placeholder={t("product.reviewPlaceholder")}
-              rows={3}
+              rows={4}
               required
             />
           </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={draftRating === 0 || isSubmitting}>
+          <div className="d-flex rbt-gap--12 mt--16">
+            <button type="submit" className="rbt-btn rbt-btn-sm" disabled={draftRating === 0 || isSubmitting}>
               {t("product.submitReview")}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => setIsFormOpen(false)}>
+            </button>
+            <button type="button" className="rbt-btn rbt-btn-sm rbt-btn-secondary" onClick={() => setIsFormOpen(false)} disabled={isSubmitting}>
               {t("common.cancel")}
-            </Button>
+            </button>
           </div>
         </form>
       ) : (
-        <Button variant="outline" size="sm" className="w-fit" onClick={() => setIsFormOpen(true)}>
+        <button type="button" className="rbt-btn rbt-btn-sm w-fit" onClick={() => setIsFormOpen(true)}>
           {t("product.writeReview")}
-        </Button>
+        </button>
       )}
     </div>
   );
