@@ -582,3 +582,18 @@ select.form-control-lg {
 [data-slot="sheet-content"] {
   z-index: 100;
 }
+
+/* Homepage brand tiles: the logo is a non-fill next/image, so it sits in .brand-image's
+   flex centering. Size it to the same box the template gives the tile (full width x 60px,
+   and style.min.css's 50% max-width x 38px under 480px). */
+.rbt-brand.style-one .brand-image img {
+  width: 100%;
+  height: 60px;
+  object-fit: contain;
+}
+
+@media only screen and (max-width: 479px) {
+  .rbt-brand.style-one .brand-image img {
+    height: 38px;
+  }
+}
