@@ -196,7 +196,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   // line — each line's `UPDATE ... WHERE stock >= quantity` row-locks that variant, so two
   // checkouts racing for the last unit can't both succeed. Called via the service-role client
   // because the function's execute grant is service_role-only (see the migration for why).
-  const stockItems = input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity }));
+  // Lines are merged per variant and sorted by id so every checkout locks variant rows in the same
+  // order — otherwise carts [A, B] and [B, A] placed at once can deadlock, and Postgres aborts one
+  // with a misleading "sold out".
+  const stockQuantities = new Map<string, number>();
+  for (const item of input.lineItems) {
+    stockQuantities.set(item.variantId, (stockQuantities.get(item.variantId) ?? 0) + item.quantity);
+  }
+  const stockItems = [...stockQuantities]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([variant_id, quantity]) => ({ variant_id, quantity }));
   const { error: stockError } = await admin.rpc("decrement_variant_stock", { items: stockItems });
   if (stockError) {
     await releaseCoupon();
