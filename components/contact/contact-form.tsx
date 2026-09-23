@@ -39,14 +39,6 @@ export function ContactForm({ settings }: { settings: StoreSettings }) {
     setIsSubmitted(true);
   }
 
-  if (isSubmitted) {
-    return (
-      <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm text-foreground">
-        {t("contact.submitted")}
-      </div>
-    );
-  }
-
   const phone = settings.phone || "+9584 4561 2564";
   const phoneHref = settings.phone ? `tel:${settings.phone.replace(/\s+/g, "")}` : "tel:+958445612564";
   const whatsappHref = settings.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}` : null;
@@ -338,6 +330,22 @@ export function ContactForm({ settings }: { settings: StoreSettings }) {
               </div>
             </div>
             <div className="rbt-fshape-box rbt-bg-color-white rbt-contact-form-fshape rbt-border-color-gray-100">
+              {isSubmitted ? (
+              // Success state reuses order-confirmation.tsx's check-badge + heading pattern.
+              <div className="d-flex align-items-center">
+                <div className="rbt-checkout-step rbt-bg-color-success rbt-text-color-white">
+                  <i className="fa-solid fa-check" />
+                </div>
+                <div className="w-100 ps-3">
+                  <h3 className="h5 mb-1">
+                    Message sent
+                  </h3>
+                  <p className="desc mb--0">
+                    {t("contact.submitted")}
+                  </p>
+                </div>
+              </div>
+              ) : (
               <form id="contact-form" className="rainbow-dynamic-form" onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6 col-12 mb--16">
@@ -380,6 +388,7 @@ export function ContactForm({ settings }: { settings: StoreSettings }) {
                   </div>
                 </div>
               </form>
+              )}
             </div>
           </div>
         </div>
