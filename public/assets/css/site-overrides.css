@@ -485,6 +485,18 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
   outline-offset: 3px;
 }
 
+/* Below 992px the quick-link row is style.min.css's horizontal scroller (.rbt-tablet-row /
+   .rbt-mobile-row: overflow-x:auto, overflow-y:hidden), which clips the ring above's 6px
+   (3px offset + 3px outline) off the top of the circle. Padding inside the scroller gives
+   the ring room. Scoped via .pt--0 to quick-link.tsx (see the padding-top rule below), not
+   category-tiles.tsx's rbt-mobile-row. */
+@media (max-width: 991px) {
+  .rbt-catagories-area.pt--0 .rbt-tablet-row,
+  .rbt-catagories-area.pt--0 .rbt-mobile-row {
+    padding-top: 8px;
+  }
+}
+
 /* quick-link.tsx's own wrapper sets pt--0 (padding-top:0!important, active at >=992px — its
    pt_sm--16/pt_md--16 responsive classes already cover the gap below that) assuming whatever
    precedes it (PromoBanner on /shop, CategoryBanner on /category/[slug]) supplies its own
@@ -493,11 +505,10 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
    sections reset to 0 before their own responsive override) — pairing it with
    rbt-catagories-area scopes this to quick-link.tsx specifically, not
    components/home/category-tiles.tsx's unrelated rbt-catagories-area section (which already
-   has its own rbt-section-gap2 spacing). */
-@media (min-width: 992px) {
-  .rbt-catagories-area.pt--0 {
-    padding-top: 32px !important;
-  }
+   has its own rbt-section-gap2 spacing). Applied at every width: the pt_sm--16/pt_md--16
+   16px left the circles reading as touching the banner on phones/tablets. */
+.rbt-catagories-area.pt--0 {
+  padding-top: 32px !important;
 }
 
 /* Product tabs (product-tabs.tsx: Description/Specifications/Reviews/Questions & Answers).
