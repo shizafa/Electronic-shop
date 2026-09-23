@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SortOption } from "@/lib/filters";
 
 // URL plumbing for the /shop and /category/[slug] listings: their filter state lives in the
@@ -77,25 +77,59 @@ export function useListingSearchParams() {
     [pathname, router, search]
   );
 
-  // Drops every filter param at once (the "clear all" buttons)
-  const clearParams = useCallback(() => {
-    router.replace(pathname, { scroll: false });
-  }, [pathname, router]);
+  // Debounced writes (search box, price slider) share one timer and one pending batch, so
+  // controls changed together — a price-tier checkbox sets min and max — land in a single
+  // replace instead of the second overwriting the first. The flush goes through the latest
+  // setParams, so it builds on the current query string rather than the one at schedule time.
+  const pendingRef = useRef<Record<string, ParamValue>>({});
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setParamsRef = useRef(setParams);
+  useEffect(() => {
+    setParamsRef.current = setParams;
+  }, [setParams]);
 
-  return { searchParams, setParams, clearParams };
+  const cancelPending = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+    pendingRef.current = {};
+  }, []);
+
+  // A write still pending when the listing unmounts (e.g. a product card was clicked) is
+  // dropped, so it can't navigate back to the listing
+  useEffect(() => cancelPending, [cancelPending]);
+
+  const scheduleParams = useCallback(
+    (updates: Record<string, ParamValue>, delayMs = 300) => {
+      pendingRef.current = { ...pendingRef.current, ...updates };
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        const pending = pendingRef.current;
+        cancelPending();
+        setParamsRef.current(pending);
+      }, delayMs);
+    },
+    [cancelPending]
+  );
+
+  // Drops every filter param at once (the "clear all" buttons), including any pending write
+  const clearParams = useCallback(() => {
+    cancelPending();
+    router.replace(pathname, { scroll: false });
+  }, [cancelPending, pathname, router]);
+
+  return { searchParams, setParams, scheduleParams, clearParams };
 }
 
 // Keeps a text/slider control responsive while still driving the URL: the input renders from
-// local draft state on every keystroke or drag, and the param is written once the value settles.
-// A change to the param from elsewhere (back/forward, clear all) re-syncs the draft.
+// local draft state on every keystroke or drag, and commit hands the value to scheduleParams,
+// which writes the param once the value settles. A change to the param from elsewhere
+// (back/forward, clear all) re-syncs the draft.
 export function useDebouncedParam(
   value: string,
-  commit: (value: string) => void,
-  delayMs = 300
+  commit: (value: string) => void
 ): [string, (next: string) => void] {
   const [draft, setDraft] = useState(value);
   const [previousValue, setPreviousValue] = useState(value);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (previousValue !== value) {
     setPreviousValue(value);
@@ -104,8 +138,7 @@ export function useDebouncedParam(
 
   function update(next: string) {
     setDraft(next);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => commit(next), delayMs);
+    commit(next);
   }
 
   return [draft, update];

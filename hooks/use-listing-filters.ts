@@ -54,7 +54,7 @@ interface UseListingFiltersOptions {
 // What isn't here: each listing's own filteredProducts pipeline and its checklist widgets, which
 // differ (categories checklist vs. per-spec-field widgets).
 export function useListingFilters({ products, scopeByCategory = true }: UseListingFiltersOptions) {
-  const { searchParams, setParams, clearParams } = useListingSearchParams();
+  const { searchParams, setParams, scheduleParams, clearParams } = useListingSearchParams();
 
   const activeCategoryIds = useMemo(() => getListParam(searchParams, "cats"), [searchParams]);
   const activeFieldValues = useMemo(() => getFieldParams(searchParams), [searchParams]);
@@ -70,13 +70,13 @@ export function useListingFilters({ products, scopeByCategory = true }: UseListi
   // The search box and price slider fire on every keystroke/drag — render them from a local
   // draft and write the param once the value settles, so the URL isn't rewritten per event.
   const [searchDraft, setSearchDraft] = useDebouncedParam(searchQuery, (value) =>
-    setParams({ q: value, page: null })
+    scheduleParams({ q: value, page: null })
   );
   const [minPriceDraft, setMinPriceDraft] = useDebouncedParam(minPrice, (value) =>
-    setParams({ min: value, page: null })
+    scheduleParams({ min: value, page: null })
   );
   const [maxPriceDraft, setMaxPriceDraft] = useDebouncedParam(maxPrice, (value) =>
-    setParams({ max: value, page: null })
+    scheduleParams({ max: value, page: null })
   );
 
   // the toggles feed the listings' checklistWidgets memos, hence useCallback
