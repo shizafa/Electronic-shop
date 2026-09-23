@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      const sessionUserId = session?.user?.id;
       if (!session?.user?.email) {
         if (active) {
           setUser(null);
@@ -50,10 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         })
         .catch((error) => {
-          // treat as signed out rather than leaving every auth-gated page on "Loading..."
+          // The session is still valid — only the profile/addresses read failed (this also runs
+          // on every periodic TOKEN_REFRESHED). Keep the already-loaded user for this account
+          // rather than logging them out; with nothing loaded yet, fall back to signed out so
+          // auth-gated pages don't sit on "Loading..." forever.
           console.error("AuthProvider: failed to load current user", error);
           if (active) {
-            setUser(null);
+            setUser((current) => (current?.id === sessionUserId ? current : null));
             setIsLoading(false);
           }
         });
@@ -67,9 +71,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Attempts login and updates state; returns whether it succeeded
   async function login(email: string, password: string): Promise<boolean> {
-    const loggedInUser = await authLib.login(email, password);
-    if (!loggedInUser) return false;
-    setUser(loggedInUser);
+    try {
+      const loggedInUser = await authLib.login(email, password);
+      if (!loggedInUser) return false;
+      setUser(loggedInUser);
+    } catch (error) {
+      // credentials were accepted and the session exists; only the profile read failed, so
+      // don't report "invalid credentials" — onAuthStateChange's SIGNED_IN load fills in user
+      console.error("AuthProvider: signed in but failed to load user", error);
+    }
     return true;
   }
 

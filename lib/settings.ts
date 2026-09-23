@@ -73,9 +73,9 @@ const FALLBACK: StoreSettings = {
 
 // Store branding, read with the no-cookie public client (same reasoning as
 // lib/categories.ts) so pages that only need this — /about, the root layout — can still be
-// statically prerendered. Falls back to hardcoded defaults if the row is missing or a field
-// is null, so the header/footer/metadata never render empty.
-export const getSettings = cache(async (): Promise<StoreSettings> => {
+// statically prerendered. Returns null if the row can't be read — use this where the defaults
+// would be wrong rather than just blank (placeOrder: a 0 shipping fee / 0% tax undercharges).
+export const getStoredSettings = cache(async (): Promise<StoreSettings | null> => {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("store_settings")
@@ -85,8 +85,8 @@ export const getSettings = cache(async (): Promise<StoreSettings> => {
     .eq("id", 1)
     .maybeSingle();
   if (error || !data) {
-    if (error) console.error("getSettings failed", error);
-    return FALLBACK;
+    if (error) console.error("getStoredSettings failed", error);
+    return null;
   }
   return {
     storeName: data.store_name || FALLBACK.storeName,
@@ -118,3 +118,7 @@ export const getSettings = cache(async (): Promise<StoreSettings> => {
         : FALLBACK.whyShopFeatures,
   };
 });
+
+// Same as getStoredSettings, but falls back to hardcoded defaults if the row is missing, so the
+// header/footer/metadata never render empty.
+export const getSettings = cache(async (): Promise<StoreSettings> => (await getStoredSettings()) ?? FALLBACK);

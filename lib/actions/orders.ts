@@ -8,7 +8,7 @@ import { CARD_CURRENCY, CARD_MAX_ORDER_VALUE, toStripeAmount } from "@/lib/card-
 import { COD_MAX_ORDER_VALUE } from "@/lib/cod-payment";
 import { findRedeemableCoupon } from "@/lib/coupons";
 import { computeOrderTotals } from "@/lib/order-totals";
-import { getSettings } from "@/lib/settings";
+import { getStoredSettings } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 import {
   failCardOrderWithoutPayment,
@@ -96,7 +96,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     return { success: false, error: "This payment method is not available" };
   }
 
-  const settings = await getSettings();
+  // No display defaults here: they have a 0 shipping fee and 0% tax, so an order placed while
+  // store_settings can't be read would be undercharged.
+  const settings = await getStoredSettings();
+  if (!settings) return { success: false, error: "Checkout is temporarily unavailable. Please try again." };
   if (input.paymentMethod === "cod" && !settings.codEnabled) {
     return { success: false, error: "Cash on Delivery is not available" };
   }
@@ -193,7 +196,16 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   // line — each line's `UPDATE ... WHERE stock >= quantity` row-locks that variant, so two
   // checkouts racing for the last unit can't both succeed. Called via the service-role client
   // because the function's execute grant is service_role-only (see the migration for why).
-  const stockItems = input.lineItems.map((item) => ({ variant_id: item.variantId, quantity: item.quantity }));
+  // Lines are merged per variant and sorted by id so every checkout locks variant rows in the same
+  // order — otherwise carts [A, B] and [B, A] placed at once can deadlock, and Postgres aborts one
+  // with a misleading "sold out".
+  const stockQuantities = new Map<string, number>();
+  for (const item of input.lineItems) {
+    stockQuantities.set(item.variantId, (stockQuantities.get(item.variantId) ?? 0) + item.quantity);
+  }
+  const stockItems = [...stockQuantities]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([variant_id, quantity]) => ({ variant_id, quantity }));
   const { error: stockError } = await admin.rpc("decrement_variant_stock", { items: stockItems });
   if (stockError) {
     await releaseCoupon();

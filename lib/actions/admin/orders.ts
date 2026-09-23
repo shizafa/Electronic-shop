@@ -36,11 +36,18 @@ export async function updateOrderStatus(
     return { success: false, error: "That status change isn't allowed from the order's current state" };
   }
 
-  const { error: updateError } = await guard.supabase
+  // Conditional on the status the transition was checked against: if another admin (or a card
+  // payment failing) changed it since the read above, this matches nothing instead of overwriting it.
+  const { data: updatedRows, error: updateError } = await guard.supabase
     .from("orders")
     .update({ status: nextStatus })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .eq("status", order.status)
+    .select("id");
   if (updateError) return { success: false, error: "Failed to update order status" };
+  if (!updatedRows.length) {
+    return { success: false, error: "This order was changed by someone else. Refresh and try again." };
+  }
 
   const { error: historyError } = await guard.supabase
     .from("order_status_history")
