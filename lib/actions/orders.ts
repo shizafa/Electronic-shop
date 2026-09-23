@@ -8,7 +8,7 @@ import { CARD_CURRENCY, CARD_MAX_ORDER_VALUE, toStripeAmount } from "@/lib/card-
 import { COD_MAX_ORDER_VALUE } from "@/lib/cod-payment";
 import { findRedeemableCoupon } from "@/lib/coupons";
 import { computeOrderTotals } from "@/lib/order-totals";
-import { getSettings } from "@/lib/settings";
+import { getStoredSettings } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 import {
   failCardOrderWithoutPayment,
@@ -96,7 +96,10 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     return { success: false, error: "This payment method is not available" };
   }
 
-  const settings = await getSettings();
+  // No display defaults here: they have a 0 shipping fee and 0% tax, so an order placed while
+  // store_settings can't be read would be undercharged.
+  const settings = await getStoredSettings();
+  if (!settings) return { success: false, error: "Checkout is temporarily unavailable. Please try again." };
   if (input.paymentMethod === "cod" && !settings.codEnabled) {
     return { success: false, error: "Cash on Delivery is not available" };
   }
