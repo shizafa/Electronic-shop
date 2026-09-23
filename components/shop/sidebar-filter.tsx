@@ -65,6 +65,8 @@ interface SidebarFilterProps {
   maxPrice: string;
   onMinPriceChange: (value: string) => void;
   onMaxPriceChange: (value: string) => void;
+  // Rendered inside the mobile filter drawer: visible below lg, and without the promo banner.
+  inDrawer?: boolean;
 }
 
 interface PriceRangeSliderProps {
@@ -88,20 +90,19 @@ function PriceRangeSlider({ bounds, minPrice, maxPrice, onMinPriceChange, onMaxP
   const minPercent = ((currentMin - bounds.min) / span) * 100;
   const maxPercent = ((currentMax - bounds.min) / span) * 100;
 
-  function priceFromClientX(clientX: number): number {
-    const track = trackRef.current;
-    if (!track) return bounds.min;
-    const rect = track.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    return Math.round(bounds.min + ratio * span);
-  }
-
   function startDrag(handle: "min" | "max") {
     return (event: React.PointerEvent<HTMLSpanElement>) => {
       event.currentTarget.setPointerCapture(event.pointerId);
 
       function onMove(moveEvent: PointerEvent) {
-        const price = priceFromClientX(moveEvent.clientX);
+        // ref read inside the event handler itself, never during render
+        const track = trackRef.current;
+        let price = bounds.min;
+        if (track) {
+          const rect = track.getBoundingClientRect();
+          const ratio = Math.min(1, Math.max(0, (moveEvent.clientX - rect.left) / rect.width));
+          price = Math.round(bounds.min + ratio * span);
+        }
         if (handle === "min") {
           onMinPriceChange(String(Math.min(price, currentMax)));
         } else {
@@ -207,7 +208,7 @@ function ChecklistWidgetSection({ widget, collapseDomId, open, onToggleOpen }: C
   );
 }
 
-// Desktop sidebar: the checklist widgets (Categories on /shop, per-spec-field widgets on
+// Listing sidebar (desktop column, and the mobile filter drawer via inDrawer): the checklist widgets (Categories on /shop, per-spec-field widgets on
 // /category/[slug]) + color + brand + price filters (both the Min/Max inputs and the preset
 // price-tier checkboxes) are wired to real data/state from the caller. Customer Reviews has no
 // backing data model (no rating field on Product) — same UI-only treatment as
@@ -226,6 +227,7 @@ export function SidebarFilter({
   maxPrice,
   onMinPriceChange,
   onMaxPriceChange,
+  inDrawer = false,
 }: SidebarFilterProps) {
   function isBucketActive(bucket: PriceBucket): boolean {
     const expectedMin = bucket.min !== undefined ? String(bucket.min) : "";
@@ -257,7 +259,7 @@ export function SidebarFilter({
   }
 
   return (
-    <aside className="rbt-sidebar has-rbt-fshape d-none d-lg-block">
+    <aside className={`rbt-sidebar has-rbt-fshape ${inDrawer ? "" : "d-none d-lg-block"}`}>
       <div className="rbt-sidebar-widget-wrapper rbt-sidebar-bg-one position-relative">
         <div className="rbt-sidebar-top">
           <h2 className="rbt-sidebar-title h6">
@@ -615,13 +617,15 @@ export function SidebarFilter({
           {/* End Widget Area */}
         </div>
       </div>
-      <div className="rbt-sidebar-widget-wrapper">
-        <div className="rbt-sidebar-widget-img">
-          <a href="#">
-            <img src="/assets/images/sidebar/sidebar-banner-one.webp" alt="Sidebar Banner" />
-          </a>
+      {!inDrawer && (
+        <div className="rbt-sidebar-widget-wrapper">
+          <div className="rbt-sidebar-widget-img">
+            <a href="#">
+              <img src="/assets/images/sidebar/sidebar-banner-one.webp" alt="Sidebar Banner" />
+            </a>
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

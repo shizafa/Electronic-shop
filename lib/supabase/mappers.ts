@@ -4,6 +4,7 @@
 
 import type { Category, SpecFieldDefinition } from "@/types/category";
 import type { Product, Variant } from "@/types/product";
+import type { Address } from "@/types/user";
 
 interface VariantRow {
   id: string;
@@ -31,6 +32,7 @@ interface ProductRow {
   featured: boolean;
   average_rating: string | number;
   review_count: number;
+  created_at: string;
   variants?: VariantRow[] | null;
 }
 
@@ -89,6 +91,7 @@ export function mapProductRow(row: ProductRow): Product {
     featured: row.featured,
     averageRating: Number(row.average_rating),
     reviewCount: row.review_count,
+    createdAt: row.created_at,
     variants: (row.variants ?? []).map(mapVariantRow),
   };
 }
@@ -120,5 +123,30 @@ export function mapCategoryRow(row: CategoryRow): Category {
       .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
       .map(mapSpecFieldRow),
+  };
+}
+
+// addresses row -> Address, shared by lib/auth.ts (own account) and lib/admin/customers.ts (admin view)
+interface AddressRow {
+  id: string;
+  label: string;
+  full_name: string;
+  phone: string;
+  city: string;
+  area: string;
+  address_line: string;
+  is_default: boolean;
+}
+
+export function mapAddressRow(row: AddressRow): Address {
+  return {
+    id: row.id,
+    label: row.label,
+    fullName: row.full_name,
+    phone: row.phone,
+    city: row.city,
+    area: row.area,
+    addressLine: row.address_line,
+    isDefault: row.is_default,
   };
 }

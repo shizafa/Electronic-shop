@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { CategoryListing } from "@/components/category/category-listing";
-import { getAllCategories, getCategoryBySlug } from "@/lib/categories";
+import { getVisibleCategories, getCategoryBySlug } from "@/lib/categories";
 import { getAllProducts, getProductsByCategory } from "@/lib/products";
 
 // Sets the tab title to the matched category's name
@@ -21,11 +22,14 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
 
   const [products, allCategories, allProducts] = await Promise.all([
     getProductsByCategory(category.id),
-    getAllCategories(),
+    getVisibleCategories(),
     getAllProducts(),
   ]);
 
+  // Suspense boundary for CategoryListing's useSearchParams-driven filters, same as /shop
   return (
-    <CategoryListing category={category} products={products} allCategories={allCategories} allProducts={allProducts} />
+    <Suspense>
+      <CategoryListing category={category} products={products} allCategories={allCategories} allProducts={allProducts} />
+    </Suspense>
   );
 }

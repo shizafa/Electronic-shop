@@ -6,11 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useCart } from "@/context/cart-context";
+import { useVariantsByIds } from "@/hooks/use-variants-by-ids";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
 import { computeOrderTotals, type CommerceSettings } from "@/lib/order-totals";
-import { getProductById, getVariantById } from "@/lib/products";
-import type { Product, Variant } from "@/types/product";
+import { getProductById } from "@/lib/products";
+import type { Product } from "@/types/product";
 
 // Slide-in cart drawer, opened by the header's cart icon (rbt-cart-sidenav-activation in
 // main-bar-cart-link.tsx / sticky-header-cart-link.tsx) via CartContext's isCartOpen.
@@ -34,19 +35,18 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
   const { user } = useAuth();
   const { items, isCartOpen, closeCart, updateQuantity, removeFromCart } = useCart();
   const [productsById, setProductsById] = useState<Record<string, Product | null>>({});
-  const [variantsById, setVariantsById] = useState<Record<string, Variant | null>>({});
+  const [productsError, setProductsError] = useState(false);
+  const { variantsById, hasError: variantsError } = useVariantsByIds(items.map((item) => item.variantId));
+  const loadError = productsError || variantsError;
 
   useEffect(() => {
     const missingProductIds = items.map((item) => item.productId).filter((id) => !(id in productsById));
-    const missingVariantIds = items.map((item) => item.variantId).filter((id) => !(id in variantsById));
-    if (missingProductIds.length === 0 && missingVariantIds.length === 0) return;
+    if (missingProductIds.length === 0) return;
 
     let active = true;
-    Promise.all([
-      Promise.all(missingProductIds.map((id) => getProductById(id))),
-      Promise.all(missingVariantIds.map((id) => getVariantById(id))),
-    ]).then(([products, variants]) => {
+    Promise.all(missingProductIds.map((id) => getProductById(id))).then((products) => {
       if (!active) return;
+      setProductsError(false);
       setProductsById((current) => {
         const next = { ...current };
         products.forEach((product, index) => {
@@ -54,19 +54,15 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
         });
         return next;
       });
-      setVariantsById((current) => {
-        const next = { ...current };
-        variants.forEach((variant, index) => {
-          next[missingVariantIds[index]] = variant ?? null;
-        });
-        return next;
-      });
+    }).catch((error) => {
+      console.error(error);
+      if (active) setProductsError(true);
     });
 
     return () => {
       active = false;
     };
-  }, [items, productsById, variantsById]);
+  }, [items, productsById]);
 
   // Drops any line whose product/variant no longer exists in the catalog (deleted since being
   // added to the cart)
@@ -111,7 +107,9 @@ export function CartSideNav({ settings }: { settings: CommerceSettings }) {
             </div>
           </div>
           <nav className="side-nav w-100">
-            {isResolving ? (
+            {loadError ? (
+              <p className="mt--16">{t("common.loadFailed")}</p>
+            ) : isResolving ? (
               <p className="mt--16">{t("common.loading")}</p>
             ) : lineItems.length === 0 ? (
               <p className="mt--16">{t("cart.empty")}</p>

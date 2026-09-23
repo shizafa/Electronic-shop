@@ -30,6 +30,7 @@ export function NotificationSettings() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
   const [isPrefsLoading, setIsPrefsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -37,12 +38,20 @@ export function NotificationSettings() {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    getNotificationPreferences(user.id).then((result) => {
-      if (active) {
-        setPrefs(result);
-        setIsPrefsLoading(false);
-      }
-    });
+    getNotificationPreferences(user.id)
+      .then((result) => {
+        if (active) {
+          setPrefs(result);
+          setIsPrefsLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) {
+          setLoadError(true);
+          setIsPrefsLoading(false);
+        }
+      });
     return () => {
       active = false;
     };
@@ -92,7 +101,11 @@ export function NotificationSettings() {
         <p className="b1 mb--0">{t("common.loading")}</p>
       )}
 
-      {!isPrefsLoading && (
+      {!isPrefsLoading && loadError && (
+        <p className="b1 mb--0">{t("common.loadFailed")}</p>
+      )}
+
+      {!isPrefsLoading && !loadError && (
         <div className="rbt-scrollable-content hide-scrollbar">
           {PREFS.map((pref, index) => (
             <div key={pref.key}>
@@ -132,7 +145,7 @@ export function NotificationSettings() {
       )}
 
       <div className="d-flex align-items-center rbt-gap--12 mt--8">
-        <button type="button" className="rbt-btn rbt-btn-sm" onClick={handleSave} disabled={isSaving || isPrefsLoading}>
+        <button type="button" className="rbt-btn rbt-btn-sm" onClick={handleSave} disabled={isSaving || isPrefsLoading || loadError}>
           Save Preferences
         </button>
         {savedAt && (

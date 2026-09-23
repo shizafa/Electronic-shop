@@ -48,6 +48,7 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
     getVariantById,
     getCategoryById,
     isLoading: isCatalogLoading,
+    hasError: catalogError,
   } = useProductCatalog();
 
   // resolve cart items into full product/variant data for pricing and display
@@ -112,6 +113,13 @@ export function CheckoutFlow({ settings }: { settings: CommerceSettings & { codE
   if (isAuthLoading || isCatalogLoading || !user || items.length === 0) {
     return (
       <div className="container-page py-12 text-base text-muted-foreground">{t("common.loading")}</div>
+    );
+  }
+
+  // without the catalog there are no line items to price — block checkout rather than show a $0 order
+  if (catalogError) {
+    return (
+      <div className="container-page py-12 text-base text-muted-foreground">{t("common.loadFailed")}</div>
     );
   }
 

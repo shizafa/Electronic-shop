@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductGrid } from "@/components/product/product-grid";
-import { getAllCategories } from "@/lib/categories";
+import { getVisibleCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { getAllProducts } from "@/lib/products";
 import { getDiscountPercent, getDisplayVariant } from "@/lib/product-helpers";
@@ -13,8 +13,10 @@ export const metadata: Metadata = {
 // /deals route: only products with a live discount (variant.compareAtPrice > price). Being
 // featured is not enough on its own — a featured product with no discount isn't a "deal".
 export default async function DealsPage() {
-  const [allProducts, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
+  const [allProducts, categories] = await Promise.all([getAllProducts(), getVisibleCategories()]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
   const deals = allProducts.filter((product) => {
+    if (!visibleCategoryIds.has(product.categoryId)) return false;
     const displayVariant = getDisplayVariant(product);
     return displayVariant !== undefined && getDiscountPercent(displayVariant) !== undefined;
   });

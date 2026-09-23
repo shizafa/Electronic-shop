@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { BreadCrumb } from "@/components/shop/bread-crumb";
 import { ShopListing } from "@/components/shop/shop-listing";
-import { getAllCategories } from "@/lib/categories";
+import { getVisibleCategories } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { getAllProducts } from "@/lib/products";
 
@@ -11,12 +12,18 @@ export const metadata: Metadata = {
 
 // /shop route: every product across every category, with category + spec + price filters
 export default async function ShopPage() {
-  const [products, categories] = await Promise.all([getAllProducts(), getAllCategories()]);
+  const [allProducts, categories] = await Promise.all([getAllProducts(), getVisibleCategories()]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
+  const products = allProducts.filter((product) => visibleCategoryIds.has(product.categoryId));
 
   return (
     <>
       <BreadCrumb />
-      <ShopListing products={products} categories={categories} />
+      {/* ShopListing reads its filters from the query string (useSearchParams), which this page
+          otherwise renders statically — the boundary lets the shell prerender either way. */}
+      <Suspense>
+        <ShopListing products={products} categories={categories} />
+      </Suspense>
     </>
   );
 }

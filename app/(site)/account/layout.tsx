@@ -53,9 +53,14 @@ export default function AccountLayout({ children }: LayoutProps<"/account">) {
   useEffect(() => {
     if (!user) return;
     let active = true;
-    getOrdersForUser(user.id).then((orders) => {
-      if (active) setOrderCount(orders.length);
-    });
+    getOrdersForUser(user.id)
+      .then((orders) => {
+        if (active) setOrderCount(orders.length);
+      })
+      .catch((error) => {
+        // nav badge only — leave the count hidden; the orders page shows the error itself
+        console.error(error);
+      });
     return () => {
       active = false;
     };

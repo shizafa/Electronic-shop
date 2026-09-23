@@ -28,17 +28,19 @@ export const getVisibleCategories = cache(async (): Promise<Category[]> => {
 // both generateMetadata and the page body (e.g. /category/[slug]) only hit the DB once.
 export const getCategoryBySlug = cache(async (slug: string): Promise<Category | undefined> => {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("categories")
     .select(CATEGORY_SELECT)
     .eq("slug", slug)
     .maybeSingle();
+  if (error) throw new Error(`getCategoryBySlug: ${error.message}`);
   return data ? mapCategoryRow(data) : undefined;
 });
 
 // Looks up a category by its id
 export const getCategoryById = cache(async (id: string): Promise<Category | undefined> => {
   const supabase = createClient();
-  const { data } = await supabase.from("categories").select(CATEGORY_SELECT).eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("categories").select(CATEGORY_SELECT).eq("id", id).maybeSingle();
+  if (error) throw new Error(`getCategoryById: ${error.message}`);
   return data ? mapCategoryRow(data) : undefined;
 });

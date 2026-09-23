@@ -29,6 +29,7 @@ export const televisionProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-samsung-crystal-43",
@@ -84,6 +85,7 @@ export const televisionProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-tcl-qled-55",
@@ -129,6 +131,7 @@ export const televisionProducts: Product[] = [
     variantAxes: [screenSizeAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-haier-le-32",
@@ -174,6 +177,7 @@ export const televisionProducts: Product[] = [
     featured: true,
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-sony-bravia-55",
@@ -218,6 +222,7 @@ export const televisionProducts: Product[] = [
     variantAxes: [screenSizeAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-lg-uhd-43",
@@ -272,6 +277,7 @@ export const televisionProducts: Product[] = [
     variantAxes: [screenSizeAxis],
     averageRating: 0,
     reviewCount: 0,
+    createdAt: "1970-01-01T00:00:00.000Z", // unused by seedProducts (DB default fills the real column); kept only to satisfy Product
     variants: [
       {
         id: "tv-ecostar-led-32",

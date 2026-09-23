@@ -34,6 +34,7 @@ export function OrderConfirmation() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId") ?? "";
   const [order, setOrder] = useState<Order | null | undefined>(undefined); // undefined = still loading
+  const [loadError, setLoadError] = useState(false);
   const { products, getCategoryById } = useProductCatalog();
 
   useEffect(() => {
@@ -41,14 +42,22 @@ export function OrderConfirmation() {
 
     let active = true;
     (async () => {
-      let result = await getOrderById(orderId);
-      // A card order can land here before Stripe's webhook has settled it (e.g. right after a
-      // 3-D Secure check) — ask the server to check Stripe directly, then re-read the order.
-      if (result?.paymentMethod === "card" && result.paymentStatus === "pending") {
-        const sync = await syncCardPayment(orderId);
-        if (sync.success && sync.outcome !== "pending") result = (await getOrderById(orderId)) ?? result;
+      try {
+        let result = await getOrderById(orderId);
+        // A card order can land here before Stripe's webhook has settled it (e.g. right after a
+        // 3-D Secure check) — ask the server to check Stripe directly, then re-read the order.
+        if (result?.paymentMethod === "card" && result.paymentStatus === "pending") {
+          const sync = await syncCardPayment(orderId);
+          if (sync.success && sync.outcome !== "pending") result = (await getOrderById(orderId)) ?? result;
+        }
+        if (active) setOrder(result ?? null);
+      } catch (error) {
+        console.error(error);
+        if (active) {
+          setLoadError(true);
+          setOrder(null);
+        }
       }
-      if (active) setOrder(result ?? null);
     })();
     return () => {
       active = false;
@@ -67,7 +76,7 @@ export function OrderConfirmation() {
     return (
       <div className="container-page flex flex-col items-center gap-3 py-16 text-center">
         <p className="text-sm text-muted-foreground">
-          {t("checkout.orderNotFound")}
+          {loadError ? t("common.loadFailed") : t("checkout.orderNotFound")}
         </p>
         <Link href="/" className="rbt-btn">
           {t("common.continueShopping")}

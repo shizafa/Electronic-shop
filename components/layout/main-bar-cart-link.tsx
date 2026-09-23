@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { useVariantsByIds } from "@/hooks/use-variants-by-ids";
 import { formatPrice } from "@/lib/currency";
 import { t } from "@/lib/i18n";
-import { getVariantById } from "@/lib/products";
 
 // Mini-cart quick-access item: item count badge plus running subtotal.
 //
@@ -18,30 +17,13 @@ import { getVariantById } from "@/lib/products";
 // isCartOpen) instead of navigating — href="/cart" stays as a no-JS fallback.
 export function MainBarCartLink() {
   const { items, itemCount, openCart } = useCart();
-  const [variantPrices, setVariantPrices] = useState<Record<string, number>>({});
+  // subtotal badge only — a failed lookup leaves those prices out; the cart drawer shows the error
+  const { variantsById } = useVariantsByIds(items.map((item) => item.variantId));
 
-  useEffect(() => {
-    const missingIds = items.map((item) => item.variantId).filter((id) => !(id in variantPrices));
-    if (missingIds.length === 0) return;
-
-    let active = true;
-    Promise.all(missingIds.map((id) => getVariantById(id))).then((variants) => {
-      if (!active) return;
-      setVariantPrices((current) => {
-        const next = { ...current };
-        variants.forEach((variant, index) => {
-          if (variant) next[missingIds[index]] = variant.price;
-        });
-        return next;
-      });
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [items, variantPrices]);
-
-  const subtotal = items.reduce((sum, item) => sum + (variantPrices[item.variantId] ?? 0) * item.quantity, 0);
+  const subtotal = items.reduce(
+    (sum, item) => sum + (variantsById[item.variantId]?.price ?? 0) * item.quantity,
+    0
+  );
 
   return (
           <li className="rbt-access-box rbt-scroll-trigger fade_in animation-order-3 rbt-access-box-has-bg-hover rbt-mini-cart">

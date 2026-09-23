@@ -14,16 +14,28 @@ import type { Order } from "@/types/order";
 export function OrderDetail({ orderId }: { orderId: string }) {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [order, setOrder] = useState<Order | null | undefined>(undefined); // undefined = still loading
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     let active = true;
-    getOrderById(orderId).then((result) => {
-      if (active) setOrder(result ?? null);
-    });
+    getOrderById(orderId)
+      .then((result) => {
+        if (active) setOrder(result ?? null);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) setLoadError(true);
+      });
     return () => {
       active = false;
     };
   }, [orderId]);
+
+  if (loadError) {
+    return (
+      <div className="container-page py-12 text-base text-muted-foreground">{t("common.loadFailed")}</div>
+    );
+  }
 
   if (isAuthLoading || order === undefined) {
     return (

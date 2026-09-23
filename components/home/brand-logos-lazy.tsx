@@ -9,18 +9,27 @@ import { useInViewOnce } from "@/components/ui/use-in-view-once";
 // Below-the-fold: fetch only starts once this scrolls near the viewport, not on page load.
 export function BrandLogosLazy() {
   const { ref, inView } = useInViewOnce<HTMLDivElement>();
+  const [loadError, setLoadError] = useState(false);
   const [brands, setBrands] = useState<BrandTile[] | null>(null);
 
   useEffect(() => {
     if (!inView || brands) return;
     let cancelled = false;
-    loadBrandLogos().then((data) => {
-      if (!cancelled) setBrands(data);
-    });
+    loadBrandLogos()
+      .then((data) => {
+        if (!cancelled) setBrands(data);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!cancelled) setLoadError(true);
+      });
     return () => {
       cancelled = true;
     };
   }, [inView, brands]);
+
+  // Decorative homepage section — on a failed load, leave it out rather than show a skeleton forever
+  if (loadError) return null;
 
   if (brands) return <BrandLogos brands={brands} />;
 

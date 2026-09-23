@@ -10,6 +10,8 @@ import type { Product, Variant } from "@/types/product";
 // parent supplying product/category data directly (cart, compare, wishlist, checkout).
 interface ProductCatalogContextValue {
   isLoading: boolean;
+  // true when the catalog fetch failed — consumers show an error instead of an empty state
+  hasError: boolean;
   products: Product[];
   categories: Category[];
   getProductById: (id: string) => Product | undefined;
@@ -26,6 +28,7 @@ export function ProductCatalogProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,18 +37,26 @@ export function ProductCatalogProvider({ children }: { children: ReactNode }) {
     Promise.all([
       supabase.from("products").select("*, variants(*)"),
       supabase.from("categories").select("*, spec_fields(*)"),
-    ]).then(([productsResult, categoriesResult]) => {
-      if (!active) return;
-      if (productsResult.error) {
-        console.error("ProductCatalogProvider: failed to load products", productsResult.error);
-      }
-      if (categoriesResult.error) {
-        console.error("ProductCatalogProvider: failed to load categories", categoriesResult.error);
-      }
-      setProducts((productsResult.data ?? []).map(mapProductRow));
-      setCategories((categoriesResult.data ?? []).map(mapCategoryRow));
-      setIsLoading(false);
-    });
+    ])
+      .then(([productsResult, categoriesResult]) => {
+        if (!active) return;
+        if (productsResult.error) {
+          console.error("ProductCatalogProvider: failed to load products", productsResult.error);
+        }
+        if (categoriesResult.error) {
+          console.error("ProductCatalogProvider: failed to load categories", categoriesResult.error);
+        }
+        setHasError(Boolean(productsResult.error || categoriesResult.error));
+        setProducts((productsResult.data ?? []).map(mapProductRow));
+        setCategories((categoriesResult.data ?? []).map(mapCategoryRow));
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("ProductCatalogProvider: failed to load catalog", error);
+        if (!active) return;
+        setHasError(true);
+        setIsLoading(false);
+      });
 
     return () => {
       active = false;
@@ -70,7 +81,7 @@ export function ProductCatalogProvider({ children }: { children: ReactNode }) {
 
   return (
     <ProductCatalogContext.Provider
-      value={{ isLoading, products, categories, getProductById, getVariantById, getCategoryById }}
+      value={{ isLoading, hasError, products, categories, getProductById, getVariantById, getCategoryById }}
     >
       {children}
     </ProductCatalogContext.Provider>

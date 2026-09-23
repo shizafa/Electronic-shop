@@ -30,7 +30,7 @@ export function HeaderTopbarTicker({ slides }: { slides: TopbarTickerSlide[] }) 
               modules={[Navigation]}
               direction="vertical"
               slidesPerView={1}
-              loop
+              loop={slides.length > 2}
               navigation={{ prevEl, nextEl }}
             >
               {slides.map((slide) => (

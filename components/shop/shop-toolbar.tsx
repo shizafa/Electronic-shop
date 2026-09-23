@@ -3,11 +3,12 @@
 import type { ReactNode } from "react";
 import type { SortOption } from "@/lib/filters";
 
-// UI-only quick filters — not wired to real criteria yet (no ratings/color/"popularity" data
-// exists in the schema). They toggle visually and show as removable chips; filtering logic
-// for each will be added once that data exists. The pasted markup's fast-filter row repeats
-// "Top Rated" a second time (same iconClass/label as entry 3) — dropped as a template typo,
-// there's no 8th distinct concept behind it.
+// Quick filters, applied via lib/filters.ts's applyFastFilters (see that file for what each id
+// actually matches — most are approximations, since the schema has no sales-count/"popularity"
+// data). The pasted markup's fast-filter row repeats "Top Rated" a second time (same
+// iconClass/label as entry 3) — dropped as a template typo, there's no 8th distinct concept
+// behind it. "Best Colors" dropped too — there's no per-product color-popularity data at all,
+// and it isn't the same thing as the sidebar's real color-swatch filter.
 const FAST_FILTERS = [
   { id: "featured", label: "Featured", iconClass: "fa-regular fa-truck-fast" },
   { id: "bestSellers", label: "Best Sellers", iconClass: "fa-sharp fa-regular fa-stars" },
@@ -15,7 +16,6 @@ const FAST_FILTERS = [
   { id: "new", label: "New", iconClass: "fa-regular fa-money-bill" },
   { id: "topItems", label: "Top Items", iconClass: "fa-sharp fa-regular fa-calendar-days" },
   { id: "popularItem", label: "Popular Item", iconClass: "fa-sharp fa-regular fa-stars" },
-  { id: "bestColors", label: "Best Colors", iconClass: "fa-regular fa-palette" },
 ];
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [

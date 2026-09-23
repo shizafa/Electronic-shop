@@ -18,6 +18,31 @@ export interface FilterField {
   options: FilterFieldOption[];
 }
 
+// Renders a filter option's value for display: boolean spec fields store "true"/"false" but
+// read as Yes/No in the UI. `translate` routes those through t() — the sidebar's checklist
+// labels do, the listing pages' own widgets keep the plain English wording they shipped with.
+export function formatOptionLabel(
+  value: string,
+  type: SpecFieldType,
+  { translate = false }: { translate?: boolean } = {}
+): string {
+  if (type !== "boolean") return value;
+  if (translate) return value === "true" ? t("common.yes") : t("common.no");
+  return value === "true" ? "Yes" : "No";
+}
+
+// style.min.css only defines these 8 swatch backgrounds (rbt-swatch-bg-black, ...) — a real
+// axis value like "Onyx Black" or "Ice Blue" is matched against this set by substring rather
+// than rendered as its own swatch, since there's no class (or hex-color data) for anything
+// outside it.
+export const KNOWN_COLOR_SWATCHES = ["black", "blue", "brown", "gray", "green", "orange", "red", "yellow"] as const;
+
+export function matchColorSwatch(value: string): string | undefined {
+  const normalized = value.toLowerCase();
+  if (normalized.includes("grey")) return "gray";
+  return KNOWN_COLOR_SWATCHES.find((swatch) => normalized.includes(swatch));
+}
+
 // Normalizes a spec value to a string so it can be compared/counted as a filter option
 function toFilterValue(value: string | number | boolean | undefined): string | undefined {
   if (value === undefined) return undefined;
@@ -98,6 +123,53 @@ export function applyFilters(products: Product[], filters: ActiveFilters): Produ
 
     return true;
   });
+}
+
+// Approximate definitions for /shop's "Fast Filter" chips (components/shop/shop-toolbar.tsx's
+// FAST_FILTERS ids). Only "featured" has a real product field behind it — the schema has no
+// sales-count, and no distinct "top items" concept — so the rest use the closest available
+// proxy from real data (rating, review count, creation date), which means some of these
+// overlap by design:
+//   - bestSellers: same set as featured — no separate sales-count field to rank by
+//   - topRated: average rating at or above TOP_RATED_THRESHOLD
+//   - new: the newest NEW_FRACTION slice of the catalog by creation date
+//   - topItems: topRated ∩ popularItem — highly rated AND actually reviewed
+//   - popularItem: has at least one review
+const TOP_RATED_THRESHOLD = 4;
+const NEW_FRACTION = 0.25;
+
+function computeNewProductIds(products: Product[]): Set<string> {
+  const sorted = [...products].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const cutoff = Math.max(1, Math.ceil(sorted.length * NEW_FRACTION));
+  return new Set(sorted.slice(0, cutoff).map((product) => product.id));
+}
+
+// Narrows to products matching at least one of the active fast-filter chips (OR across chips,
+// same as the sidebar's checklist widgets treat multiple checked options within one field).
+export function applyFastFilters(products: Product[], activeIds: string[]): Product[] {
+  if (activeIds.length === 0) return products;
+
+  const newProductIds = activeIds.includes("new") ? computeNewProductIds(products) : undefined;
+
+  return products.filter((product) =>
+    activeIds.some((id) => {
+      switch (id) {
+        case "featured":
+        case "bestSellers":
+          return Boolean(product.featured);
+        case "topRated":
+          return product.averageRating >= TOP_RATED_THRESHOLD;
+        case "popularItem":
+          return product.reviewCount >= 1;
+        case "topItems":
+          return product.averageRating >= TOP_RATED_THRESHOLD && product.reviewCount >= 1;
+        case "new":
+          return newProductIds?.has(product.id) ?? false;
+        default:
+          return false;
+      }
+    })
+  );
 }
 
 export type SortOption = "featured" | "price_asc" | "price_desc" | "name_asc";

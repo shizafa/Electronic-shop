@@ -17,14 +17,16 @@ export const getAllProducts = cache(async (): Promise<Product[]> => {
 // both generateMetadata and the page body (e.g. /product/[slug]) only hit the DB once.
 export const getProductBySlug = cache(async (slug: string): Promise<Product | undefined> => {
   const supabase = createClient();
-  const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  if (error) throw new Error(`getProductBySlug: ${error.message}`);
   return data ? mapProductRow(data) : undefined;
 });
 
 // Looks up a product by its id
 export const getProductById = cache(async (productId: string): Promise<Product | undefined> => {
   const supabase = createClient();
-  const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("id", productId).maybeSingle();
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("id", productId).maybeSingle();
+  if (error) throw new Error(`getProductById: ${error.message}`);
   return data ? mapProductRow(data) : undefined;
 });
 
@@ -42,9 +44,21 @@ export const getProductsByCategory = cache(async (categoryId: string): Promise<P
 // Finds a specific variant (e.g. a color/size option) by id
 export const getVariantById = cache(async (variantId: string): Promise<Variant | undefined> => {
   const supabase = createClient();
-  const { data } = await supabase.from("variants").select("*").eq("id", variantId).maybeSingle();
+  const { data, error } = await supabase.from("variants").select("*").eq("id", variantId).maybeSingle();
+  if (error) throw new Error(`getVariantById: ${error.message}`);
   return data ? mapVariantRow(data) : undefined;
 });
+
+// Looks up several variants at once (cart/wishlist lines) in a single query, so a basket of N
+// items costs one request instead of N. Ids with no matching row are simply absent from the
+// result — callers decide what a missing variant means.
+export async function getVariantsByIds(variantIds: string[]): Promise<Variant[]> {
+  if (variantIds.length === 0) return [];
+  const supabase = createClient();
+  const { data, error } = await supabase.from("variants").select("*").in("id", variantIds);
+  if (error) throw new Error(`getVariantsByIds: ${error.message}`);
+  return (data ?? []).map(mapVariantRow);
+}
 
 // Returns products flagged as featured, for homepage highlights
 export const getFeaturedProducts = cache(async (): Promise<Product[]> => {

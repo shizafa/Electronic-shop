@@ -2,7 +2,7 @@ import { readJSON, writeJSON } from "@/lib/storage";
 import type { CompareItem } from "@/types/cart";
 
 const COMPARE_KEY = "electronics_compare";
-const MAX_COMPARE_ITEMS = 4;
+export const MAX_COMPARE_ITEMS = 4;
 
 // Result of trying to add a product to compare: success, or a reason it was rejected
 export type AddToCompareResult =

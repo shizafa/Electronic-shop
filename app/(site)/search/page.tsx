@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SearchResults } from "@/components/search/search-results";
-import { getAllCategories, getCategoryBySlug } from "@/lib/categories";
+import { getVisibleCategories, getCategoryBySlug } from "@/lib/categories";
 import { t } from "@/lib/i18n";
 import { searchProducts } from "@/lib/products";
 
@@ -27,8 +27,10 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const selectedCategory = categorySlug ? await getCategoryBySlug(categorySlug) : undefined;
   const [results, categories] = await Promise.all([
     searchProducts(query, selectedCategory?.id),
-    getAllCategories(),
+    getVisibleCategories(),
   ]);
+  const visibleCategoryIds = new Set(categories.map((category) => category.id));
+  const visibleResults = results.filter((product) => visibleCategoryIds.has(product.categoryId));
 
-  return <SearchResults query={query} products={results} categories={categories} />;
+  return <SearchResults query={query} products={visibleResults} categories={categories} />;
 }

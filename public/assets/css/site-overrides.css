@@ -461,10 +461,18 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
    regardless of sibling text width. Selector matches style.min.css's own
    .rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion specificity exactly
    (4 classes) — a shorter selector here loses to that rule's higher specificity even though
-   this file loads after it. */
+   this file loads after it.
+   The grid column is capped at 110px but may shrink with its Bootstrap column (col-3 is ~85px
+   on phones), and the circle fills that column with aspect-ratio keeping it round — a fixed
+   110x110 overflowed the column and overlapped its neighbours on narrow screens. */
+.rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .inner {
+  grid-template-columns: minmax(0, 110px);
+}
+
 .rbt-cat-box.rbt-cat-box-1.rbt-cat-box-1-rounded .rbt-image-portion {
-  width: 110px;
-  height: 110px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   margin-left: auto;
   margin-right: auto;
 }
@@ -477,6 +485,18 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
   outline-offset: 3px;
 }
 
+/* Below 992px the quick-link row is style.min.css's horizontal scroller (.rbt-tablet-row /
+   .rbt-mobile-row: overflow-x:auto, overflow-y:hidden), which clips the ring above's 6px
+   (3px offset + 3px outline) off the top of the circle. Padding inside the scroller gives
+   the ring room. Scoped via .pt--0 to quick-link.tsx (see the padding-top rule below), not
+   category-tiles.tsx's rbt-mobile-row. */
+@media (max-width: 991px) {
+  .rbt-catagories-area.pt--0 .rbt-tablet-row,
+  .rbt-catagories-area.pt--0 .rbt-mobile-row {
+    padding-top: 8px;
+  }
+}
+
 /* quick-link.tsx's own wrapper sets pt--0 (padding-top:0!important, active at >=992px — its
    pt_sm--16/pt_md--16 responsive classes already cover the gap below that) assuming whatever
    precedes it (PromoBanner on /shop, CategoryBanner on /category/[slug]) supplies its own
@@ -485,11 +505,10 @@ body:has(.rbt-cart-side-menu.side-menu-active) footer {
    sections reset to 0 before their own responsive override) — pairing it with
    rbt-catagories-area scopes this to quick-link.tsx specifically, not
    components/home/category-tiles.tsx's unrelated rbt-catagories-area section (which already
-   has its own rbt-section-gap2 spacing). */
-@media (min-width: 992px) {
-  .rbt-catagories-area.pt--0 {
-    padding-top: 32px !important;
-  }
+   has its own rbt-section-gap2 spacing). Applied at every width: the pt_sm--16/pt_md--16
+   16px left the circles reading as touching the banner on phones/tablets. */
+.rbt-catagories-area.pt--0 {
+  padding-top: 32px !important;
 }
 
 /* Product tabs (product-tabs.tsx: Description/Specifications/Reviews/Questions & Answers).
@@ -565,4 +584,52 @@ select.form-control-lg {
 .rbt-megamenu a.rbt-btn {
   padding-left: 32px !important;
   padding-right: 32px !important;
+}
+
+/* shadcn Sheet drawers (filter drawer, mobile nav) render at z-index 50, below the template's
+   .rbt-header (z-index 99), so the header painted over the drawer's top. Lift both the overlay
+   and the panel above it on storefront pages only. */
+[data-slot="sheet-overlay"],
+[data-slot="sheet-content"] {
+  z-index: 100;
+}
+
+/* Homepage brand tiles: the logo is a non-fill next/image, so it sits in .brand-image's
+   flex centering. Size it to the same box the template gives the tile (full width x 60px,
+   and style.min.css's 50% max-width x 38px under 480px). */
+.rbt-brand.style-one .brand-image img {
+  width: 100%;
+  height: 60px;
+  object-fit: contain;
+}
+
+@media only screen and (max-width: 479px) {
+  .rbt-brand.style-one .brand-image img {
+    height: 38px;
+  }
+}
+
+/* Product card price row (product-card.tsx): style.min.css switches .pricing-part to
+   flex-wrap:wrap under 480px and at 1200-1399px, so a long price ("From Rs 1,234,567")
+   pushes the "N in stock" badge onto its own line. Keep it on the price's line instead: the
+   price never shrinks, and the badge takes whatever width is left and truncates with an
+   ellipsis. The badge is inline-flex in the template, and text-overflow only applies to a
+   block container's own text, so it's switched to block here. Scoped with :has() to rows
+   carrying the stock badge, so other .rbt-product-card price rows (list card, order
+   confirmation, alternatives) keep the template's wrapping. */
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) {
+  flex-wrap: nowrap;
+}
+
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) .price-text {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) .rbt-badge {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

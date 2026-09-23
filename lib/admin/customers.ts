@@ -1,6 +1,7 @@
 import "server-only";
 import { requireAdmin } from "@/lib/actions/admin/guard";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { mapAddressRow } from "@/lib/supabase/mappers";
 import type { Address } from "@/types/user";
 
 export interface AdminCustomerSummary {
@@ -23,30 +24,6 @@ interface ProfileRow {
   phone: string | null;
   is_admin: boolean;
   created_at: string;
-}
-
-interface AddressRow {
-  id: string;
-  label: string;
-  full_name: string;
-  phone: string;
-  city: string;
-  area: string;
-  address_line: string;
-  is_default: boolean;
-}
-
-function mapAddressRow(row: AddressRow): Address {
-  return {
-    id: row.id,
-    label: row.label,
-    fullName: row.full_name,
-    phone: row.phone,
-    city: row.city,
-    area: row.area,
-    addressLine: row.address_line,
-    isDefault: row.is_default,
-  };
 }
 
 // Customer reads need two things RLS doesn't grant admins: another user's email (lives on

@@ -19,7 +19,7 @@ import { getDisplayVariant } from "@/lib/product-helpers";
 export function WishlistView() {
   const { items, removeFromWishlist } = useWishlist();
   const { addToCart, isAdding } = useAddToCartButton();
-  const { getProductById, getVariantById, isLoading: isCatalogLoading } = useProductCatalog();
+  const { getProductById, getVariantById, isLoading: isCatalogLoading, hasError: catalogError } = useProductCatalog();
 
   // resolve wishlist entries into product/variant data; fall back to the product's default
   // display variant if no specific variant was saved, and drop items whose product is gone
@@ -49,6 +49,10 @@ export function WishlistView() {
           {isCatalogLoading ? (
             <div className="col-12 text-center">
               <p>{t("common.loading")}</p>
+            </div>
+          ) : catalogError ? (
+            <div className="col-12 text-center">
+              <p>{t("common.loadFailed")}</p>
             </div>
           ) : entries.length === 0 ? (
             <div className="col-12 text-center">

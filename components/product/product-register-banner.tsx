@@ -23,7 +23,7 @@ export function ProductRegisterBanner() {
       </div>
       <div className="rbt-quick-access-banner-action-btn">
         <Link className="rbt-btn rbt-btn-xs" href="/signup">
-          <i className="fa-light fa-user mr--4" />
+          <i className="fa-regular fa-user mr--4" />
           Register Now
         </Link>
       </div>

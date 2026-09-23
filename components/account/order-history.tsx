@@ -42,18 +42,26 @@ export function OrderHistory() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isOrdersLoading, setIsOrdersLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [tab, setTab] = useState<Tab>("current");
 
   useEffect(() => {
     if (!user) return; // nothing to fetch — the render logic below handles the "no user" case
 
     let active = true;
-    getOrdersForUser(user.id).then((result) => {
-      if (!active) return;
-      // newest first
-      setOrders([...result].sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()));
-      setIsOrdersLoading(false);
-    });
+    getOrdersForUser(user.id)
+      .then((result) => {
+        if (!active) return;
+        // newest first
+        setOrders([...result].sort((a, b) => new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime()));
+        setIsOrdersLoading(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!active) return;
+        setLoadError(true);
+        setIsOrdersLoading(false);
+      });
 
     return () => {
       active = false;
@@ -72,6 +80,14 @@ export function OrderHistory() {
     return (
       <div className="rbt-profile-content-area">
         <p className="b1 mb--0">{t("common.loading")}</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="rbt-profile-content-area">
+        <p className="b1 mb--0">{t("common.loadFailed")}</p>
       </div>
     );
   }

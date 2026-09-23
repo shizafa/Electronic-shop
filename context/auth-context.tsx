@@ -41,12 +41,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
-      authLib.getCurrentUser().then((current) => {
-        if (active) {
-          setUser(current);
-          setIsLoading(false);
-        }
-      });
+      authLib
+        .getCurrentUser()
+        .then((current) => {
+          if (active) {
+            setUser(current);
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          // treat as signed out rather than leaving every auth-gated page on "Loading..."
+          console.error("AuthProvider: failed to load current user", error);
+          if (active) {
+            setUser(null);
+            setIsLoading(false);
+          }
+        });
     });
 
     return () => {

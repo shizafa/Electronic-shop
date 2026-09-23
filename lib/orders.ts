@@ -106,10 +106,7 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
     .select(ORDER_SELECT)
     .eq("user_id", userId)
     .order("placed_at", { ascending: false });
-  if (error) {
-    console.error("getOrdersForUser failed", error);
-    return [];
-  }
+  if (error) throw new Error(`getOrdersForUser: ${error.message}`);
   return (data ?? []).map((row) => mapOrderRow(row as unknown as OrderRow));
 }
 
@@ -117,10 +114,7 @@ export async function getOrdersForUser(userId: string): Promise<Order[]> {
 export async function getOrderById(orderId: string): Promise<Order | undefined> {
   const supabase = createClient();
   const { data, error } = await supabase.from("orders").select(ORDER_SELECT).eq("id", orderId).maybeSingle();
-  if (error) {
-    console.error("getOrderById failed", error);
-    return undefined;
-  }
+  if (error) throw new Error(`getOrderById: ${error.message}`);
   return data ? mapOrderRow(data as unknown as OrderRow) : undefined;
 }
 

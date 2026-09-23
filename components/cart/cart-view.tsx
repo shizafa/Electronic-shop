@@ -28,7 +28,7 @@ export function CartView({ settings }: { settings: CommerceSettings }) {
   const router = useRouter();
   const { user } = useAuth();
   const { items, updateQuantity, removeFromCart } = useCart();
-  const { getProductById, getVariantById, isLoading: isCatalogLoading } = useProductCatalog();
+  const { getProductById, getVariantById, isLoading: isCatalogLoading, hasError: catalogError } = useProductCatalog();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ shipping: true });
 
   function isSectionOpen(section: string): boolean {
@@ -75,6 +75,8 @@ export function CartView({ settings }: { settings: CommerceSettings }) {
         </div>
         {isCatalogLoading ? (
           <p className="text-center mt--24">{t("common.loading")}</p>
+        ) : catalogError ? (
+          <p className="text-center mt--24">{t("common.loadFailed")}</p>
         ) : lineItems.length === 0 ? (
           <div className="text-center mt--24">
             <p className="rbt-title rbt-text-bold h6">{t("cart.empty")}</p>
