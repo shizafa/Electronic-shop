@@ -608,3 +608,28 @@ select.form-control-lg {
     height: 38px;
   }
 }
+
+/* Product card price row (product-card.tsx): style.min.css switches .pricing-part to
+   flex-wrap:wrap under 480px and at 1200-1399px, so a long price ("From Rs 1,234,567")
+   pushes the "N in stock" badge onto its own line. Keep it on the price's line instead: the
+   price never shrinks, and the badge takes whatever width is left and truncates with an
+   ellipsis. The badge is inline-flex in the template, and text-overflow only applies to a
+   block container's own text, so it's switched to block here. Scoped with :has() to rows
+   carrying the stock badge, so other .rbt-product-card price rows (list card, order
+   confirmation, alternatives) keep the template's wrapping. */
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) {
+  flex-wrap: nowrap;
+}
+
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) .price-text {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.rbt-product-card .rbt-card-body .pricing-part:has(> .rbt-badge) .rbt-badge {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
